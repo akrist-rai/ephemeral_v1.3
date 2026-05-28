@@ -1,4 +1,4 @@
-it# Production & Deployment Guide
+# Production & Deployment Guide
 
 ## Vercel Deployment
 

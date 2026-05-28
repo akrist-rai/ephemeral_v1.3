@@ -131,31 +131,6 @@ async function seed() {
   // 3. Challenges
   for (const ch of CHALLENGES) {
     await db.insert(schema.challenges).values(ch).onConflictDoUpdate({ target: schema.challenges.id, set: ch });
-=======
-// Exact flags and points from your frontend design
-const initialChallenges = [
-  { id: 'GRAD_001', flag: '4', points: 100, attemptsAllowed: 3 },
-  { id: 'VIT_001', flag: '10', points: 100, attemptsAllowed: 3 },
-  { id: 'DEPLOY_001', flag: 'train', points: 100, attemptsAllowed: 3 },
-  { id: 'ATTN_001', flag: '38809', points: 200, attemptsAllowed: 3 },
-  { id: 'CONV_001', flag: '61', points: 200, attemptsAllowed: 3 },
-  { id: 'LEAK_001', flag: 'normalize', points: 200, attemptsAllowed: 3 },
-  { id: 'SILENT_001', flag: '0', points: 400, attemptsAllowed: 3 },
-  { id: 'FLASH_001', flag: 'YES_0.000000', points: 400, attemptsAllowed: 3 },
-  { id: 'RESNET_001', flag: 'RESNET-50', points: 400, attemptsAllowed: 3 },
-];
-
-async function seed() {
-  console.log('[SEED] Injecting base challenges into ACN_NETWORK...');
-  
-  for (const challenge of initialChallenges) {
-    await db.insert(schema.challenges)
-      .values(challenge)
-      .onConflictDoUpdate({
-        target: schema.challenges.id,
-        set: challenge
-      });
->>>>>>> 6f9336f (initial commit: ephemeral ctf engine v1.0)
   }
   
   console.log('[SEED] Architecture populated. Ready for Subjects.');
@@ -165,8 +140,4 @@ async function seed() {
 seed().catch(err => {
   console.error('[SEED] ERROR:', err);
   process.exit(1);
-<<<<<<< HEAD
 });
-=======
-});
->>>>>>> 6f9336f (initial commit: ephemeral ctf engine v1.0)
