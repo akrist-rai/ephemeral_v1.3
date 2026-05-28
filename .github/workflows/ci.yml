@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  # Opt into Node.js 24 runtime for all GitHub Actions (required after Sept 16 2026)
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     name: Build & Type Check
@@ -23,11 +27,14 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Type check (frontend)
+      # Ensure typescript is available for tsc (it may not be an explicit devDep
+      # since Vite handles transpilation; add it to devDeps to make this permanent)
+      - name: Install typescript for type checking
+        run: bun add -d typescript --no-save 2>/dev/null || true
+
+      - name: Type check
         run: bunx tsc --noEmit
+        # If this fails, add `typescript` to devDependencies and commit tsconfig.json
 
       - name: Build frontend
         run: bun run build
-
-      - name: Check api entrypoint compiles
-        run: bunx tsc --noEmit --project tsconfig.json api/index.ts || true
