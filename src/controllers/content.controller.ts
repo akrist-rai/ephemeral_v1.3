@@ -57,10 +57,11 @@ export class ContentController {
     const fs = require('fs');
     const path = require('path');
     try {
-      const avatarDir = path.join(process.cwd(), 'public', 'one_piece', 'avatar');
-      const files = await fs.promises.readdir(avatarDir);
+      // Serve all images from the top-level one_piece/ directory (no avatar/ subfolder)
+      const imageDir = path.join(process.cwd(), 'public', 'one_piece');
+      const files = await fs.promises.readdir(imageDir);
       const imageFiles = files.filter((f: string) => /\.(jpe?g|png|webp|gif)$/i.test(f));
-      ok(ctx, { avatars: imageFiles.map((f: string) => `/one_piece/avatar/${f}`) });
+      ok(ctx, { avatars: imageFiles.map((f: string) => `/one_piece/${f}`) });
     } catch (err: any) {
       ctx.throw(500, `Failed to load avatars: ${err.message}`);
     }

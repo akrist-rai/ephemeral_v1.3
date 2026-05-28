@@ -93,7 +93,7 @@ export default function App() {
 
   // ── CUSTOM AVATAR & VOLUME COVER CUSTOMIZER ──
   const [userAvatar, setUserAvatar] = useState(() => {
-    return localStorage.getItem('user_avatar') || '/one_piece/avatar/Monkey D Luffy.jpeg';
+    return localStorage.getItem('user_avatar') || '/one_piece/ONE PIECE.jpeg';
   });
   const [arcCovers, setArcCovers] = useState<Record<number, string>>(() => {
     const saved = localStorage.getItem('arc_covers');
