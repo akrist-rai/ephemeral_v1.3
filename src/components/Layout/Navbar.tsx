@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import type { LeaderboardEntry } from '../../types';
-import { apiRequest } from '../../hooks/useApi';
+import React from 'react';
 
 interface NavbarProps {
   onHome: () => void;
@@ -8,6 +6,7 @@ interface NavbarProps {
   onBack?: () => void;
   userXp: number;
   userId: string;
+  displayName?: string;
   showToast: (msg: string) => void;
   activeTab?: string;
   nodeId?: string;
@@ -18,87 +17,58 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  onHome, onSeries, onBack, userXp, userId, showToast, activeTab, nodeId, navigate, challengesSolved, userAvatar, onChangeAvatar,
+  onHome, onSeries, onBack, userXp, userId, displayName, showToast,
+  activeTab, nodeId, navigate, challengesSolved, userAvatar, onChangeAvatar,
 }) => {
-  const [showRankings, setShowRankings] = useState(false);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [lbLoading, setLbLoading] = useState(false);
-
-  const navClick = (action: () => void) => (event: React.MouseEvent) => {
-    event.preventDefault();
+  const go = (href: string, action: () => void) => (e: React.MouseEvent) => {
+    e.preventDefault();
     action();
   };
 
-  const openRankings = async () => {
-    setShowRankings(true);
-    if (leaderboard.length === 0) {
-      setLbLoading(true);
-      try {
-        const data = await apiRequest('/api/leaderboard?limit=10');
-        setLeaderboard(data.leaderboard);
-      } catch { showToast('FAILED TO LOAD RANKINGS'); }
-      setLbLoading(false);
-    }
-  };
+  const name = displayName || userId;
 
   return (
-    <>
-      <nav>
-        <div className="logo" onClick={onHome}>
-          <svg className="compass-logo" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px', transition: 'transform 0.8s ease-out' }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-          </svg>
-          <em>E</em>PHEMERAL
-        </div>
-        <div className="nav-mid">
-          <a href="/" onClick={navClick(onHome)} className={activeTab === 'home' ? 'on' : ''}>HOME</a>
-          {onSeries && <a href="/series" onClick={navClick(onSeries)} className={activeTab === 'series' ? 'on' : ''}>SERIES</a>}
-          <a href="/bounty" onClick={(e) => { e.preventDefault(); navigate('/bounty'); }} className={activeTab === 'bounty' ? 'on' : ''}>BOUNTY DECK</a>
-          <a href="/alliance" onClick={(e) => { e.preventDefault(); navigate('/alliance'); }} className={activeTab === 'alliance' ? 'on' : ''}>ALLIANCE</a>
-          <a href="#rankings" onClick={(e) => { e.preventDefault(); openRankings(); }}>RANKINGS</a>
-        </div>
-        <div className="nav-r">
-          {onBack && <button className="nav-btn" onClick={onBack}>BACK</button>}
-          {!nodeId && <span className="nav-status"><span className="nav-dot"></span>LIVE</span>}
-          <span className="nav-uid" style={{ color: 'var(--lime)', marginRight: '1rem' }}>XP// {userXp}</span>
-          {userAvatar ? (
-            <div className="nav-profile-wrap" onClick={onChangeAvatar} title="Change Profile Avatar">
-              <img src={userAvatar} alt="Profile" className="nav-avatar-img" />
-              <span className="nav-uid">{nodeId ? nodeId : `UID// ${userId}`}</span>
-            </div>
-          ) : (
-            <span className="nav-uid">{nodeId ? nodeId : `UID// ${userId}`}</span>
-          )}
-        </div>
-      </nav>
+    <nav>
+      {/* Logo */}
+      <div className="logo" onClick={onHome}>
+        <svg className="compass-logo" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}>
+          <circle cx="12" cy="12" r="10" />
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+        </svg>
+        <em>E</em>PHEMERAL
+      </div>
 
-      {showRankings && (
-        <div className="rankings-overlay" onClick={() => setShowRankings(false)}>
-          <div className="rankings-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="rankings-header">
-              <span className="rankings-title">LEADERBOARD</span>
-              <button className="rankings-close" onClick={() => setShowRankings(false)}>✕</button>
-            </div>
-            {lbLoading ? (
-              <div className="rankings-loading">SYNCING...</div>
-            ) : leaderboard.length === 0 ? (
-              <div className="rankings-empty">NO RANKINGS YET — BE THE FIRST</div>
-            ) : (
-              <div className="rankings-list">
-                {leaderboard.map((entry) => (
-                  <div key={entry.userId} className={`rankings-row ${entry.userId === userId ? 'rankings-self' : ''}`}>
-                    <span className="rankings-rank">#{entry.rank}</span>
-                    <span className="rankings-user">{entry.userId}</span>
-                    <span className="rankings-solved">{entry.challengesSolved} solved</span>
-                    <span className="rankings-xp">{entry.xp} XP</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+      {/* Navigation links */}
+      <div className="nav-mid">
+        <a href="/" onClick={go('/', onHome)} className={activeTab === 'home' ? 'on' : ''}>HOME</a>
+        {onSeries && <a href="/series" onClick={go('/series', onSeries)} className={activeTab === 'series' ? 'on' : ''}>SERIES</a>}
+        <a href="/leaderboard" onClick={go('/leaderboard', () => navigate('/leaderboard'))} className={activeTab === 'leaderboard' ? 'on' : ''}>LEADERBOARD</a>
+      </div>
+
+      {/* Right side */}
+      <div className="nav-r">
+        {onBack && <button className="nav-btn" onClick={onBack}>← BACK</button>}
+        {!nodeId && <span className="nav-status"><span className="nav-dot" />LIVE</span>}
+
+        {/* XP counter */}
+        <span className="nav-xp-pill">
+          ⚡ <span className="nav-xp-val">{userXp}</span> XP
+        </span>
+
+        {/* Challenges */}
+        <span className="nav-chal-pill">
+          ◈ <span className="nav-xp-val">{challengesSolved}</span> FLAGS
+        </span>
+
+        {/* User avatar + name */}
+        <div className="nav-profile-wrap" onClick={onChangeAvatar} title="Change Avatar">
+          {userAvatar
+            ? <img src={userAvatar} alt="avatar" className="nav-avatar-img" onError={e => { e.currentTarget.style.display = 'none'; }} />
+            : <div className="nav-avatar-fallback">{name.slice(0, 2)}</div>
+          }
+          <span className="nav-uid">{nodeId || name}</span>
         </div>
-      )}
-    </>
+      </div>
+    </nav>
   );
 };

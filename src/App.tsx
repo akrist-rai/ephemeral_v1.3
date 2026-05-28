@@ -11,52 +11,68 @@ import { Brief } from './components/Challenge/Brief';
 import { Resources } from './components/Challenge/Resources';
 import { CTFComponent } from './components/Challenge/CTFComponent';
 import { Toast } from './components/Common/Toast';
+import { AuthGate } from './components/Common/AuthGate';
+import { Leaderboard } from './components/Common/Leaderboard';
+import { AvatarSelectorModal } from './components/Common/AvatarSelectorModal';
 import { apiRequest } from './hooks/useApi';
 import { useCtf } from './hooks/useCtf';
-import { BountyDeck, CrewMember } from './components/Home/BountyDeck';
-import { AllianceBuilder } from './components/Home/AllianceBuilder';
 
 import type { Arc, Episode, Challenge } from './types';
-import { AvatarSelectorModal } from './components/Common/AvatarSelectorModal';
 import { getArcCover } from './lib/imageMapping';
-import { CyberCanvas } from './components/Common/CyberCanvas';
 
-const USER_ID = 'AK_0xD4';
-
+// ── Route parsing ──────────────────────────────────────────────────────────
 function parseRoute() {
   const path = window.location.pathname.replace(/\/+$/, '') || '/';
 
-  // Match /episode/:arcId/:episodeId/ctf/:challengeId
   const ctfChalMatch = path.match(/^\/episode\/([^/]+)\/([^/]+)\/ctf\/([^/]+)$/);
   if (ctfChalMatch) return { screen: 's-ep' as const, tab: 'ctf' as const, arcId: ctfChalMatch[1], episodeId: ctfChalMatch[2], challengeId: decodeURIComponent(ctfChalMatch[3]) };
 
-  // Match /episode/:arcId/:episodeId/ctf
   const ctfMatch = path.match(/^\/episode\/([^/]+)\/([^/]+)\/ctf$/);
   if (ctfMatch) return { screen: 's-ep' as const, tab: 'ctf' as const, arcId: ctfMatch[1], episodeId: ctfMatch[2], challengeId: null };
 
-  // Match /episode/:arcId/:episodeId/resources
   const resMatch = path.match(/^\/episode\/([^/]+)\/([^/]+)\/resources$/);
   if (resMatch) return { screen: 's-ep' as const, tab: 'res' as const, arcId: resMatch[1], episodeId: resMatch[2], challengeId: null };
 
-  // Match /episode/:arcId/:episodeId
   const epMatch = path.match(/^\/episode\/([^/]+)\/([^/]+)$/);
   if (epMatch) return { screen: 's-ep' as const, tab: 'brief' as const, arcId: epMatch[1], episodeId: epMatch[2], challengeId: null };
 
-  if (path === '/series') return { screen: 's-series' as const, tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
-  if (path === '/bounty') return { screen: 's-bounty' as const, tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
-  if (path === '/alliance') return { screen: 's-alliance' as const, tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
+  if (path === '/series')      return { screen: 's-series' as const,      tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
+  if (path === '/leaderboard') return { screen: 's-leaderboard' as const, tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
 
   return { screen: 's-home' as const, tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
 }
 
 type Route = ReturnType<typeof parseRoute>;
 
+// ── Auth helpers ───────────────────────────────────────────────────────────
+function getSavedUser(): { id: string; name: string } | null {
+  const id = localStorage.getItem('ephemeral_user_id');
+  const name = localStorage.getItem('ephemeral_display_name');
+  if (id && name) return { id, name };
+  return null;
+}
+
 export default function App() {
+  // ── Auth ──
+  const [user, setUser] = useState<{ id: string; name: string } | null>(getSavedUser);
+
+  const handleAuth = useCallback((userId: string, displayName: string) => {
+    setUser({ id: userId, name: displayName });
+  }, []);
+
+  // ── Routing ──
   const [route, setRoute] = useState<Route>(parseRoute);
+
+  // ── Toast ──
   const [toast, setToast] = useState({ msg: '', show: false });
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showToast = useCallback((msg: string) => {
+    setToast({ msg, show: true });
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast({ msg: '', show: false }), 2600);
+  }, []);
 
-  // ── DATA STATE ──
+  // ── Data ──
   const [userXp, setUserXp] = useState(0);
   const [challengesSolved, setChallengesSolved] = useState(0);
   const [arcs, setArcs] = useState<Arc[]>([]);
@@ -66,79 +82,38 @@ export default function App() {
   const [apiError, setApiError] = useState('');
   const [curArc, setCurArc] = useState<number | null>(null);
 
-  // ── ALLIANCE STATE ──
-  const [alliance, setAlliance] = useState<CrewMember[]>([]);
-
-  const recruitMember = useCallback((member: CrewMember) => {
-    setAlliance(prev => {
-      if (prev.some(m => m.name === member.name)) return prev;
-      if (prev.length >= 5) {
-        return prev;
-      }
-      return [...prev, member];
-    });
-  }, []);
-
-  const removeMember = useCallback((member: CrewMember) => {
-    setAlliance(prev => {
-      return prev.filter(m => m.name !== member.name);
-    });
-  }, []);
-
-  const showToast = useCallback((msg: string) => {
-    setToast({ msg, show: true });
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast({ msg: '', show: false }), 2600);
-  }, []);
-
-  // ── CUSTOM AVATAR & VOLUME COVER CUSTOMIZER ──
-  const [userAvatar, setUserAvatar] = useState(() => {
-    return localStorage.getItem('user_avatar') || '/one_piece/ONE PIECE.jpeg';
-  });
+  // ── Avatar / cover customization ──
+  const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem('user_avatar') || '/one_piece/ONE PIECE.jpeg');
   const [arcCovers, setArcCovers] = useState<Record<number, string>>(() => {
-    const saved = localStorage.getItem('arc_covers');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch { /* ignore */ }
-    }
-    return {};
+    try { return JSON.parse(localStorage.getItem('arc_covers') || '{}'); } catch { return {}; }
   });
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const [avatarModalMode, setAvatarModalMode] = useState<'player' | { arcId: number }>('player');
 
-  const openPlayerAvatarSelector = useCallback(() => {
-    setAvatarModalMode('player');
-    setAvatarModalOpen(true);
-  }, []);
+  const openPlayerAvatarSelector = useCallback(() => { setAvatarModalMode('player'); setAvatarModalOpen(true); }, []);
+  const openArcCoverSelector = useCallback((arcId: number) => { setAvatarModalMode({ arcId }); setAvatarModalOpen(true); }, []);
 
-  const openArcCoverSelector = useCallback((arcId: number) => {
-    setAvatarModalMode({ arcId });
-    setAvatarModalOpen(true);
-  }, []);
-
-  const handleAvatarSelect = useCallback((avatarUrl: string) => {
+  const handleAvatarSelect = useCallback((url: string) => {
     if (avatarModalMode === 'player') {
-      setUserAvatar(avatarUrl);
-      localStorage.setItem('user_avatar', avatarUrl);
-      showToast('PLAYER PROFILE AVATAR UPDATED');
+      setUserAvatar(url);
+      localStorage.setItem('user_avatar', url);
+      showToast('OPERATOR AVATAR UPDATED');
     } else {
-      const arcId = avatarModalMode.arcId;
+      const arcId = (avatarModalMode as { arcId: number }).arcId;
       setArcCovers(prev => {
-        const updated = { ...prev, [arcId]: avatarUrl };
-        localStorage.setItem('arc_covers', JSON.stringify(updated));
-        return updated;
+        const next = { ...prev, [arcId]: url };
+        localStorage.setItem('arc_covers', JSON.stringify(next));
+        return next;
       });
-      showToast(`VOLUME V${arcId} COVER ART CUSTOMIZED`);
+      showToast(`VOLUME V${arcId} COVER UPDATED`);
     }
   }, [avatarModalMode, showToast]);
 
+  // ── CTF hook ──
   const { gctf, setGctf, submitFlag, toggleCTFHint, shake, flagInputRef } = useCtf(
-    USER_ID,
+    user?.id || 'ANONYMOUS',
     showToast,
-    useCallback(() => {
-      setChallengesSolved(prev => prev + 1);
-    }, [])
+    useCallback(() => setChallengesSolved(p => p + 1), []),
   );
 
   const applyRoute = useCallback((nextRoute: Route) => {
@@ -150,15 +125,16 @@ export default function App() {
     }));
   }, [setGctf]);
 
-  // ── FETCH ALL DATA ──
+  // ── Fetch all data (after auth) ──
   useEffect(() => {
+    if (!user) return;
     const fetchData = async () => {
       try {
         setDataStatus('loading');
         const [arcsData, chalData, progData] = await Promise.all([
           apiRequest('/api/arcs'),
           apiRequest('/api/challenges'),
-          apiRequest(`/api/progress/${USER_ID}`),
+          apiRequest(`/api/progress/${encodeURIComponent(user.id)}`),
         ]);
 
         const fetchedArcs: Arc[] = arcsData.arcs;
@@ -167,53 +143,40 @@ export default function App() {
         setUserXp(progData.xp);
         setChallengesSolved(progData.challengesSolved || 0);
 
-        // Default to the first arc with episodes, or the first arc
-        if (fetchedArcs.length > 0 && curArc === null) {
-          setCurArc(fetchedArcs[0].id);
-        }
+        if (fetchedArcs.length > 0 && curArc === null) setCurArc(fetchedArcs[0].id);
 
-        // Fetch episodes for all arcs
-        const fullArcEpisodes: Record<number, Episode[]> = {};
-        for (const arc of fetchedArcs) {
-          const epData = await apiRequest(`/api/episodes/${arc.id}`);
-          fullArcEpisodes[arc.id] = epData.episodes;
-        }
-        setArcEpisodes(fullArcEpisodes);
+        const allEps: Record<number, Episode[]> = {};
+        await Promise.all(fetchedArcs.map(async arc => {
+          const ep = await apiRequest(`/api/episodes/${arc.id}`);
+          allEps[arc.id] = ep.episodes;
+        }));
+        setArcEpisodes(allEps);
 
-        // Map progress
         const solved: Record<string, any> = {};
         const chalAttempts: Record<string, number> = {};
         chalData.challenges.forEach((c: Challenge) => { chalAttempts[c.id] = c.attemptsAllowed; });
         progData.progress.forEach((p: any) => {
-          const originalAttempts = chalData.challenges.find((c: Challenge) => c.id === p.challengeId)?.attemptsAllowed || 3;
-          const attemptsRemaining = originalAttempts - p.attemptsUsed;
-          const isFailed = !p.solved && attemptsRemaining <= 0;
-
-          solved[p.challengeId] = { 
-            attempts_used: p.attemptsUsed, 
-            pts_earned: p.pointsEarned, 
-            solved: p.solved,
-            failed: isFailed
-          };
-          chalAttempts[p.challengeId] = Math.max(0, attemptsRemaining);
+          const orig = chalData.challenges.find((c: Challenge) => c.id === p.challengeId)?.attemptsAllowed || 3;
+          const rem = orig - p.attemptsUsed;
+          solved[p.challengeId] = { attempts_used: p.attemptsUsed, pts_earned: p.pointsEarned, solved: p.solved, failed: !p.solved && rem <= 0 };
+          chalAttempts[p.challengeId] = Math.max(0, rem);
         });
-
         setGctf((prev: any) => ({ ...prev, solved, chalAttempts }));
         setDataStatus('ready');
       } catch (err: any) {
-        console.error('Fetch error:', err);
         setApiError(err.message);
         setDataStatus('error');
       }
     };
     fetchData();
-  }, [setGctf]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, setGctf]);
 
-  // ── POPSTATE ──
+  // ── Browser back/forward ──
   useEffect(() => {
-    const handlePopState = () => applyRoute(parseRoute());
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    const handle = () => applyRoute(parseRoute());
+    window.addEventListener('popstate', handle);
+    return () => window.removeEventListener('popstate', handle);
   }, [applyRoute]);
 
   const navigate = useCallback((path: string) => {
@@ -222,11 +185,10 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [applyRoute]);
 
-  // ── DERIVED DATA ──
-  const totalEpisodes = useMemo(() => Object.values(arcEpisodes).reduce((sum, eps) => sum + eps.length, 0), [arcEpisodes]);
+  // ── Derived state ──
+  const totalEpisodes = useMemo(() => Object.values(arcEpisodes).reduce((s, eps) => s + eps.length, 0), [arcEpisodes]);
   const totalDomains = arcs.length;
 
-  // Get the featured episode (active episode, or the last one from the first arc with episodes)
   const featuredEpisode = useMemo(() => {
     for (const eps of Object.values(arcEpisodes)) {
       const active = eps.find(e => e.active);
@@ -235,12 +197,10 @@ export default function App() {
     return null;
   }, [arcEpisodes]);
 
-  const featuredArc = useMemo(() => {
-    if (!featuredEpisode) return arcs[0] || null;
-    return arcs.find(a => a.id === featuredEpisode.arcId) || arcs[0] || null;
-  }, [featuredEpisode, arcs]);
+  const featuredArc = useMemo(() =>
+    featuredEpisode ? (arcs.find(a => a.id === featuredEpisode.arcId) || arcs[0] || null) : (arcs[0] || null),
+    [featuredEpisode, arcs]);
 
-  // The current episode for the episode page
   const currentEpisode = useMemo(() => {
     if (!route.episodeId) return featuredEpisode;
     for (const eps of Object.values(arcEpisodes)) {
@@ -250,40 +210,49 @@ export default function App() {
     return null;
   }, [route.episodeId, arcEpisodes, featuredEpisode]);
 
-  const currentArc = useMemo(() => {
-    if (!currentEpisode) return featuredArc;
-    return arcs.find(a => a.id === currentEpisode.arcId) || featuredArc;
-  }, [currentEpisode, arcs, featuredArc]);
+  const currentArc = useMemo(() =>
+    currentEpisode ? (arcs.find(a => a.id === currentEpisode.arcId) || featuredArc) : featuredArc,
+    [currentEpisode, arcs, featuredArc]);
 
-  // Get recent/active episodes for the transmissions section
   const recentEpisodes = useMemo(() => {
     const all: (Episode & { arc?: Arc })[] = [];
     for (const arc of arcs) {
-      const eps = arcEpisodes[arc.id] || [];
-      eps.forEach(ep => all.push({ ...ep, arc }));
+      (arcEpisodes[arc.id] || []).forEach(ep => all.push({ ...ep, arc }));
     }
-    // Active episodes first, then by xp descending
-    return all
-      .sort((a, b) => (b.active ? 1 : 0) - (a.active ? 1 : 0) || b.xp - a.xp)
-      .slice(0, 4);
+    return all.sort((a, b) => (b.active ? 1 : 0) - (a.active ? 1 : 0) || b.xp - a.xp).slice(0, 4);
   }, [arcs, arcEpisodes]);
 
-  // Selected arc for the series page
   const selectedArc = useMemo(() => arcs.find(a => a.id === curArc) || arcs[0] || null, [arcs, curArc]);
 
-  // Episode base path for the current episode
-  const episodeBasePath = currentEpisode && currentArc
+  const episodeBasePath = (currentEpisode && currentArc)
     ? `/episode/${currentArc.id}/${currentEpisode.id}`
-    : featuredEpisode && featuredArc
-      ? `/episode/${featuredArc.id}/${featuredEpisode.id}`
-      : '/episode/3/S2E3';
+    : (featuredEpisode && featuredArc)
+    ? `/episode/${featuredArc.id}/${featuredEpisode.id}`
+    : '/episode/1/S1E1_A1';
+
+  // ── Auth gate ──────────────────────────────────────────────────────────────
+  if (!user) return <AuthGate onAuth={handleAuth} />;
+
+  // ── Shared Navbar props ──
+  const navProps = {
+    onHome: () => navigate('/'),
+    onSeries: () => navigate('/series'),
+    userXp,
+    userId: user.id,
+    displayName: user.name,
+    showToast,
+    navigate,
+    challengesSolved,
+    userAvatar,
+    onChangeAvatar: openPlayerAvatarSelector,
+  };
 
   return (
     <div className="ephemeral-app">
-      <CyberCanvas />
+
       {route.screen === 's-home' && (
         <div className="scr on">
-          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="home" navigate={navigate} challengesSolved={challengesSolved} userAvatar={userAvatar} onChangeAvatar={openPlayerAvatarSelector} />
+          <Navbar {...navProps} activeTab="home" />
           <Hero
             onPlay={() => navigate(episodeBasePath)}
             onMoreInfo={() => navigate('/series')}
@@ -297,17 +266,13 @@ export default function App() {
             onArcSelect={(arcId) => { setCurArc(arcId); navigate('/series'); }}
           />
           <Manifest arcs={arcs} onShowSeries={() => navigate('/series')} />
-          <Transmissions
-            episodes={recentEpisodes}
-            arcs={arcs}
-            onNavigate={navigate}
-          />
+          <Transmissions episodes={recentEpisodes} arcs={arcs} onNavigate={navigate} />
         </div>
       )}
 
       {route.screen === 's-series' && (
         <div className="scr on">
-          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} onBack={() => navigate('/')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="series" navigate={navigate} challengesSolved={challengesSolved} userAvatar={userAvatar} onChangeAvatar={openPlayerAvatarSelector} />
+          <Navbar {...navProps} activeTab="series" onBack={() => navigate('/')} />
           <SeriesHero
             arc={selectedArc}
             episodes={arcEpisodes[selectedArc?.id ?? 0] || []}
@@ -338,30 +303,18 @@ export default function App() {
         </div>
       )}
 
-      {route.screen === 's-bounty' && (
+      {route.screen === 's-leaderboard' && (
         <div className="scr on">
-          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="bounty" navigate={navigate} challengesSolved={challengesSolved} userAvatar={userAvatar} onChangeAvatar={openPlayerAvatarSelector} />
-          <BountyDeck onRecruit={recruitMember} recruitedIds={alliance.map(m => m.name)} showToast={showToast} />
-        </div>
-      )}
-
-      {route.screen === 's-alliance' && (
-        <div className="scr on">
-          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="alliance" navigate={navigate} challengesSolved={challengesSolved} userAvatar={userAvatar} onChangeAvatar={openPlayerAvatarSelector} />
-          <AllianceBuilder alliance={alliance} onRemove={removeMember} onAdd={recruitMember} showToast={showToast} />
+          <Navbar {...navProps} activeTab="leaderboard" onBack={() => navigate('/')} />
+          <Leaderboard currentUserId={user.id} navigate={navigate} />
         </div>
       )}
 
       {route.screen === 's-ep' && (
         <div className="scr on">
-          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} onBack={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} nodeId={currentEpisode?.id || 'EPISODE'} navigate={navigate} challengesSolved={challengesSolved} userAvatar={userAvatar} onChangeAvatar={openPlayerAvatarSelector} />
+          <Navbar {...navProps} onBack={() => navigate('/series')} nodeId={currentEpisode?.id || 'EPISODE'} />
           <div className="ch-wrap">
-            <ChallengeHeader
-              episode={currentEpisode}
-              arc={currentArc}
-              challenges={challenges}
-              onBack={() => navigate('/series')}
-            />
+            <ChallengeHeader episode={currentEpisode} arc={currentArc} challenges={challenges} onBack={() => navigate('/series')} />
             <div className="tabs-l">
               <button className={`tl ${route.tab === 'brief' ? 'on' : ''}`} onClick={() => navigate(episodeBasePath)}>BRIEF</button>
               <button className={`tl ${route.tab === 'res' ? 'on' : ''}`} onClick={() => navigate(`${episodeBasePath}/resources`)}>RESOURCES</button>
@@ -370,29 +323,47 @@ export default function App() {
             {route.tab === 'brief' && <Brief episode={currentEpisode} arc={currentArc} onStartResources={() => navigate(`${episodeBasePath}/resources`)} />}
             {route.tab === 'res' && <Resources episode={currentEpisode} onEnterArena={() => navigate(`${episodeBasePath}/ctf`)} />}
             {route.tab === 'ctf' && (
-              <CTFComponent gctf={gctf} setGctf={setGctf} setUserXp={setUserXp} showToast={showToast} challenges={challenges} navigate={navigate} dataStatus={dataStatus} apiError={apiError} submitFlag={submitFlag} toggleCTFHint={toggleCTFHint} shake={shake} flagInputRef={flagInputRef} episodeBasePath={episodeBasePath} />
+              <CTFComponent
+                gctf={gctf} setGctf={setGctf} setUserXp={setUserXp}
+                showToast={showToast} challenges={challenges} navigate={navigate}
+                dataStatus={dataStatus} apiError={apiError}
+                submitFlag={submitFlag} toggleCTFHint={toggleCTFHint}
+                shake={shake} flagInputRef={flagInputRef}
+                episodeBasePath={episodeBasePath}
+              />
             )}
           </div>
         </div>
       )}
 
+      {/* Status bar */}
       <div className="sbar">
         <span>EPHEMERAL_OS</span><span className="sbar-sep">|</span>
-        <span>STATUS: <span className="sbar-v">{dataStatus === 'ready' ? 'CONNECTED' : dataStatus === 'loading' ? 'SYNCING...' : 'ERROR'}</span></span><span className="sbar-sep">|</span>
-        <span>ARCS: <span className="sbar-v">{totalDomains}</span></span><span className="sbar-sep">|</span>
-        <span>EPISODES: <span className="sbar-v">{totalEpisodes}</span></span><span className="sbar-sep">|</span>
+        <span>STATUS: <span className="sbar-v">{dataStatus === 'ready' ? 'CONNECTED' : dataStatus === 'loading' ? 'SYNCING...' : 'ERROR'}</span></span>
+        <span className="sbar-sep">|</span>
+        <span>ARCS: <span className="sbar-v">{totalDomains}</span></span>
+        <span className="sbar-sep">|</span>
+        <span>EPISODES: <span className="sbar-v">{totalEpisodes}</span></span>
+        <span className="sbar-sep">|</span>
         <span>XP: <span className="sbar-v">{userXp}</span></span>
         <div className="sbar-r">
-          <span>USER: <span className="sbar-v">{USER_ID}</span></span>
+          <span>OPERATOR: <span className="sbar-v" style={{ color: '#00ff41' }}>{user.name}</span></span>
+          <button className="sbar-logout" onClick={() => {
+            localStorage.removeItem('ephemeral_user_id');
+            localStorage.removeItem('ephemeral_display_name');
+            setUser(null);
+          }}>⏏ LOGOUT</button>
         </div>
       </div>
+
       <Toast message={toast.msg} show={toast.show} />
+
       <AvatarSelectorModal
         isOpen={avatarModalOpen}
         onClose={() => setAvatarModalOpen(false)}
         onSelect={handleAvatarSelect}
         currentAvatar={avatarModalMode === 'player' ? userAvatar : (selectedArc ? (arcCovers[selectedArc.id] || getArcCover(selectedArc.id)) : '')}
-        title={avatarModalMode === 'player' ? 'Choose Commander Avatar' : `Set Volume V${(avatarModalMode as any).arcId} Cover Art`}
+        title={avatarModalMode === 'player' ? 'Choose Operator Avatar' : `Set Volume V${(avatarModalMode as any).arcId} Cover Art`}
       />
     </div>
   );
