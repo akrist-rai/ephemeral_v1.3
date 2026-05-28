@@ -293,6 +293,8 @@ export default function App() {
             totalDomains={totalDomains}
             arcCoverUrl={featuredArc ? (arcCovers[featuredArc.id] || getArcCover(featuredArc.id)) : undefined}
             onChangeCover={featuredArc ? () => openArcCoverSelector(featuredArc.id) : undefined}
+            arcs={arcs}
+            onArcSelect={(arcId) => { setCurArc(arcId); navigate('/series'); }}
           />
           <Manifest arcs={arcs} onShowSeries={() => navigate('/series')} />
           <Transmissions

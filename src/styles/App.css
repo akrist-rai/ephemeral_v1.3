@@ -1831,3 +1831,86 @@ nav {
 @media(max-width:900px){.tx-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.ep-img-row{grid-template-columns:120px 1fr auto;min-height:90px}}
 @media(max-width:600px){.arc-img-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ═══════════════════════════════════════════════════
+   EXPANDED HERO — FILMSTRIP + RICH HUD
+   ═══════════════════════════════════════════════════ */
+.hfb-grad-left,.hfb-grad-bot,.hfb-grad-top{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hfb-scan{position:absolute;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px)}
+.hfb-vignette{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.55) 100%)}
+
+.hfb-top-hud{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;gap:0;padding:.5rem 1.5rem;background:rgba(6,6,14,0.72);border-bottom:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(8px)}
+.hfb-hud-item{display:flex;flex-direction:column;gap:.05rem;padding:0 1rem}
+.hfb-hud-key{font-size:.36rem;font-family:var(--mono);color:rgba(255,255,255,.3);letter-spacing:.14em;text-transform:uppercase}
+.hfb-hud-val{font-size:.52rem;font-family:var(--mono);color:rgba(255,255,255,.8);letter-spacing:.08em}
+.hfb-hud-sep{width:1px;height:28px;background:rgba(255,255,255,.08)}
+
+.hfb-content{position:relative;z-index:10;padding:0 2.5rem 1rem;max-width:680px;margin-top:auto}
+.hfb-eyebrow{display:flex;align-items:center;gap:.7rem;margin-bottom:.65rem}
+.hfb-breadcrumb{font-size:.5rem;color:rgba(255,255,255,.4);font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase}
+.hfb-title{font-family:var(--disp);font-size:clamp(3.2rem,8vw,6rem);letter-spacing:.04em;line-height:.88;color:#fff;text-shadow:0 2px 50px rgba(0,0,0,0.9),0 0 80px rgba(0,0,0,0.5);margin-bottom:.4rem}
+.hfb-ep-subtitle{font-family:var(--mono);font-size:clamp(.65rem,1.5vw,1rem);letter-spacing:.1em;margin-bottom:.9rem;text-shadow:0 2px 20px rgba(0,0,0,0.8)}
+.hfb-desc{font-family:var(--body);font-size:.78rem;color:rgba(255,255,255,.7);line-height:1.72;max-width:520px;margin-bottom:.85rem;text-shadow:0 1px 10px rgba(0,0,0,0.95);font-weight:300}
+.hfb-xp-badge{display:inline-flex;align-items:center;border:1px solid;font-family:var(--mono);font-size:.5rem;letter-spacing:.12em;padding:.22rem .7rem;margin-bottom:1rem;backdrop-filter:blur(4px);background:rgba(0,0,0,0.3)}
+.hfb-btns{display:flex;gap:.7rem;margin-bottom:1.5rem}
+.hfb-btn-primary{border:none;padding:.72rem 2rem;font-family:var(--mono);font-size:.68rem;font-weight:700;letter-spacing:.14em;cursor:pointer;text-transform:uppercase;transition:all .25s;position:relative;overflow:hidden}
+.hfb-btn-primary::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.15) 0%,transparent 100%);opacity:0;transition:opacity .2s}
+.hfb-btn-primary:hover::after{opacity:1}
+.hfb-btn-primary:hover{transform:translateY(-2px);filter:brightness(1.1)}
+.hfb-btn-secondary{background:rgba(255,255,255,.07);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.85);padding:.72rem 1.5rem;font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;cursor:pointer;text-transform:uppercase;transition:all .2s}
+.hfb-btn-secondary:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.4)}
+
+/* Arc filmstrip */
+.hfb-arc-ribbon{position:relative;z-index:10;display:flex;gap:.4rem;padding:.55rem 1.5rem;background:rgba(6,6,14,0.88);border-top:1px solid rgba(255,255,255,.05);overflow-x:auto;scrollbar-width:none}
+.hfb-arc-ribbon::-webkit-scrollbar{display:none}
+.hfb-arc-chip{position:relative;width:72px;min-width:72px;height:100px;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.07);transition:all .25s;flex-shrink:0}
+.hfb-arc-chip.active{border-color:var(--chip-acc,var(--red));box-shadow:0 0 12px var(--chip-acc,var(--red))33}
+.hfb-arc-chip:hover{transform:translateY(-4px);border-color:var(--chip-acc,var(--red))}
+.hfb-arc-chip-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.hfb-arc-chip:hover .hfb-arc-chip-img{transform:scale(1.1)}
+.hfb-arc-chip-overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(6,6,14,0.85) 0%,rgba(6,6,14,0.15) 100%)}
+.hfb-arc-chip-label{position:absolute;bottom:0;left:0;right:0;padding:.3rem .25rem;z-index:2}
+.hfb-arc-chip-vol{display:block;font-size:.34rem;font-family:var(--mono);letter-spacing:.1em;font-weight:700}
+.hfb-arc-chip-name{display:block;font-family:var(--disp);font-size:.55rem;letter-spacing:.04em;color:#fff;line-height:1;margin-top:.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hfb-arc-chip-active-bar{position:absolute;bottom:0;left:0;right:0;height:2px;z-index:3}
+
+.hfb-stats{position:relative;z-index:10;display:flex;align-items:center;gap:2rem;padding:.55rem 2.5rem;background:rgba(6,6,14,.9);border-top:1px solid rgba(255,255,255,.05);backdrop-filter:blur(12px)}
+
+/* ═══════════════════════════════════════════════════
+   IMPROVED MANIFEST — HOVER PANELS
+   ═══════════════════════════════════════════════════ */
+.arc-card-scan{position:absolute;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.03) 3px,rgba(0,0,0,0.03) 4px);opacity:0;transition:opacity .3s}
+.arc-img-card.arc-hov .arc-card-scan{opacity:1}
+.arc-hover-panel{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:.7rem .5rem;background:rgba(6,6,14,0.88);opacity:0;transform:translateY(8px);transition:all .28s cubic-bezier(0.16,1,0.3,1);pointer-events:none}
+.arc-hover-panel.on{opacity:1;transform:translateY(0)}
+.arc-hp-domain{font-family:var(--disp);font-size:.9rem;letter-spacing:.08em;margin-bottom:.1rem;line-height:1}
+.arc-hp-arc{font-size:.34rem;color:rgba(255,255,255,.5);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.55rem;font-family:var(--mono)}
+.arc-hp-prog-wrap{display:flex;align-items:center;gap:.35rem;width:100%;margin-bottom:.5rem}
+.arc-hp-prog-bar{flex:1;height:2px;background:rgba(255,255,255,.1);overflow:hidden}
+.arc-hp-prog-fill{height:100%;transition:width .6s}
+.arc-hp-prog-label{font-size:.35rem;font-family:var(--mono);color:rgba(255,255,255,.4);letter-spacing:.08em;flex-shrink:0}
+.arc-hp-enter{font-family:var(--mono);font-size:.45rem;letter-spacing:.14em;font-weight:700;margin-top:.2rem}
+.arc-card-top-badge{position:absolute;top:.4rem;right:.4rem;z-index:5;font-family:var(--disp);font-size:.7rem;letter-spacing:.1em;padding:.1rem .35rem;line-height:1}
+
+/* ═══════════════════════════════════════════════════
+   IMPROVED EPISODE ROW — RICHER
+   ═══════════════════════════════════════════════════ */
+.ep-img-row-meta-right{display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;padding:.85rem .8rem;flex-shrink:0;gap:.4rem}
+.ep-enter-arrow{font-family:var(--disp);font-size:1.5rem;color:rgba(255,255,255,.12);transition:color .2s,transform .2s}
+.ep-img-row:hover .ep-enter-arrow{color:rgba(255,255,255,.5);transform:translateX(4px)}
+
+/* ═══════════════════════════════════════════════════
+   IMPROVED SERIES HERO
+   ═══════════════════════════════════════════════════ */
+.sh-badges{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem}
+.sh-actions{display:flex;gap:.6rem;align-items:center}
+.sh-play-btn{background:var(--acc,var(--red));border:none;color:#fff;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;padding:.5rem 1.3rem;cursor:pointer;text-transform:uppercase;transition:all .2s}
+.sh-play-btn:hover{filter:brightness(1.15);transform:translateY(-1px)}
+
+/* ═══════════════════════════════════════════════════
+   IMPROVED NAVBAR — FROSTED GLASS
+   ═══════════════════════════════════════════════════ */
+nav{background:rgba(6,6,14,0.92)!important;backdrop-filter:blur(16px)!important;border-bottom:1px solid rgba(255,255,255,0.06)!important}
+.nav-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1.5px solid var(--gold);margin-right:.45rem;cursor:pointer;transition:border-color .2s}
+.nav-avatar-img:hover{border-color:#fff}
+.nav-profile-wrap{display:flex;align-items:center;cursor:pointer;gap:0}
