@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "bun --watch src/server.ts",
     "dev:ui": "vite",
-    "dev:full": "concurrently \"npm run dev\" \"npm run dev:ui\"",
+    "dev:full": "concurrently \"PORT=3010 npm run dev\" \"VITE_API_TARGET=http://localhost:3010 npm run dev:ui\"",
     "build": "vite build",
     "preview": "vite preview",
     "db:generate": "drizzle-kit generate:pg",
@@ -25,16 +25,17 @@
     "koa-json": "^2.0.2",
     "koa-logger": "^4.0.0",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/koa": "^2.15.0",
+    "@types/koa__cors": "^5.0.0",
+    "@types/koa__router": "^12.0.4",
     "@types/koa-bodyparser": "^4.3.12",
     "@types/koa-compress": "^4.0.7",
     "@types/koa-json": "^2.0.24",
     "@types/koa-logger": "^3.1.5",
-    "@types/koa__cors": "^5.0.0",
-    "@types/koa__router": "^12.0.4",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
