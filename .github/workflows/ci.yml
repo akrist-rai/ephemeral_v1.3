@@ -28,6 +28,3 @@ jobs:
 
       - name: Build
         run: bun run build
-        # Vite transpiles TypeScript and exits non-zero on errors.
-        # If you want explicit tsc type-checking, add a tsconfig.json
-        # at the root and run: bun x tsc --noEmit -p tsconfig.app.json
