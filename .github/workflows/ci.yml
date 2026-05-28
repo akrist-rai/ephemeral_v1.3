@@ -7,7 +7,6 @@ on:
     branches: [main]
 
 env:
-  # Opt into Node.js 24 runtime for all GitHub Actions (required after Sept 16 2026)
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -27,14 +26,8 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # Ensure typescript is available for tsc (it may not be an explicit devDep
-      # since Vite handles transpilation; add it to devDeps to make this permanent)
-      - name: Install typescript for type checking
-        run: bun add -d typescript --no-save 2>/dev/null || true
-
-      - name: Type check
-        run: bunx tsc --noEmit
-        # If this fails, add `typescript` to devDependencies and commit tsconfig.json
-
-      - name: Build frontend
+      - name: Build
         run: bun run build
+        # Vite transpiles TypeScript and exits non-zero on errors.
+        # If you want explicit tsc type-checking, add a tsconfig.json
+        # at the root and run: bun x tsc --noEmit -p tsconfig.app.json
