@@ -379,3 +379,695 @@ nav{display:flex;align-items:center;padding:0 1.4rem;height:46px;position:sticky
 .rankings-user{flex:1;color:var(--paper);letter-spacing:.06em}
 .rankings-solved{color:var(--muted);font-size:.48rem;letter-spacing:.1em}
 .rankings-xp{color:var(--lime);font-weight:700;min-width:60px;text-align:right;letter-spacing:.06em}
+
+/* ─── STRAW HAT PIRATE ALLIANCE & BOUNTY DECK OVERLAYS ─── */
+:root {
+  --gold: #ffb830;
+  --gold-glow: rgba(255, 184, 48, 0.25);
+  --cyber-blue: #00e5ff;
+}
+
+.compass-logo {
+  transition: transform 0.8s ease-out;
+}
+.logo:hover .compass-logo {
+  transform: rotate(720deg) scale(1.1);
+  stroke: var(--gold);
+}
+
+nav .nav-mid a {
+  cursor: pointer;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+nav .nav-mid a:hover {
+  color: var(--gold);
+  text-shadow: 0 0 8px var(--gold-glow);
+  border-color: rgba(255, 184, 48, 0.15);
+  background: rgba(255, 184, 48, 0.03);
+}
+nav .nav-mid a.on {
+  color: var(--gold);
+  border-color: var(--gold);
+  background: rgba(255, 184, 48, 0.08);
+  box-shadow: 0 0 10px rgba(255, 184, 48, 0.15);
+  text-shadow: 0 0 8px var(--gold-glow);
+}
+
+/* BOUNTY DECK STYLING */
+.bounty-deck-container {
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 2rem;
+  flex: 1;
+  background: var(--void);
+  z-index: 10;
+}
+.bounty-deck-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.bounty-filters-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: rgba(7, 18, 43, 0.6);
+  padding: 1rem;
+  border: 1px dashed rgba(255, 184, 48, 0.25);
+  border-radius: 4px;
+  backdrop-filter: blur(10px);
+}
+.bounty-search {
+  flex: 1;
+  background: rgba(3, 6, 18, 0.7);
+  border: 1px solid rgba(255, 184, 48, 0.3);
+  padding: 0.5rem 1rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--paper);
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+.bounty-search:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+.bounty-filters {
+  display: flex;
+  gap: 0.5rem;
+}
+.bounty-filter-btn {
+  background: transparent;
+  border: 1px solid rgba(100, 132, 168, 0.3);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+.bounty-filter-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.bounty-filter-btn.on {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(255, 184, 48, 0.1);
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.bounty-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+/* 3D Wanted Card */
+.wanted-crew-card {
+  perspective: 1000px;
+  cursor: pointer;
+}
+.wanted-crew-card-inner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1.35;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+}
+.wanted-crew-card:hover .wanted-crew-card-inner {
+  transform: rotateY(15deg) rotateX(5deg) scale(1.03);
+}
+.wanted-crew-card.active-selection .wanted-crew-card-inner {
+  transform: rotateY(180deg);
+}
+
+.wanted-front, .wanted-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.wanted-front {
+  background: linear-gradient(180deg, #1f1a14 0%, #0d0a06 100%);
+  border: 1px solid var(--gold);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.wanted-back {
+  background: linear-gradient(180deg, #07122b 0%, #030612 100%);
+  border: 1px solid var(--cyber-blue);
+  box-shadow: 0 4px 15px rgba(0,229,255,0.2);
+  transform: rotateY(180deg);
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: var(--mono);
+}
+
+.crew-card {
+  background: linear-gradient(180deg, #1f1a14 0%, #0d0a06 100%);
+  border: 1.5px solid var(--gold);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.crew-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 25px rgba(255, 184, 48, 0.25);
+}
+
+.wanted-header {
+  font-family: var(--disp);
+  font-size: 1.7rem;
+  letter-spacing: 0.15em;
+  color: var(--gold);
+  text-align: center;
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: 0.2rem;
+  text-shadow: 0 0 10px var(--gold-glow);
+}
+
+.wanted-img-container {
+  width: 100%;
+  aspect-ratio: 1.1;
+  overflow: hidden;
+  margin-top: 0.6rem;
+  position: relative;
+  border: 1px solid rgba(255, 184, 48, 0.2);
+}
+
+.wanted-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: sepia(0.45) contrast(1.1) brightness(0.9);
+  transition: all 0.5s ease;
+}
+
+.wanted-crew-card:hover .wanted-img {
+  filter: sepia(0) contrast(1) brightness(1);
+}
+
+.wanted-status-overlay {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 0.45rem;
+  font-family: var(--mono);
+  padding: 0.1rem 0.3rem;
+  border-radius: 2px;
+  color: #000;
+  font-weight: bold;
+}
+
+.wanted-detail {
+  padding: 0.6rem 0.2rem 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.wanted-alias {
+  font-size: 0.55rem;
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.wanted-name {
+  font-family: var(--disp);
+  font-size: 1.4rem;
+  color: #fff;
+  letter-spacing: 0.05em;
+  text-align: center;
+  line-height: 1.1;
+  margin-top: 0.15rem;
+  text-transform: uppercase;
+}
+
+.wanted-role {
+  font-size: 0.5rem;
+  color: var(--gold);
+  text-align: center;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 0.15rem;
+}
+
+.wanted-specialty {
+  font-size: 0.48rem;
+  color: var(--paper);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 0.2rem;
+  margin-top: 0.5rem;
+  text-align: center;
+  letter-spacing: 0.05em;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.wanted-bounty {
+  font-family: var(--disp);
+  font-size: 1.25rem;
+  color: var(--lime);
+  text-align: center;
+  margin-top: auto;
+  letter-spacing: 0.05em;
+}
+.bounty-symbol {
+  font-size: 0.9rem;
+  margin-right: 2px;
+}
+
+.bounty-deck-side {
+  background: rgba(7, 18, 43, 0.75);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  position: sticky;
+  top: 80px;
+  height: calc(100vh - 160px);
+  overflow-y: auto;
+  backdrop-filter: blur(15px);
+}
+.console-title {
+  font-family: var(--disp);
+  font-size: 1.8rem;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 10px var(--gold-glow);
+  border-bottom: 1px dashed rgba(255,184,48,0.3);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.side-specs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.spec-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.spec-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.52rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.spec-bar-outer {
+  height: 6px;
+  background: rgba(3, 6, 18, 0.8);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.spec-bar-inner {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 8px currentColor;
+}
+.alliance-action-btn {
+  background: var(--gold);
+  color: #000;
+  border: none;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: bold;
+  padding: 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px var(--gold-glow);
+  text-align: center;
+  margin-top: auto;
+}
+.alliance-action-btn:hover {
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(255,255,255,0.3);
+  transform: translateY(-2px);
+}
+
+/* ALLIANCE BUILDER STYLING */
+.alliance-builder-container {
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 2rem;
+  flex: 1;
+  background: var(--void);
+  z-index: 10;
+}
+.alliance-slots-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.alliance-slots-header {
+  font-family: var(--disp);
+  font-size: 1.8rem;
+  color: var(--paper);
+  letter-spacing: 0.12em;
+}
+.alliance-slots-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+.alliance-slot-card {
+  aspect-ratio: 1/1.3;
+  background: rgba(7, 18, 43, 0.5);
+  border: 2px dashed rgba(255, 184, 48, 0.25);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+.alliance-slot-card.filled {
+  border-style: solid;
+  border-color: var(--gold);
+  background: linear-gradient(180deg, #18110b 0%, #0d0a06 100%);
+  box-shadow: 0 5px 15px rgba(255,184,48,0.15);
+}
+.alliance-slot-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+.slot-idx {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  font-size: 0.45rem;
+  color: rgba(255, 184, 48, 0.4);
+}
+.slot-empty-label {
+  font-size: 0.5rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+.slot-img {
+  width: 100%;
+  height: 65%;
+  object-fit: cover;
+  border-bottom: 1px solid var(--gold);
+}
+.slot-name {
+  font-family: var(--disp);
+  font-size: 0.9rem;
+  color: #fff;
+  margin-top: 0.4rem;
+  text-align: center;
+  padding: 0 0.2rem;
+}
+.slot-role {
+  font-size: 0.4rem;
+  color: var(--gold);
+  margin-top: 0.1rem;
+}
+.slot-remove {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 14px;
+  height: 14px;
+  background: rgba(255, 59, 71, 0.8);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.45rem;
+  font-weight: bold;
+}
+
+.alliance-pool-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.alliance-pool-header {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.alliance-pool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1rem;
+}
+.pool-card {
+  background: rgba(7, 18, 43, 0.6);
+  border: 1px solid rgba(255, 184, 48, 0.2);
+  border-radius: 4px;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  transition: all 0.3s;
+}
+.pool-card:hover {
+  border-color: var(--gold);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 15px var(--gold-glow);
+}
+.pool-card.selected {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: rgba(100, 132, 168, 0.2);
+}
+.pool-img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 2px;
+  filter: sepia(0.4) contrast(1.1);
+}
+.pool-card:hover .pool-img {
+  filter: sepia(0) contrast(1);
+}
+.pool-name {
+  font-family: var(--disp);
+  font-size: 0.8rem;
+  color: #fff;
+  margin-top: 0.4rem;
+  text-align: center;
+}
+.pool-role {
+  font-size: 0.4rem;
+  color: var(--gold);
+  margin-top: 0.1rem;
+  text-transform: uppercase;
+}
+
+.alliance-telemetry-side {
+  background: rgba(7, 18, 43, 0.8);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  position: sticky;
+  top: 80px;
+  height: calc(100vh - 160px);
+  backdrop-filter: blur(15px);
+}
+.radar-compass-wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.03) 0%, transparent 70%);
+  border: 1px dashed rgba(0, 229, 255, 0.15);
+  border-radius: 50%;
+}
+.radar-ring {
+  position: absolute;
+  border: 1px solid rgba(0, 229, 255, 0.08);
+  border-radius: 50%;
+  animation: pulseRadar 4s infinite linear;
+}
+@keyframes pulseRadar {
+  0% { width: 0%; height: 0%; opacity: 1; }
+  100% { width: 100%; height: 100%; opacity: 0; }
+}
+.radar-line {
+  position: absolute;
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(0,229,255,0.8) 0%, transparent 100%);
+  transform-origin: left center;
+  left: 50%;
+  top: 50%;
+  animation: rotateRadar 6s infinite linear;
+}
+@keyframes rotateRadar {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.alliance-bounty-dial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  z-index: 5;
+}
+.alliance-bounty-val {
+  font-family: var(--disp);
+  font-size: 2.2rem;
+  color: var(--gold);
+  text-shadow: 0 0 12px var(--gold-glow);
+}
+.alliance-bounty-label {
+  font-size: 0.52rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.alliance-terminal-log {
+  background: rgba(3, 6, 18, 0.85);
+  border: 1px solid rgba(255, 184, 48, 0.25);
+  border-radius: 4px;
+  padding: 1rem;
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  line-height: 1.5;
+  color: var(--paper);
+  flex: 1;
+  overflow-y: auto;
+  max-height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.terminal-title {
+  color: var(--gold);
+  border-bottom: 1px solid rgba(255, 184, 48, 0.1);
+  padding-bottom: 0.2rem;
+  font-weight: bold;
+}
+.terminal-msg {
+  color: var(--lime);
+}
+
+/* FULLSCREEN SAILING ANIMATION OVERLAY */
+.sailing-overlay {
+  position: fixed;
+  inset: 0;
+  background: #020714;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: sailScreen 4s ease-in-out forwards;
+}
+@keyframes sailScreen {
+  0% { opacity: 0; pointer-events: auto; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; pointer-events: none; }
+}
+.sailing-waves {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 229, 255, 0.08) 100%);
+  overflow: hidden;
+}
+.wave-path {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0, 229, 255, 0.03) 10px, rgba(0, 229, 255, 0.03) 20px);
+  animation: slideWave 8s linear infinite;
+}
+@keyframes slideWave {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.sailing-logo {
+  font-family: var(--disp);
+  font-size: 3rem;
+  letter-spacing: 0.2em;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255,255,255,0.4);
+  margin-top: 1rem;
+}
+.sailing-skull {
+  font-size: 5rem;
+  animation: bobSkull 2s infinite ease-in-out;
+}
+@keyframes bobSkull {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-15px) rotate(3deg); }
+}
+
+@keyframes spinCompass {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media(max-width: 990px) {
+  .bounty-deck-container, .alliance-builder-container {
+    grid-template-columns: 1fr;
+  }
+  .bounty-deck-side, .alliance-telemetry-side {
+    position: static;
+    height: auto;
+  }
+  .alliance-slots-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media(max-width: 600px) {
+  .alliance-slots-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

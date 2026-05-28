@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "jetro": {
+      "type": "stdio",
+      "command": "/home/akrist/.jetro/runtime/node-linux-x64",
+      "args": [
+        "/home/akrist/.jetro/mcp-server/index.js"
+      ],
+      "env": {
+        "JET_WORKSPACE": "/home/akrist/Downloads/ephemeral/ephemeral_v1.3",
+        "JET_API_URL": "https://api.jetro.ai",
+        "JET_JWT": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImM5YTBjMWRlYWEyN2JjNjMyNTUzYmM4MWEyMmQ4NzY1MWM3MTMyY2IiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vamV0cm8tY2RhZWYiLCJhdWQiOiJqZXRyby1jZGFlZiIsImF1dGhfdGltZSI6MTc3OTQzOTMxNSwidXNlcl9pZCI6InhCaW9NVjBiUUdVQmxiU0ZHUXlhekdPUUdQeTIiLCJzdWIiOiJ4QmlvTVYwYlFHVUJsYlNGR1F5YXpHT1FHUHkyIiwiaWF0IjoxNzc5OTc5OTA4LCJleHAiOjE3Nzk5ODM1MDgsImVtYWlsIjoiYW5raXRyYWkyODAxMTNAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsiYW5raXRyYWkyODAxMTNAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.ZMTzYj1tzz-udw1zdmNJ6TgPrk1uB1oBIxlOZ1wATVrIiaWDwU0njF4y9GCyihhA6l6OvL09vuE3qXpxNnTzf0ui7Ty1AOddbkzeV7Dp201ssPGBakYgQV02skc1qlIzbpqiSRdnum9DjsRZr-8sXjVcGDI5IbtrAqGtcJCD6BKFWt9O49GfbO-ushs69FoI-Fwfh9gJdoK_nzQKAidi1MAVhJB9GKuLL-dfeaVL6IBbhAwpG3e04hVB1fs2dhwPcH6ZSuBeoZwKfNdb8HxZVcohzXUyiXsO0P8JUb_MZhvzyvno7aCPv8ps1sNA26azYAcS1o8AC-QtYAQ2JeGuCg",
+        "PATH": "/home/akrist/.jetro/runtime:/home/akrist/.npm-global/bin:/home/akrist/.bun/bin:/home/akrist/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin"
+      }
+    }
+  }
+}

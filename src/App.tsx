@@ -13,6 +13,8 @@ import { CTFComponent } from './components/Challenge/CTFComponent';
 import { Toast } from './components/Common/Toast';
 import { apiRequest } from './hooks/useApi';
 import { useCtf } from './hooks/useCtf';
+import { BountyDeck, CrewMember } from './components/Home/BountyDeck';
+import { AllianceBuilder } from './components/Home/AllianceBuilder';
 
 import type { Arc, Episode, Challenge } from './types';
 
@@ -38,6 +40,8 @@ function parseRoute() {
   if (epMatch) return { screen: 's-ep' as const, tab: 'brief' as const, arcId: epMatch[1], episodeId: epMatch[2], challengeId: null };
 
   if (path === '/series') return { screen: 's-series' as const, tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
+  if (path === '/bounty') return { screen: 's-bounty' as const, tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
+  if (path === '/alliance') return { screen: 's-alliance' as const, tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
 
   return { screen: 's-home' as const, tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
 }
@@ -58,6 +62,25 @@ export default function App() {
   const [dataStatus, setDataStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [apiError, setApiError] = useState('');
   const [curArc, setCurArc] = useState<number | null>(null);
+
+  // ── ALLIANCE STATE ──
+  const [alliance, setAlliance] = useState<CrewMember[]>([]);
+
+  const recruitMember = useCallback((member: CrewMember) => {
+    setAlliance(prev => {
+      if (prev.some(m => m.name === member.name)) return prev;
+      if (prev.length >= 5) {
+        return prev;
+      }
+      return [...prev, member];
+    });
+  }, []);
+
+  const removeMember = useCallback((member: CrewMember) => {
+    setAlliance(prev => {
+      return prev.filter(m => m.name !== member.name);
+    });
+  }, []);
 
   const showToast = useCallback((msg: string) => {
     setToast({ msg, show: true });
@@ -247,6 +270,20 @@ export default function App() {
             loading={dataStatus === 'loading'}
             error={apiError || null}
           />
+        </div>
+      )}
+
+      {route.screen === 's-bounty' && (
+        <div className="scr on">
+          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="bounty" navigate={navigate} challengesSolved={challengesSolved} />
+          <BountyDeck onRecruit={recruitMember} recruitedIds={alliance.map(m => m.name)} showToast={showToast} />
+        </div>
+      )}
+
+      {route.screen === 's-alliance' && (
+        <div className="scr on">
+          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="alliance" navigate={navigate} challengesSolved={challengesSolved} />
+          <AllianceBuilder alliance={alliance} onRemove={removeMember} onAdd={recruitMember} showToast={showToast} />
         </div>
       )}
 
