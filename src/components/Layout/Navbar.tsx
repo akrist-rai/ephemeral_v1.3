@@ -13,10 +13,12 @@ interface NavbarProps {
   nodeId?: string;
   navigate: (path: string) => void;
   challengesSolved: number;
+  userAvatar?: string;
+  onChangeAvatar?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  onHome, onSeries, onBack, userXp, userId, showToast, activeTab, nodeId, navigate, challengesSolved,
+  onHome, onSeries, onBack, userXp, userId, showToast, activeTab, nodeId, navigate, challengesSolved, userAvatar, onChangeAvatar,
 }) => {
   const [showRankings, setShowRankings] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
@@ -60,7 +62,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           {onBack && <button className="nav-btn" onClick={onBack}>BACK</button>}
           {!nodeId && <span className="nav-status"><span className="nav-dot"></span>LIVE</span>}
           <span className="nav-uid" style={{ color: 'var(--lime)', marginRight: '1rem' }}>XP// {userXp}</span>
-          <span className="nav-uid">{nodeId ? nodeId : `UID// ${userId}`}</span>
+          {userAvatar ? (
+            <div className="nav-profile-wrap" onClick={onChangeAvatar} title="Change Profile Avatar">
+              <img src={userAvatar} alt="Profile" className="nav-avatar-img" />
+              <span className="nav-uid">{nodeId ? nodeId : `UID// ${userId}`}</span>
+            </div>
+          ) : (
+            <span className="nav-uid">{nodeId ? nodeId : `UID// ${userId}`}</span>
+          )}
         </div>
       </nav>
 

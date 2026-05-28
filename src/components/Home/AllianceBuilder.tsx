@@ -149,7 +149,7 @@ export const AllianceBuilder: React.FC<AllianceBuilderProps> = ({
                     addLog(`${candidate.name.toUpperCase()} JOINED THE FLEET COMMAND`);
                   }}
                 >
-                  <img src={candidate.image} alt={candidate.name} className="pool-img" onerror="this.src='/one_piece/Straw Hat Pirates.jpeg'" />
+                  <img src={candidate.image} alt={candidate.name} className="pool-img" onError={(e) => { e.currentTarget.src = '/one_piece/Straw Hat Pirates.jpeg'; }} />
                   <div className="pool-name">{candidate.name.split(' ').pop()}</div>
                   <div className="pool-role">{candidate.role.split(' ')[0]}</div>
                 </div>

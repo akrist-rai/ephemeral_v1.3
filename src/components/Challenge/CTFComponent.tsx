@@ -25,7 +25,7 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   const [flagInput, setFlagInput] = useState('');
 
   const totalPts = Object.values(gctf.solved).reduce((a: any, s: any) => a + (s.pts_earned || 0), 0) as number;
-  const solvedCount = Object.keys(gctf.solved).filter(id => !gctf.solved[id].failed).length;
+  const solvedCount = Object.values(gctf.solved).filter((s: any) => s.solved).length;
 
   const openChallenge = (id: string) => {
     navigate(`${episodeBasePath}/ctf/${encodeURIComponent(id)}`);
@@ -70,11 +70,11 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
               <div className="ctfb-grid">
                 {tChallenges.map(ch => {
                   const solved = gctf.solved[ch.id];
-                  const failed = solved && solved.failed;
-                  const ok = solved && !failed;
-                  const col = catColors[ch.category] || '#fff';
+                  const ok = !!(solved && solved.solved);
                   const att = gctf.chalAttempts[ch.id];
-                  const tried = att < ch.attemptsAllowed && !solved;
+                  const failed = !!(solved && (solved.failed || (!solved.solved && att <= 0)));
+                  const col = catColors[ch.category] || '#fff';
+                  const tried = att < ch.attemptsAllowed && !ok;
 
                   return (
                     <div key={ch.id} className={`ctfb-card ${ok ? 'ctfb-solved' : failed ? 'ctfb-failed' : tried ? 'ctfb-tried' : ''}`} onClick={() => openChallenge(ch.id)} style={{ '--cat-color': col } as any}>
@@ -104,9 +104,9 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   const ch = challenges.find(c => c.id === id);
   if (!ch) return <div className="ctf-challenge-panel"><div className="empty-state">CHALLENGE NOT FOUND // {id}</div></div>;
   const solved = gctf.solved[id];
-  const failed = solved && solved.failed;
-  const ok = solved && !failed;
+  const ok = !!(solved && solved.solved);
   const att = gctf.chalAttempts[id];
+  const failed = !!(solved && (solved.failed || (!solved.solved && att <= 0)));
   const col = catColors[ch.category] || '#fff';
 
   return (

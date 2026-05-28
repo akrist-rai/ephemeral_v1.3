@@ -30,6 +30,7 @@ router.get('/arcs/:arcId', validate(arcIdParamSchema, 'params'), ContentControll
 router.get('/episodes/:arcId', validate(arcIdParamSchema, 'params'), ContentController.getEpisodes);
 router.get('/challenges', validate(challengeFilterSchema, 'query'), ContentController.getChallenges);
 router.get('/challenges/:challengeId', validate(challengeIdParamSchema, 'params'), ContentController.getChallengeById);
+router.get('/avatars', ContentController.getAvatars);
 
 // ═══════════════════════════════════════════════
 //  USER — Progress & flag submission

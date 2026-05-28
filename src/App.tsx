@@ -17,6 +17,9 @@ import { BountyDeck, CrewMember } from './components/Home/BountyDeck';
 import { AllianceBuilder } from './components/Home/AllianceBuilder';
 
 import type { Arc, Episode, Challenge } from './types';
+import { AvatarSelectorModal } from './components/Common/AvatarSelectorModal';
+import { getArcCover } from './lib/imageMapping';
+import { CyberCanvas } from './components/Common/CyberCanvas';
 
 const USER_ID = 'AK_0xD4';
 
@@ -88,6 +91,48 @@ export default function App() {
     toastTimer.current = setTimeout(() => setToast({ msg: '', show: false }), 2600);
   }, []);
 
+  // ── CUSTOM AVATAR & VOLUME COVER CUSTOMIZER ──
+  const [userAvatar, setUserAvatar] = useState(() => {
+    return localStorage.getItem('user_avatar') || '/one_piece/avatar/Monkey D Luffy.jpeg';
+  });
+  const [arcCovers, setArcCovers] = useState<Record<number, string>>(() => {
+    const saved = localStorage.getItem('arc_covers');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch { /* ignore */ }
+    }
+    return {};
+  });
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+  const [avatarModalMode, setAvatarModalMode] = useState<'player' | { arcId: number }>('player');
+
+  const openPlayerAvatarSelector = useCallback(() => {
+    setAvatarModalMode('player');
+    setAvatarModalOpen(true);
+  }, []);
+
+  const openArcCoverSelector = useCallback((arcId: number) => {
+    setAvatarModalMode({ arcId });
+    setAvatarModalOpen(true);
+  }, []);
+
+  const handleAvatarSelect = useCallback((avatarUrl: string) => {
+    if (avatarModalMode === 'player') {
+      setUserAvatar(avatarUrl);
+      localStorage.setItem('user_avatar', avatarUrl);
+      showToast('PLAYER PROFILE AVATAR UPDATED');
+    } else {
+      const arcId = avatarModalMode.arcId;
+      setArcCovers(prev => {
+        const updated = { ...prev, [arcId]: avatarUrl };
+        localStorage.setItem('arc_covers', JSON.stringify(updated));
+        return updated;
+      });
+      showToast(`VOLUME V${arcId} COVER ART CUSTOMIZED`);
+    }
+  }, [avatarModalMode, showToast]);
+
   const { gctf, setGctf, submitFlag, toggleCTFHint, shake, flagInputRef } = useCtf(
     USER_ID,
     showToast,
@@ -140,8 +185,17 @@ export default function App() {
         const chalAttempts: Record<string, number> = {};
         chalData.challenges.forEach((c: Challenge) => { chalAttempts[c.id] = c.attemptsAllowed; });
         progData.progress.forEach((p: any) => {
-          solved[p.challengeId] = { attempts_used: p.attemptsUsed, pts_earned: p.pointsEarned, solved: p.solved };
-          chalAttempts[p.challengeId] -= p.attemptsUsed;
+          const originalAttempts = chalData.challenges.find((c: Challenge) => c.id === p.challengeId)?.attemptsAllowed || 3;
+          const attemptsRemaining = originalAttempts - p.attemptsUsed;
+          const isFailed = !p.solved && attemptsRemaining <= 0;
+
+          solved[p.challengeId] = { 
+            attempts_used: p.attemptsUsed, 
+            pts_earned: p.pointsEarned, 
+            solved: p.solved,
+            failed: isFailed
+          };
+          chalAttempts[p.challengeId] = Math.max(0, attemptsRemaining);
         });
 
         setGctf((prev: any) => ({ ...prev, solved, chalAttempts }));
@@ -226,9 +280,10 @@ export default function App() {
 
   return (
     <div className="ephemeral-app">
+      <CyberCanvas />
       {route.screen === 's-home' && (
         <div className="scr on">
-          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="home" navigate={navigate} challengesSolved={challengesSolved} />
+          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="home" navigate={navigate} challengesSolved={challengesSolved} userAvatar={userAvatar} onChangeAvatar={openPlayerAvatarSelector} />
           <Hero
             onPlay={() => navigate(episodeBasePath)}
             onMoreInfo={() => navigate('/series')}
@@ -236,6 +291,8 @@ export default function App() {
             featuredArc={featuredArc}
             totalEpisodes={totalEpisodes}
             totalDomains={totalDomains}
+            arcCoverUrl={featuredArc ? (arcCovers[featuredArc.id] || getArcCover(featuredArc.id)) : undefined}
+            onChangeCover={featuredArc ? () => openArcCoverSelector(featuredArc.id) : undefined}
           />
           <Manifest arcs={arcs} onShowSeries={() => navigate('/series')} />
           <Transmissions
@@ -248,8 +305,14 @@ export default function App() {
 
       {route.screen === 's-series' && (
         <div className="scr on">
-          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} onBack={() => navigate('/')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="series" navigate={navigate} challengesSolved={challengesSolved} />
-          <SeriesHero arc={selectedArc} episodes={arcEpisodes[selectedArc?.id ?? 0] || []} onBack={() => navigate('/')} />
+          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} onBack={() => navigate('/')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="series" navigate={navigate} challengesSolved={challengesSolved} userAvatar={userAvatar} onChangeAvatar={openPlayerAvatarSelector} />
+          <SeriesHero
+            arc={selectedArc}
+            episodes={arcEpisodes[selectedArc?.id ?? 0] || []}
+            onBack={() => navigate('/')}
+            arcCoverUrl={selectedArc ? (arcCovers[selectedArc.id] || getArcCover(selectedArc.id)) : undefined}
+            onChangeCover={selectedArc ? () => openArcCoverSelector(selectedArc.id) : undefined}
+          />
           <div className="arc-strip">
             <span className="arc-label">ARC:</span>
             {arcs.map(arc => (
@@ -275,21 +338,21 @@ export default function App() {
 
       {route.screen === 's-bounty' && (
         <div className="scr on">
-          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="bounty" navigate={navigate} challengesSolved={challengesSolved} />
+          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="bounty" navigate={navigate} challengesSolved={challengesSolved} userAvatar={userAvatar} onChangeAvatar={openPlayerAvatarSelector} />
           <BountyDeck onRecruit={recruitMember} recruitedIds={alliance.map(m => m.name)} showToast={showToast} />
         </div>
       )}
 
       {route.screen === 's-alliance' && (
         <div className="scr on">
-          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="alliance" navigate={navigate} challengesSolved={challengesSolved} />
+          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} activeTab="alliance" navigate={navigate} challengesSolved={challengesSolved} userAvatar={userAvatar} onChangeAvatar={openPlayerAvatarSelector} />
           <AllianceBuilder alliance={alliance} onRemove={removeMember} onAdd={recruitMember} showToast={showToast} />
         </div>
       )}
 
       {route.screen === 's-ep' && (
         <div className="scr on">
-          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} onBack={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} nodeId={currentEpisode?.id || 'EPISODE'} navigate={navigate} challengesSolved={challengesSolved} />
+          <Navbar onHome={() => navigate('/')} onSeries={() => navigate('/series')} onBack={() => navigate('/series')} userXp={userXp} userId={USER_ID} showToast={showToast} nodeId={currentEpisode?.id || 'EPISODE'} navigate={navigate} challengesSolved={challengesSolved} userAvatar={userAvatar} onChangeAvatar={openPlayerAvatarSelector} />
           <div className="ch-wrap">
             <ChallengeHeader
               episode={currentEpisode}
@@ -322,6 +385,13 @@ export default function App() {
         </div>
       </div>
       <Toast message={toast.msg} show={toast.show} />
+      <AvatarSelectorModal
+        isOpen={avatarModalOpen}
+        onClose={() => setAvatarModalOpen(false)}
+        onSelect={handleAvatarSelect}
+        currentAvatar={avatarModalMode === 'player' ? userAvatar : (selectedArc ? (arcCovers[selectedArc.id] || getArcCover(selectedArc.id)) : '')}
+        title={avatarModalMode === 'player' ? 'Choose Commander Avatar' : `Set Volume V${(avatarModalMode as any).arcId} Cover Art`}
+      />
     </div>
   );
 }

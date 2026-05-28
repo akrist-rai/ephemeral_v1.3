@@ -5,9 +5,11 @@ interface SeriesHeroProps {
   arc: Arc | null;
   episodes: Episode[];
   onBack: () => void;
+  arcCoverUrl?: string;
+  onChangeCover?: () => void;
 }
 
-export const SeriesHero: React.FC<SeriesHeroProps> = ({ arc, episodes, onBack }) => {
+export const SeriesHero: React.FC<SeriesHeroProps> = ({ arc, episodes, onBack, arcCoverUrl, onChangeCover }) => {
   if (!arc) return null;
 
   const acc = arc.accColor || '#00c85a';
@@ -24,17 +26,33 @@ export const SeriesHero: React.FC<SeriesHeroProps> = ({ arc, episodes, onBack })
   const difficulty = episodes.length > 0 ? (episodes.reduce((s, e) => s + e.xp, 0) / episodes.length > 150 ? 'ADVANCED' : 'INTERMEDIATE') : 'BEGINNER';
 
   return (
-    <div className="series-hero" style={{ background: `linear-gradient(135deg,${bg} 0%,${bg}dd 60%,#050005 100%)` }}>
+    <div className="series-hero" style={{ background: `linear-gradient(135deg,${bg} 0%,${bg}dd 60%,#050005 100%)`, position: 'relative', overflow: 'hidden' }}>
+      {arcCoverUrl && (
+        <img src={arcCoverUrl} alt="Background cover" className="series-hero-img-bg" />
+      )}
       <div className="hc tl" style={{ borderColor: acc, width: '20px', height: '20px' }}></div>
       <div className="hc br" style={{ borderColor: acc, width: '20px', height: '20px' }}></div>
       <div className="coord tl" style={{ color: `${acc}55` }}>SERIES_ID: {arc.title.toUpperCase().replace(/\s+/g, '_')}_v{arc.id}</div>
-      <div className="sh-left" style={{ background: acc, minHeight: '280px' }}>
-        <div className="scan" style={{ opacity: .4 }}></div>
-        <div className="hc tl" style={{ borderColor: '#fff', opacity: .3 }}></div>
-        <div className="hc br" style={{ borderColor: '#fff', opacity: .3 }}></div>
-        <pre className="sh-ascii" style={{ color: bg, fontSize: '.48rem' }}>{ascii}</pre>
+      
+      <div className="series-hero-left-art">
+        {arcCoverUrl ? (
+          <div className="series-hero-art-cover">
+            <img src={arcCoverUrl} alt="Volume Cover Art" />
+            <button className="change-cover-hud-btn" onClick={onChangeCover} title="Select custom cover art">
+              🖼 CHANGE COVER
+            </button>
+          </div>
+        ) : (
+          <div className="sh-left" style={{ background: acc, minHeight: '280px' }}>
+            <div className="scan" style={{ opacity: .4 }}></div>
+            <div className="hc tl" style={{ borderColor: '#fff', opacity: .3 }}></div>
+            <div className="hc br" style={{ borderColor: '#fff', opacity: .3 }}></div>
+            <pre className="sh-ascii" style={{ color: bg, fontSize: '.48rem' }}>{ascii}</pre>
+          </div>
+        )}
       </div>
-      <div className="sh-content">
+
+      <div className="sh-content" style={{ zIndex: 5 }}>
         <div className="sh-domain" style={{ color: acc }}>{domain} · DOMAIN SERIES</div>
         <div className="sh-title">{title.split(' ').map((w, i) => <React.Fragment key={i}>{w}{i < title.split(' ').length - 1 ? <br/> : null}</React.Fragment>)}</div>
         <div className="sh-badges">

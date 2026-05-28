@@ -250,7 +250,7 @@ export const BountyDeck: React.FC<BountyDeckProps> = ({ onRecruit, recruitedIds 
                   <div className="wanted-front">
                     <div className="wanted-header">WANTED</div>
                     <div className="wanted-img-container">
-                      <img src={member.image} alt={member.name} className="wanted-img" onerror="this.src='/one_piece/Straw Hat Pirates.jpeg'" />
+                      <img src={member.image} alt={member.name} className="wanted-img" onError={(e) => { e.currentTarget.src = '/one_piece/Straw Hat Pirates.jpeg'; }} />
                       {isRecruited && (
                         <div className="wanted-status-overlay" style={{ background: 'var(--lime)' }}>
                           ALLIED

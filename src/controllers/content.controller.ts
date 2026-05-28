@@ -49,4 +49,20 @@ export class ContentController {
     const challenge = await ChallengeService.getPublicById(ctx.params.challengeId);
     ok(ctx, { challenge });
   }
+
+  /**
+   * GET /api/avatars — Fetch all available custom player and cover avatars from public directory
+   */
+  static async getAvatars(ctx: Context) {
+    const fs = require('fs');
+    const path = require('path');
+    try {
+      const avatarDir = path.join(process.cwd(), 'public', 'one_piece', 'avatar');
+      const files = await fs.promises.readdir(avatarDir);
+      const imageFiles = files.filter((f: string) => /\.(jpe?g|png|webp|gif)$/i.test(f));
+      ok(ctx, { avatars: imageFiles.map((f: string) => `/one_piece/avatar/${f}`) });
+    } catch (err: any) {
+      ctx.throw(500, `Failed to load avatars: ${err.message}`);
+    }
+  }
 }

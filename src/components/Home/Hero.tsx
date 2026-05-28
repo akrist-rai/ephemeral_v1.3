@@ -8,9 +8,11 @@ interface HeroProps {
   featuredArc: Arc | null;
   totalEpisodes: number;
   totalDomains: number;
+  arcCoverUrl?: string;
+  onChangeCover?: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onPlay, onMoreInfo, featuredEpisode, featuredArc, totalEpisodes, totalDomains }) => {
+export const Hero: React.FC<HeroProps> = ({ onPlay, onMoreInfo, featuredEpisode, featuredArc, totalEpisodes, totalDomains, arcCoverUrl, onChangeCover }) => {
   const acc = featuredArc?.accColor || '#e8000d';
   const bg = featuredArc?.bgColor || '#0d0003';
   const ascii = featuredArc?.asciiArt || '';
@@ -33,16 +35,26 @@ export const Hero: React.FC<HeroProps> = ({ onPlay, onMoreInfo, featuredEpisode,
 
   return (
     <div className="hero">
-      <div className="hero-left" style={{ background: acc }}>
-        <div className="scan" style={{ opacity: .5 }}></div>
-        <div className="hc tl"></div><div className="hc tr"></div><div className="hc bl"></div><div className="hc br"></div>
-        <div className="coord tl" style={{ color: 'rgba(0,0,0,.3)' }}>{domain}</div>
-        <div className="coord br" style={{ color: 'rgba(0,0,0,.3)' }}>S{featuredEpisode?.arcId || '?'}·E{epN}</div>
-        <div className="hero-left-inner">
-          <pre className="hero-ascii" style={{ color: bg }}>{ascii}</pre>
-          <div className="hero-ascii-label" style={{ color: 'rgba(0,0,0,.5)', borderColor: 'rgba(0,0,0,.2)' }}>{arcName} // {domain}</div>
-        </div>
-        <div className="hero-vol-tag" style={{ color: 'rgba(0,0,0,.12)' }}>VOL.{String(featuredArc?.id || '?').padStart(2, '0')}</div>
+      <div className="hero-left" style={{ background: bg, position: 'relative', overflow: 'hidden' }}>
+        {arcCoverUrl ? (
+          <div className="hero-left-art">
+            <img src={arcCoverUrl} alt="Arc Cover" className="hero-left-img" />
+            <div className="hero-left-grid-overlay"></div>
+            <button className="change-cover-hud-btn" onClick={onChangeCover} title="Customize this Volume Cover">
+              🖼 COVER HUD
+            </button>
+          </div>
+        ) : (
+          <div className="hero-left-inner">
+            <pre className="hero-ascii" style={{ color: acc }}>{ascii}</pre>
+            <div className="hero-ascii-label" style={{ color: 'rgba(255,255,255,.5)', borderColor: 'rgba(255,255,255,.2)' }}>{arcName} // {domain}</div>
+          </div>
+        )}
+        <div className="scan" style={{ opacity: .5, zIndex: 3 }}></div>
+        <div className="hc tl" style={{ zIndex: 3 }}></div><div className="hc tr" style={{ zIndex: 3 }}></div><div className="hc bl" style={{ zIndex: 3 }}></div><div className="hc br" style={{ zIndex: 3 }}></div>
+        <div className="coord tl" style={{ color: arcCoverUrl ? 'rgba(255,255,255,.7)' : 'rgba(255,255,255,.3)', zIndex: 3, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{domain}</div>
+        <div className="coord br" style={{ color: arcCoverUrl ? 'rgba(255,255,255,.7)' : 'rgba(255,255,255,.3)', zIndex: 3, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>S{featuredEpisode?.arcId || '?'}·E{epN}</div>
+        <div className="hero-vol-tag" style={{ color: arcCoverUrl ? 'rgba(255,184,48,.18)' : 'rgba(255,255,255,.05)', zIndex: 3 }}>VOL.{String(featuredArc?.id || '?').padStart(2, '0')}</div>
       </div>
 
       <div className="hero-right">
