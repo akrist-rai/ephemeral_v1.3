@@ -1,0 +1,39 @@
+{
+2
+  "version": 2,
+3
+  "buildCommand": "npm run build",
+4
+  "outputDirectory": "dist",
+5
+  "functions": {
+6
+    "api/index.ts": {
+7
+      "maxDuration": 10
+8
+    }
+9
+  },
+10
+  "rewrites": [
+11
+    {
+12
+      "source": "/api/(.*)",
+13
+      "destination": "/api/index.ts"
+14
+    },
+15
+    {
+16
+      "source": "/(.*)",
+17
+      "destination": "/index.html"
+18
+    }
+19
+  ]
+20
+}
