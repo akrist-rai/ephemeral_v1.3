@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import type { Arc, Episode } from '../../types';
 
 interface HeroProps {
@@ -14,8 +14,6 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ onPlay, onMoreInfo, featuredEpisode, featuredArc, totalEpisodes, totalDomains, arcCoverUrl, onChangeCover }) => {
   const acc = featuredArc?.accColor || '#e8000d';
-  const bg = featuredArc?.bgColor || '#0d0003';
-  const ascii = featuredArc?.asciiArt || '';
   const domain = featuredArc?.domain || 'LOADING';
   const arcName = featuredArc?.arcName || '';
   const title = featuredArc?.title || 'LOADING';
@@ -25,71 +23,58 @@ export const Hero: React.FC<HeroProps> = ({ onPlay, onMoreInfo, featuredEpisode,
   const epXp = featuredEpisode?.xp || 0;
   const epN = featuredEpisode?.n || 0;
   const epId = featuredEpisode?.id || '';
-
-  // Binary background text from the arc's ascii art
-  const binSeed = useMemo(() => {
-    const raw = (ascii || 'EPHEMERAL').replace(/[^A-Z0-9]/gi, '');
-    return raw.split('').map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join(' ') + ' ';
-  }, [ascii]);
-  const binBgHtml = useMemo(() => Array(32).fill(`<span>${binSeed.repeat(6)}</span>`).join(''), [binSeed]);
+  const bgUrl = arcCoverUrl || '';
 
   return (
-    <div className="hero">
-      <div className="hero-left" style={{ background: bg, position: 'relative', overflow: 'hidden' }}>
-        {arcCoverUrl ? (
-          <div className="hero-left-art">
-            <img src={arcCoverUrl} alt="Arc Cover" className="hero-left-img" />
-            <div className="hero-left-grid-overlay"></div>
-            <button className="change-cover-hud-btn" onClick={onChangeCover} title="Customize this Volume Cover">
-              🖼 COVER HUD
-            </button>
-          </div>
-        ) : (
-          <div className="hero-left-inner">
-            <pre className="hero-ascii" style={{ color: acc }}>{ascii}</pre>
-            <div className="hero-ascii-label" style={{ color: 'rgba(255,255,255,.5)', borderColor: 'rgba(255,255,255,.2)' }}>{arcName} // {domain}</div>
-          </div>
-        )}
-        <div className="scan" style={{ opacity: .5, zIndex: 3 }}></div>
-        <div className="hc tl" style={{ zIndex: 3 }}></div><div className="hc tr" style={{ zIndex: 3 }}></div><div className="hc bl" style={{ zIndex: 3 }}></div><div className="hc br" style={{ zIndex: 3 }}></div>
-        <div className="coord tl" style={{ color: arcCoverUrl ? 'rgba(255,255,255,.7)' : 'rgba(255,255,255,.3)', zIndex: 3, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{domain}</div>
-        <div className="coord br" style={{ color: arcCoverUrl ? 'rgba(255,255,255,.7)' : 'rgba(255,255,255,.3)', zIndex: 3, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>S{featuredEpisode?.arcId || '?'}·E{epN}</div>
-        <div className="hero-vol-tag" style={{ color: arcCoverUrl ? 'rgba(255,184,48,.18)' : 'rgba(255,255,255,.05)', zIndex: 3 }}>VOL.{String(featuredArc?.id || '?').padStart(2, '0')}</div>
+    <div className="hero-fullbleed">
+      {/* Full-bleed background image */}
+      {bgUrl && <img src={bgUrl} alt="" className="hero-bg-img" onError={e => { e.currentTarget.style.display = 'none'; }} />}
+      {/* Gradient overlays */}
+      <div className="hero-overlay-l" />
+      <div className="hero-overlay-b" style={{ background: `linear-gradient(0deg, #06060e 0%, rgba(6,6,14,0.7) 50%, transparent 100%)` }} />
+      <div className="hero-overlay-r" style={{ background: `linear-gradient(90deg, rgba(6,6,14,0.92) 0%, rgba(6,6,14,0.5) 60%, transparent 100%)` }} />
+
+      {/* HUD corners */}
+      <div className="hc tl" style={{ borderColor: acc }} />
+      <div className="hc br" style={{ borderColor: acc }} />
+      <div className="hc tr" style={{ borderColor: 'rgba(255,255,255,0.15)' }} />
+      <div className="hc bl" style={{ borderColor: 'rgba(255,255,255,0.15)' }} />
+
+      {/* Top HUD bar */}
+      <div className="hero-hud-top">
+        <span style={{ color: acc }}>{domain}</span>
+        <span>STATUS: <span style={{ color: '#00ff41' }}>{featuredEpisode?.active ? 'LIVE' : 'BROADCASTING'}</span></span>
+        <span>NODE: <span style={{ color: acc }}>{epId}</span></span>
+        <span className="hero-hud-right" style={{ marginLeft: 'auto' }}>
+          {onChangeCover && <button className="cover-mod-btn" onClick={onChangeCover}>⬡ COVER</button>}
+        </span>
       </div>
 
-      <div className="hero-right">
-        <div className="bin-bg" dangerouslySetInnerHTML={{ __html: binBgHtml }}></div>
-        <div className="hc tl"></div><div className="hc br"></div>
-        <div className="hero-hud-data">
-          <span>DOMAIN: <span>{domain}</span></span>
-          <span>STATUS: <span>{featuredEpisode?.active ? 'LIVE' : 'BROADCASTING'}</span></span>
-          <span>NODE: <span>{epId}</span></span>
+      {/* Main content — bottom-left */}
+      <div className="hero-content">
+        <div className="hero-eyebrow-row">
+          {featuredEpisode?.active && <span className="pill-live" style={{ background: acc }}>◉ LIVE</span>}
+          <span className="hero-breadcrumb">{arcName} · E{epN} · {epType.toUpperCase()}</span>
         </div>
-        <div className="hero-eyebrow">
-          {featuredEpisode?.active && <span className="pill-live" style={{ background: acc }}>NEW EP</span>}
-          <span className="pill-ep">{domain} · E{epN} · {epType.toUpperCase()}</span>
-        </div>
-        <div className="hero-title">
-          {title.split(' ').slice(0, -1).join(' ')}
-          <span className="hl" style={{ color: acc }}>{title.split(' ').slice(-1)[0]}</span>
-          <span className="sub">// {epTitle}</span>
-        </div>
-        <div className="hero-desc">{epDesc || 'Loading episode data...'}</div>
-        <div className="hero-btns">
-          <button className="btn-r" style={{ background: acc }} onClick={onPlay}>PLAY E{epN}</button>
-          <button className="btn-o" onClick={onMoreInfo}>MORE INFO</button>
+        <h1 className="hero-title-full">
+          <span className="hero-title-main">{title}</span>
+          <span className="hero-title-ep" style={{ color: acc }}>// {epTitle}</span>
+        </h1>
+        <p className="hero-desc-full">{epDesc ? epDesc.slice(0, 160) + (epDesc.length > 160 ? '…' : '') : 'Loading...'}</p>
+        <div className="hero-btns-full">
+          <button className="btn-play" style={{ background: acc, boxShadow: `0 0 30px ${acc}66` }} onClick={onPlay}>▶ PLAY E{epN}</button>
+          <button className="btn-info" onClick={onMoreInfo}>MORE INFO</button>
         </div>
       </div>
 
-      <div className="hero-bottom" style={{ borderColor: `${acc}30` }}>
-        <div className="hb-stat"><div className="hb-n" style={{ color: acc }}>{totalEpisodes}</div><div className="hb-l">Episodes</div></div>
-        <div className="hb-div"></div>
-        <div className="hb-stat"><div className="hb-n" style={{ color: acc }}>{totalDomains}</div><div className="hb-l">Domains</div></div>
-        <div className="hb-div"></div>
-        <div className="hb-stat"><div className="hb-n" style={{ color: acc }}>{epXp}</div><div className="hb-l">XP This EP</div></div>
-        <div className="hb-right">
-          <span className="hb-tag">NETWORK: <span>ACN_EPHEMERAL</span></span>
-        </div>
+      {/* Bottom stats bar */}
+      <div className="hero-stats-bar" style={{ borderTopColor: `${acc}33` }}>
+        <div className="hstat"><span className="hstat-n" style={{ color: acc }}>{totalEpisodes}</span><span className="hstat-l">Episodes</span></div>
+        <div className="hstat-div" />
+        <div className="hstat"><span className="hstat-n" style={{ color: acc }}>{totalDomains}</span><span className="hstat-l">Domains</span></div>
+        <div className="hstat-div" />
+        <div className="hstat"><span className="hstat-n" style={{ color: acc }}>{epXp}</span><span className="hstat-l">XP This EP</span></div>
+        <div style={{ marginLeft: 'auto', fontSize: '.45rem', color: 'rgba(255,255,255,.3)', letterSpacing: '.1em' }}>ACN_EPHEMERAL</div>
       </div>
     </div>
   );

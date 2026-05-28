@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import type { Arc, Episode } from '../../types';
 
 interface SeriesHeroProps {
@@ -11,58 +11,37 @@ interface SeriesHeroProps {
 
 export const SeriesHero: React.FC<SeriesHeroProps> = ({ arc, episodes, onBack, arcCoverUrl, onChangeCover }) => {
   if (!arc) return null;
-
   const acc = arc.accColor || '#00c85a';
-  const bg = arc.bgColor || '#000d05';
-  const ascii = arc.asciiArt || '';
   const domain = arc.domain || '';
   const title = arc.title || '';
-
   const doneCount = episodes.filter(e => e.done).length;
-  const totalCount = episodes.length;
-  const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
-  const typeSet = [...new Set(episodes.map(e => e.type.toUpperCase()))];
-  const seasonSet = [...new Set(episodes.map(e => `S${e.arcId}`))];
+  const pct = episodes.length > 0 ? Math.round((doneCount / episodes.length) * 100) : 0;
   const difficulty = episodes.length > 0 ? (episodes.reduce((s, e) => s + e.xp, 0) / episodes.length > 150 ? 'ADVANCED' : 'INTERMEDIATE') : 'BEGINNER';
+  const typeSet = [...new Set(episodes.map(e => e.type.toUpperCase()))];
+  const img = arcCoverUrl || '';
 
   return (
-    <div className="series-hero" style={{ background: `linear-gradient(135deg,${bg} 0%,${bg}dd 60%,#050005 100%)`, position: 'relative', overflow: 'hidden' }}>
-      {arcCoverUrl && (
-        <img src={arcCoverUrl} alt="Background cover" className="series-hero-img-bg" />
-      )}
-      <div className="hc tl" style={{ borderColor: acc, width: '20px', height: '20px' }}></div>
-      <div className="hc br" style={{ borderColor: acc, width: '20px', height: '20px' }}></div>
-      <div className="coord tl" style={{ color: `${acc}55` }}>SERIES_ID: {arc.title.toUpperCase().replace(/\s+/g, '_')}_v{arc.id}</div>
-      
-      <div className="series-hero-left-art">
-        {arcCoverUrl ? (
-          <div className="series-hero-art-cover">
-            <img src={arcCoverUrl} alt="Volume Cover Art" />
-            <button className="change-cover-hud-btn" onClick={onChangeCover} title="Select custom cover art">
-              🖼 CHANGE COVER
-            </button>
-          </div>
-        ) : (
-          <div className="sh-left" style={{ background: acc, minHeight: '280px' }}>
-            <div className="scan" style={{ opacity: .4 }}></div>
-            <div className="hc tl" style={{ borderColor: '#fff', opacity: .3 }}></div>
-            <div className="hc br" style={{ borderColor: '#fff', opacity: .3 }}></div>
-            <pre className="sh-ascii" style={{ color: bg, fontSize: '.48rem' }}>{ascii}</pre>
-          </div>
-        )}
-      </div>
+    <div className="series-hero-full">
+      {img && <img src={img} alt={title} className="series-hero-bg" onError={e => { e.currentTarget.style.display = 'none'; }} />}
+      <div className="series-hero-overlay" style={{ background: `linear-gradient(90deg, ${arc.bgColor || '#000'}ee 0%, ${arc.bgColor || '#000'}99 50%, transparent 100%)` }} />
+      <div className="series-hero-overlay-b" style={{ background: `linear-gradient(0deg, ${arc.bgColor || '#000'} 0%, transparent 60%)` }} />
 
-      <div className="sh-content" style={{ zIndex: 5 }}>
+      <div className="hc tl" style={{ borderColor: acc }} />
+      <div className="hc br" style={{ borderColor: acc }} />
+      <div className="coord tl" style={{ color: `${acc}66` }}>SERIES_ID: {title.toUpperCase().replace(/\s+/g, '_')}_v{arc.id}</div>
+
+      <div className="sh-content-full">
         <div className="sh-domain" style={{ color: acc }}>{domain} · DOMAIN SERIES</div>
-        <div className="sh-title">{title.split(' ').map((w, i) => <React.Fragment key={i}>{w}{i < title.split(' ').length - 1 ? <br/> : null}</React.Fragment>)}</div>
+        <div className="sh-title-full">{title}</div>
         <div className="sh-badges">
           <span className="badge badge-g">{pct}% COMPLETE</span>
           <span className="badge badge-r">{difficulty}</span>
-          {seasonSet.length > 0 && <span className="badge badge-d">{seasonSet.length} SEASON{seasonSet.length !== 1 ? 'S' : ''}</span>}
-          <span className="badge badge-d">{totalCount} EPISODE{totalCount !== 1 ? 'S' : ''}</span>
-          {typeSet.length > 0 && <span className="badge badge-d">{typeSet.join(' · ')}</span>}
+          <span className="badge badge-d">{episodes.length} EPISODES</span>
+          {typeSet.map(t => <span key={t} className="badge badge-d">{t}</span>)}
         </div>
-        <div className="sh-desc">{arc.description || `Explore the ${domain} domain through ${totalCount} episodes.`}</div>
+        <div style={{ display: 'flex', gap: '.7rem', marginTop: '.8rem', alignItems: 'center' }}>
+          {onChangeCover && <button className="cover-mod-btn" onClick={onChangeCover}>⬡ CHANGE COVER</button>}
+        </div>
       </div>
     </div>
   );

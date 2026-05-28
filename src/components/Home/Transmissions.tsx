@@ -16,53 +16,38 @@ const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
 
 export const Transmissions: React.FC<TransmissionsProps> = ({ episodes, arcs, onNavigate }) => {
   if (episodes.length === 0) return null;
-
   return (
-    <div className="sect" style={{ paddingBottom: '2.5rem' }}>
+    <div className="transmissions-sect">
       <div className="sect-hdr">
         <div className="sect-ttl">TRANSMISSIONS</div>
         <div className="sect-id">// EPISODES</div>
         <div className="sect-count">{episodes.filter(e => e.active).length > 0 ? 'ACTIVE NOW' : `${episodes.length} AVAILABLE`}</div>
         <div className="sect-more" onClick={() => onNavigate('/series')}>ALL EPISODES →</div>
       </div>
-      <div className="sect-div"></div>
-      <div className="ep-row">
+      <div className="sect-div" />
+      <div className="tx-grid">
         {episodes.map((ep) => {
           const arc = ep.arc || arcs.find(a => a.id === ep.arcId);
           const acc = arc?.accColor || '#e8000d';
           const typeStyle = TYPE_COLORS[ep.type] || TYPE_COLORS.ctf;
-          const coverImg = getEpisodeImage(ep.id) || getArcCover(ep.arcId);
-
+          const img = getEpisodeImage(ep.id) || getArcCover(ep.arcId);
           return (
-            <div
-              className="ec"
-              style={{ '--ep-acc': acc } as any}
-              onClick={() => onNavigate(`/episode/${ep.arcId}/${ep.id}`)}
-              key={ep.id}
-            >
-              <div className="hc sm tl"></div><div className="hc sm tr" style={{ borderColor: acc }}></div>
-              <div className="hc sm bl" style={{ borderColor: acc }}></div><div className="hc sm br"></div>
-              <div className="coord tl">{ep.id}</div>
-              {/* Cover art header */}
-              <div className="ec-cover-wrap">
-                <img src={coverImg} alt={ep.title} className="ec-cover-img" />
-                <div className="ec-cover-gradient" style={{ background: `linear-gradient(180deg, transparent 20%, ${arc?.bgColor || '#06060e'} 100%)` }}></div>
-                <div className="ec-type-pill" style={{ background: typeStyle.bg, color: typeStyle.text }}>
-                  {ep.type.toUpperCase()}
-                  {ep.active && <span className="ec-live-dot">● LIVE</span>}
-                </div>
-                <div className="ec-cover-scanlines"></div>
+            <div className="tx-card" key={ep.id} onClick={() => onNavigate(`/episode/${ep.arcId}/${ep.id}`)}>
+              {img && <img src={img} alt={ep.title} className="tx-card-img" onError={e => { e.currentTarget.style.display = 'none'; }} />}
+              <div className="tx-card-overlay" style={{ background: `linear-gradient(0deg, ${arc?.bgColor || '#06060e'} 0%, rgba(6,6,14,0.2) 100%)` }} />
+              <div className="tx-type-tag" style={{ background: typeStyle.bg, color: typeStyle.text }}>
+                {ep.type.toUpperCase()}{ep.active && ' ◉ LIVE'}
               </div>
-              <div className="ec-body">
-                <div className="ec-ref">EP_ID: <span>{ep.id}</span></div>
-                <div className="ec-title">{ep.title}</div>
-                <div className="ec-desc">{ep.description}</div>
-                <div className="ec-foot">
-                  <span className="ec-xp">⚡ {ep.xp} XP</span>
-                  <span className="ec-arc">{arc?.arcName || arc?.title || ''}</span>
+              <div className="tx-card-body">
+                <div className="tx-card-id" style={{ color: acc }}>{ep.id}</div>
+                <div className="tx-card-title">{ep.title}</div>
+                <div className="tx-card-meta">
+                  <span style={{ color: '#b9ff00' }}>⚡ {ep.xp} XP</span>
+                  <span style={{ color: acc }}>{arc?.arcName || ''}</span>
                 </div>
               </div>
-              <div className="analyze">{ep.done ? 'COMPLETED' : ep.active ? 'ENTER' : 'ANALYZE'}</div>
+              <div className="hc sm tl" style={{ borderColor: acc }} />
+              <div className="hc sm br" style={{ borderColor: acc }} />
             </div>
           );
         })}
