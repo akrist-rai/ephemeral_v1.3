@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Inspector Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #fafaf9;
+            color: #292524;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- Chosen Palette: Warm Stone and Emerald -->
+<!-- Application Structure Plan: The application is structured as a technical dashboard. It features a split-pane layout on larger screens to juxtapose the mission briefing with live simulated data (chart). The bottom section acts as the interactive 'terminal' where the core learning objective (triggering a network request and inspecting DevTools) takes place. This dashboard structure immediately sets a technical tone, encouraging the user to think like an analyst or developer. -->
+<!-- Visualization & Content Choices: The source 'report' is the concept of a hidden network payload. Goal: Teach DevTools inspection. Viz Method: A real-time updating Line Chart (Chart.js) simulates network traffic to create immersion and fulfill visualization requirements. Interaction: A 'fetch' button triggers a silent data request. Justification: This forces the user away from the visual UI and into the browser's developer tools, achieving the active learning goal. Library/Method: Chart.js for visualization, Vanilla JS Fetch API for the network simulation. Confirming NO SVG/Mermaid. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <header class="bg-stone-900 text-stone-100 py-6 shadow-md border-b-4 border-emerald-600">
+        <div class="container mx-auto px-4 max-w-5xl flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight">Project: VANGUARD</h1>
+                <p class="text-stone-400 mt-1 text-sm uppercase tracking-widest">Interactive Telemetry & Analysis Interface</p>
+            </div>
+            <div class="text-emerald-400 text-2xl font-mono" id="system-clock">00:00:00</div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 max-w-5xl py-8 flex flex-col gap-8">
+
+        <section class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+            <h2 class="text-2xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+                <span class="text-emerald-600 text-xl">&#9873;</span> Mission Briefing
+            </h2>
+            <p class="text-stone-600 leading-relaxed mb-4">
+                Welcome to the analysis dashboard. This section outlines your primary objective. We are currently receiving encrypted transmissions from an external node. Our intelligence suggests a critical security token (a "flag") is being transmitted in the network layer during handshake protocols. 
+            </p>
+            <p class="text-stone-600 leading-relaxed font-semibold bg-stone-100 p-4 rounded-lg border-l-4 border-emerald-500">
+                Your Objective: We have built a button below to request the secure payload. However, the frontend UI is strictly configured to ignore the response data to prevent shoulder-surfing. You must initiate the request and use your browser's Developer Tools (Network Tab or Console) to intercept the raw response and extract the flag.
+            </p>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <section class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 flex flex-col">
+                <h2 class="text-xl font-bold text-stone-800 mb-2">Live Node Telemetry</h2>
+                <p class="text-sm text-stone-500 mb-6">
+                    This module displays simulated active packet transfers. Monitoring this traffic can help identify when data bursts occur. The visualization provides situational awareness while you prepare to intercept the targeted payload.
+                </p>
+                <div class="flex-grow flex items-center justify-center w-full">
+                    <div class="chart-container">
+                        <canvas id="telemetryChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-stone-900 text-stone-100 p-6 rounded-xl shadow-md border-t-4 border-stone-700 flex flex-col justify-between relative overflow-hidden">
+                <div>
+                    <h2 class="text-xl font-bold text-emerald-400 mb-2 font-mono">Terminal // Action Interface</h2>
+                    <p class="text-sm text-stone-400 mb-6">
+                        Execute the command below to request the secure payload from the external server. Remember, the UI will not display the result. You must monitor the network channel.
+                    </p>
+                    
+                    <div class="bg-black p-4 rounded-md font-mono text-sm mb-6 min-h-[100px] border border-stone-800 shadow-inner" id="terminal-output">
+                        <div class="text-stone-500">System ready... awaiting command.</div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <button id="intercept-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-6 rounded transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-emerald-500/50 uppercase tracking-wide">
+                        Request Secure Payload
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <section class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 text-center">
+            <h2 class="text-2xl font-bold text-stone-800 mb-2">Verification Protocol</h2>
+            <p class="text-sm text-stone-500 mb-6 max-w-2xl mx-auto">
+                Once you have successfully inspected the network traffic and isolated the payload, enter the flag below to verify your findings. The flag format is typically CTF{...}.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 max-w-lg mx-auto">
+                <input type="text" id="flag-input" placeholder="CTF{...}" class="w-full px-4 py-3 rounded-lg border-2 border-stone-300 focus:border-emerald-500 focus:outline-none transition-colors font-mono">
+                <button id="verify-btn" class="w-full sm:w-auto bg-stone-800 hover:bg-stone-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 focus:outline-none">
+                    Submit
+                </button>
+            </div>
+            <div id="verification-result" class="mt-4 font-bold text-lg hidden"></div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-900 text-stone-500 py-6 text-center mt-auto">
+        <p class="text-sm">Interactive Networking Fundamentals &copy; 2026. Designed for active learning.</p>
+    </footer>
+
+    <script>
+        const updateClock = () => {
+            const now = new Date();
+            document.getElementById('system-clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
+        };
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        const ctx = document.getElementById('telemetryChart').getContext('2d');
+        const initialData = Array.from({length: 20}, () => Math.floor(Math.random() * 100));
+        const labels = Array.from({length: 20}, (_, i) => `T-${20 - i}s`);
+
+        const telemetryChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Packet Density (Kbps)',
+                    data: initialData,
+                    borderColor: '#059669',
+                    backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(28, 25, 23, 0.9)',
+                        titleColor: '#a7f3d0',
+                        bodyColor: '#f5f5f4'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 150,
+                        grid: {
+                            color: '#e7e5e4'
+                        },
+                        ticks: {
+                            color: '#78716c'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#78716c',
+                            maxRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: 5
+                        }
+                    }
+                },
+                animation: {
+                    duration: 0
+                }
+            }
+        });
+
+        setInterval(() => {
+            const newDataPoint = Math.floor(Math.random() * 80) + 20;
+            telemetryChart.data.datasets[0].data.push(newDataPoint);
+            telemetryChart.data.datasets[0].data.shift();
+            telemetryChart.update();
+        }, 2000);
+
+        const terminalOutput = document.getElementById('terminal-output');
+        const interceptBtn = document.getElementById('intercept-btn');
+        const flagInput = document.getElementById('flag-input');
+        const verifyBtn = document.getElementById('verify-btn');
+        const resultDiv = document.getElementById('verification-result');
+
+        const secretPayload = "eyBzdGF0dXM6ICJzdWNjZXNzIiwgZGF0YTogeyBtZXNzYWdlOiAiUGF5bG9hZCBpbnRlcmNlcHRlZCBzdWNjZXNzZnVsbHkuIiwgZmxhZzogIkNURntEM3ZUMDBsc19ON3R3MHJrX000c3Qzcn0iIH0gfQ==";
+
+        interceptBtn.addEventListener('click', () => {
+            interceptBtn.disabled = true;
+            interceptBtn.classList.replace('bg-emerald-600', 'bg-stone-600');
+            interceptBtn.innerText = "Transmitting...";
+            
+            terminalOutput.innerHTML += `<br><span class="text-blue-400">[${new Date().toLocaleTimeString('en-US', { hour12: false })}]</span> Initiating secure handshake...`;
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+            setTimeout(() => {
+                terminalOutput.innerHTML += `<br><span class="text-blue-400">[${new Date().toLocaleTimeString('en-US', { hour12: false })}]</span> Handshake established. Requesting payload...`;
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+                fetch(`data:application/json;base64,${secretPayload}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        window._interceptedData = data;
+                        console.warn("%c[SYSTEM ALERT]", "color: #10b981; font-weight: bold; font-size: 14px;", "Payload received in memory. UI rendering is disabled for this object. Inspect network XHR/Fetch requests or the window._interceptedData object.");
+                        
+                        terminalOutput.innerHTML += `<br><span class="text-emerald-400">[${new Date().toLocaleTimeString('en-US', { hour12: false })}]</span> Response 200 OK. Data received. UI rendering bypassed.`;
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                        
+                        interceptBtn.innerText = "Payload Requested";
+                    })
+                    .catch(err => {
+                        console.error("Transmission failed", err);
+                    });
+            }, 1500);
+        });
+
+        verifyBtn.addEventListener('click', () => {
+            const userFlag = flagInput.value.trim();
+            resultDiv.classList.remove('hidden', 'text-emerald-600', 'text-red-600');
+            
+            if (userFlag === "CTF{D3vT00ls_N7tw0rk_M4st3r}") {
+                resultDiv.innerText = "Verification Successful. Authentication complete.";
+                resultDiv.classList.add('text-emerald-600');
+                triggerSuccessAnimation();
+            } else {
+                resultDiv.innerText = "Access Denied. Incorrect Flag.";
+                resultDiv.classList.add('text-red-600');
+                
+                terminalOutput.innerHTML += `<br><span class="text-red-400">[${new Date().toLocaleTimeString('en-US', { hour12: false })}]</span> AUTH FAILURE: Invalid token submitted.`;
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        });
+
+        function triggerSuccessAnimation() {
+            document.body.style.transition = "background-color 0.5s ease";
+            document.body.style.backgroundColor = "#dcfce7";
+            setTimeout(() => {
+                document.body.style.backgroundColor = "#fafaf9";
+            }, 1000);
+            
+            terminalOutput.innerHTML += `<br><span class="text-emerald-400 font-bold">[${new Date().toLocaleTimeString('en-US', { hour12: false })}] ACCESS GRANTED. Welcome to the mainframe.</span>`;
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+    </script>
+</body>
+</html>

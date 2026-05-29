@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Arc, Episode } from '../../types';
 import { getEpisodeImage } from '../../lib/imageMapping';
 
@@ -10,55 +10,97 @@ interface EpisodeListProps {
   error: string | null;
 }
 
+const TYPE_META: Record<string, { label: string; color: string; bg: string }> = {
+  ctf:      { label: 'CTF',      color: '#000', bg: '#00c85a' },
+  research: { label: 'RESEARCH', color: '#fff', bg: '#e8000d' },
+  quiz:     { label: 'QUIZ',     color: '#fff', bg: '#9b5fff' },
+};
+
 export const EpisodeList: React.FC<EpisodeListProps> = ({ episodes, arc, onShowChallenge, loading, error }) => {
-  if (loading) return <div className="empty-state">SYNCING BACKEND DATA...</div>;
-  if (error) return <div className="empty-state">BACKEND ERROR // {error}</div>;
-  if (episodes.length === 0) return <div className="empty-state">NO EPISODES FOUND FOR THIS ARC</div>;
+  const [hovered, setHovered] = useState<string | null>(null);
+
+  if (loading) return (
+    <div className="el-loading">
+      <div className="el-loading-bar" />
+      <span>SYNCING EPISODE DATA...</span>
+    </div>
+  );
+  if (error)  return <div className="el-error">⚠ {error}</div>;
+  if (episodes.length === 0) return <div className="el-empty">NO EPISODES IN THIS ARC</div>;
 
   const acc = arc?.accColor || '#e8000d';
 
   return (
-    <div className="ep-img-list">
+    <div className="el-grid">
       {episodes.map((ep) => {
         const img = getEpisodeImage(ep.id);
-        const typeColors: Record<string, string> = { ctf: '#e8000d', research: '#b9ff00', quiz: '#9b5fff' };
-        const tColor = typeColors[ep.type] || '#e8000d';
+        const tm = TYPE_META[ep.type] || TYPE_META.ctf;
+        const isHov = hovered === ep.id;
+
         return (
           <div
-            className={`ep-img-row ${ep.done ? 'ep-done' : ''} ${ep.locked ? 'ep-locked' : ''}`}
             key={ep.id}
+            className={`el-card ${ep.done ? 'el-done' : ''} ${ep.locked ? 'el-locked' : ''} ${isHov ? 'el-hov' : ''}`}
+            style={{ '--el-acc': ep.done ? '#00ff41' : acc } as any}
             onClick={ep.locked ? undefined : () => onShowChallenge(ep)}
+            onMouseEnter={() => !ep.locked && setHovered(ep.id)}
+            onMouseLeave={() => setHovered(null)}
           >
-            {/* Image fills entire left panel */}
-            <div className="ep-img-panel">
+            {/* Cover image */}
+            <div className="el-cover">
               {img
-                ? <img src={img} alt={ep.title} className="ep-img-fill" onError={e => { e.currentTarget.style.display='none'; }} />
-                : <div className="ep-img-fill" style={{ background: ep.bg || arc?.bgColor || '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <pre style={{ color: acc, fontSize: '.38rem', fontFamily: 'var(--mono)', textAlign: 'center' }}>{ep.art || ''}</pre>
-                  </div>
+                ? <img src={img} alt={ep.title} className="el-cover-img"
+                    onError={e => { e.currentTarget.style.display = 'none'; }} />
+                : <div className="el-cover-placeholder" style={{ background: arc?.bgColor || '#0a0a14' }} />
               }
-              <div className="ep-img-panel-overlay" />
-              <div className="ep-num-badge">{String(ep.n).padStart(2, '0')}</div>
-              {ep.locked && <div className="ep-locked-cover">🔒 LOCKED</div>}
+              <div className="el-cover-overlay" />
+              <div className="el-cover-scan" />
+
+              {/* Top badges */}
+              <div className="el-cover-top">
+                <span className="el-ep-num">EP {String(ep.n).padStart(2, '0')}</span>
+                {ep.active && <span className="el-live-tag">◉ NEW</span>}
+              </div>
+
+              {/* Type pill */}
+              <div className="el-type-pill" style={{ background: tm.bg, color: tm.color }}>
+                {tm.label}
+              </div>
+
+              {/* Done overlay */}
+              {ep.done && (
+                <div className="el-done-overlay">
+                  <span className="el-done-check">✓</span>
+                  <span className="el-done-label">COMPLETED</span>
+                </div>
+              )}
+
+              {/* Locked overlay */}
+              {ep.locked && (
+                <div className="el-locked-overlay">
+                  <span>🔒</span>
+                  <span>LOCKED</span>
+                </div>
+              )}
             </div>
 
-            {/* Info panel */}
-            <div className="ep-img-info">
-              <div className="ep-img-tags">
-                <span className="ep-type-tag" style={{ background: tColor + '22', color: tColor, border: `1px solid ${tColor}44` }}>{ep.type.toUpperCase()}</span>
-                {ep.active && <span className="ep-live-tag">◉ NEW</span>}
-                {ep.done && <span className="ep-done-tag">✓ DONE</span>}
-              </div>
-              <div className="ep-img-title">{ep.title}</div>
-              <div className="ep-img-desc">{ep.description}</div>
-              <div className="ep-img-meta">
-                <span>⏱ {ep.min} MIN</span>
-                <span style={{ color: '#b9ff00' }}>⚡ {ep.xp} XP</span>
+            {/* Info */}
+            <div className="el-info">
+              <div className="el-id" style={{ color: ep.done ? '#00ff41' : acc }}>{ep.id}</div>
+              <div className="el-title">{ep.title}</div>
+              <div className="el-desc">{ep.description?.slice(0, 100)}{ep.description?.length > 100 ? '…' : ''}</div>
+              <div className="el-meta">
+                <span className="el-xp" style={{ color: '#b9ff00' }}>⚡ {ep.xp} XP</span>
+                <span className="el-time">⏱ {ep.min}m</span>
               </div>
             </div>
 
-            {/* Accent bar */}
-            <div className="ep-acc-line" style={{ background: ep.done ? '#00ff41' : acc }} />
+            {/* Bottom accent line */}
+            <div className="el-accent-line" style={{ background: ep.done ? '#00ff41' : acc, boxShadow: `0 0 8px ${ep.done ? '#00ff41' : acc}66` }} />
+
+            {/* HUD corners */}
+            <div className="hc sm tl" style={{ borderColor: ep.done ? '#00ff41' : acc }} />
+            <div className="hc sm br" style={{ borderColor: ep.done ? '#00ff41' : acc }} />
           </div>
         );
       })}

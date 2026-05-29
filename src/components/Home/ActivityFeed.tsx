@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { apiRequest } from '../../hooks/useApi';
 
 interface ActivityEntry {
@@ -33,57 +33,51 @@ const CAT_COLORS: Record<string, string> = {
 
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({ challenges, currentUserId }) => {
   const [feed, setFeed] = useState<ActivityEntry[]>([]);
-  const [visible, setVisible] = useState(false);
-  const feedRef = useRef<HTMLDivElement>(null);
   const chalMap = Object.fromEntries(challenges.map(c => [c.id, c]));
 
-  const load = () => {
-    apiRequest('/api/stats/activity?limit=30')
+  const load = useCallback(() => {
+    apiRequest('/api/stats/activity?limit=20')
       .then(d => setFeed(d.activity || []))
       .catch(() => {});
-  };
+  }, []);
 
   useEffect(() => {
     load();
     const iv = setInterval(load, 30_000);
     return () => clearInterval(iv);
-  }, []);
+  }, [load]);
 
   if (feed.length === 0) return null;
 
   return (
-    <div className="activity-feed-wrap">
-      <div className="activity-feed-hdr" onClick={() => setVisible(v => !v)}>
-        <div className="activity-pulse" />
-        <span className="activity-title">LIVE ACTIVITY FEED</span>
-        <span className="activity-count">{feed.length} RECENT SOLVES</span>
-        <span className="activity-toggle">{visible ? '▲' : '▼'}</span>
+    <div className="af-strip">
+      <div className="af-label">
+        <span className="af-pulse" />
+        <span>LIVE NETWORK ACTIVITY</span>
       </div>
-      {visible && (
-        <div className="activity-feed-list" ref={feedRef}>
-          {feed.map((entry, i) => {
+      <div className="af-ticker">
+        <div className="af-ticker-inner">
+          {[...feed, ...feed].map((entry, i) => {
             const ch = chalMap[entry.challengeId];
             const isMe = entry.userId === currentUserId;
-            const catColor = ch ? (CAT_COLORS[ch.category] || '#fff') : '#fff';
+            const catColor = ch ? (CAT_COLORS[ch.category] || '#fff') : '#e8000d';
             return (
-              <div key={i} className={`activity-item ${isMe ? 'activity-me' : ''}`}>
-                <div className="activity-avatar" style={{ borderColor: isMe ? '#00ff41' : `${catColor}55`, color: isMe ? '#00ff41' : catColor }}>
-                  {entry.userId.slice(0, 2)}
-                </div>
-                <div className="activity-body">
-                  <span className="activity-user" style={{ color: isMe ? '#00ff41' : '#fff' }}>{entry.userId}</span>
-                  <span className="activity-verb"> captured </span>
-                  <span className="activity-chal" style={{ color: catColor }}>
-                    {ch ? ch.title : entry.challengeId}
-                  </span>
-                  {ch && <span className="activity-pts" style={{ color: catColor }}>+{entry.pointsEarned} pts</span>}
-                </div>
-                <div className="activity-time">{timeAgo(entry.solvedAt)}</div>
+              <div key={i} className={`af-item ${isMe ? 'af-me' : ''}`}>
+                <span className="af-item-dot" style={{ background: catColor }} />
+                <span className="af-item-user" style={{ color: isMe ? '#00ff41' : 'rgba(255,255,255,.7)' }}>
+                  {entry.userId}
+                </span>
+                <span className="af-item-verb"> captured </span>
+                <span className="af-item-chal" style={{ color: catColor }}>
+                  {ch ? ch.title : entry.challengeId}
+                </span>
+                <span className="af-item-pts" style={{ color: '#b9ff00' }}>+{entry.pointsEarned}pts</span>
+                <span className="af-item-time">{timeAgo(entry.solvedAt)}</span>
               </div>
             );
           })}
         </div>
-      )}
+      </div>
     </div>
   );
 };

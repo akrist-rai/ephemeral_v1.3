@@ -8,11 +8,13 @@ interface ManifestProps {
 }
 
 export const Manifest: React.FC<ManifestProps> = ({ arcs, onShowSeries }) => {
-  const [hovered, setHovered] = useState<number | null>(null);
+  const [active, setActive] = useState<number | null>(null);
   if (arcs.length === 0) return null;
 
+  const selectedArc = arcs.find(a => a.id === active) || null;
+
   return (
-    <div className="manifest-sect">
+    <div className="mf-sect">
       <div className="sect-hdr">
         <div className="sect-ttl">SERIES MANIFEST</div>
         <div className="sect-id">// DOMAIN_INDEX</div>
@@ -21,60 +23,92 @@ export const Manifest: React.FC<ManifestProps> = ({ arcs, onShowSeries }) => {
       </div>
       <div className="sect-div" />
 
-      <div className="arc-img-grid">
-        {arcs.map((arc) => {
-          const img = getArcCover(arc.id);
-          const isHov = hovered === arc.id;
-          return (
-            <div
-              className={`arc-img-card ${isHov ? 'arc-hov' : ''}`}
-              key={arc.id}
-              onClick={onShowSeries}
-              onMouseEnter={() => setHovered(arc.id)}
-              onMouseLeave={() => setHovered(null)}
-              style={{ '--acc': arc.accColor } as any}
-            >
-              {img
-                ? <img src={img} alt={arc.title} className="arc-img-card-bg"
+      <div className="mf-layout">
+        {/* Left: Arc stack */}
+        <div className="mf-stack">
+          {arcs.map((arc) => {
+            const img = getArcCover(arc.id);
+            const isActive = active === arc.id;
+            return (
+              <div
+                key={arc.id}
+                className={`mf-row ${isActive ? 'mf-row-active' : ''}`}
+                style={{ '--mf-acc': arc.accColor } as any}
+                onClick={() => setActive(isActive ? null : arc.id)}
+                onMouseEnter={() => setActive(arc.id)}
+              >
+                {/* Thumbnail */}
+                <div className="mf-row-thumb">
+                  <img src={img} alt={arc.title} className="mf-thumb-img"
                     onError={e => { e.currentTarget.style.display = 'none'; }} />
-                : <div className="arc-img-card-bg" style={{ background: arc.bgColor || '#111' }} />
-              }
-              {/* scan overlay */}
-              <div className="arc-card-scan" />
-              {/* gradient */}
-              <div className="arc-img-card-overlay"
-                style={{ background: `linear-gradient(0deg, ${arc.bgColor || '#06060e'}f0 0%, ${arc.bgColor || '#06060e'}44 55%, transparent 100%)` }} />
-
-              {/* hover info panel */}
-              <div className={`arc-hover-panel ${isHov ? 'on' : ''}`}>
-                <div className="arc-hp-domain" style={{ color: arc.accColor }}>{arc.domain}</div>
-                <div className="arc-hp-arc">{arc.arcName}</div>
-                <div className="arc-hp-prog-wrap">
-                  <div className="arc-hp-prog-bar">
-                    <div className="arc-hp-prog-fill" style={{ background: arc.accColor, width: arc.progressWidth || '0%' }} />
-                  </div>
-                  <span className="arc-hp-prog-label">{arc.progressWidth || '0%'}</span>
+                  <div className="mf-thumb-scan" />
                 </div>
-                <div className="arc-hp-enter" style={{ color: arc.accColor }}>ENTER →</div>
-              </div>
 
-              {/* always-visible bottom strip */}
-              <div className="arc-img-card-content">
-                <div className="arc-img-vol" style={{ color: arc.accColor }}>VOL.{String(arc.id).padStart(2, '0')}</div>
-                <div className="arc-img-domain" style={{ color: arc.accColor }}>{arc.domain}</div>
-                <div className="arc-img-title">{arc.title}</div>
-              </div>
+                {/* Info */}
+                <div className="mf-row-info">
+                  <div className="mf-row-vol" style={{ color: arc.accColor }}>
+                    VOL.{String(arc.id).padStart(2, '0')}
+                  </div>
+                  <div className="mf-row-title">{arc.title}</div>
+                  <div className="mf-row-domain" style={{ color: `${arc.accColor}99` }}>{arc.domain}</div>
+                </div>
 
-              {/* top badge */}
-              <div className="arc-card-top-badge" style={{ background: arc.accColor, color: arc.accColor === '#f9a825' || arc.accColor === '#b9ff00' ? '#000' : '#fff' }}>
-                V{arc.id}
-              </div>
+                {/* Progress bar on right */}
+                <div className="mf-row-prog">
+                  <div className="mf-prog-track">
+                    <div className="mf-prog-fill" style={{ width: arc.progressWidth || '0%', background: arc.accColor }} />
+                  </div>
+                  <span className="mf-prog-pct" style={{ color: arc.accColor }}>{arc.progressWidth || '0%'}</span>
+                </div>
 
-              <div className="hc sm tl" style={{ borderColor: arc.accColor }} />
-              <div className="hc sm br" style={{ borderColor: arc.accColor }} />
+                {/* Active indicator */}
+                <div className="mf-row-chevron" style={{ color: arc.accColor }}>›</div>
+                {isActive && <div className="mf-row-bar" style={{ background: arc.accColor }} />}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Right: Featured art */}
+        <div className="mf-feature">
+          {arcs.map((arc) => {
+            const img = getArcCover(arc.id);
+            const isActive = active === arc.id;
+            return (
+              <div key={arc.id} className={`mf-feature-panel ${isActive ? 'mf-fp-active' : ''}`}>
+                <img src={img} alt={arc.title} className="mf-feature-img"
+                  onError={e => { e.currentTarget.style.display = 'none'; }} />
+                <div className="mf-feature-grad" style={{ background: `linear-gradient(135deg, ${arc.bgColor || '#06060e'} 0%, transparent 60%, ${arc.bgColor || '#06060e'}cc 100%)` }} />
+                <div className="mf-feature-scan" />
+
+                <div className="mf-feature-body">
+                  <div className="mf-feat-vol" style={{ color: arc.accColor }}>VOL.{String(arc.id).padStart(2, '0')}</div>
+                  <div className="mf-feat-title">{arc.title}</div>
+                  <div className="mf-feat-sub" style={{ color: `${arc.accColor}bb` }}>{arc.arcName}</div>
+                  <div className="mf-feat-domain">{arc.domain}</div>
+                  <button
+                    className="mf-feat-btn"
+                    style={{ borderColor: arc.accColor, color: arc.accColor, boxShadow: `0 0 20px ${arc.accColor}33` }}
+                    onClick={onShowSeries}
+                  >
+                    ENTER SERIES →
+                  </button>
+                </div>
+
+                <div className="hc tl" style={{ borderColor: arc.accColor }} />
+                <div className="hc br" style={{ borderColor: arc.accColor }} />
+              </div>
+            );
+          })}
+
+          {/* Default state: no selection */}
+          {active === null && (
+            <div className="mf-feature-default">
+              <div className="mf-default-text">SELECT A VOLUME</div>
+              <div className="mf-default-sub">Hover a row to preview</div>
             </div>
-          );
-        })}
+          )}
+        </div>
       </div>
     </div>
   );
