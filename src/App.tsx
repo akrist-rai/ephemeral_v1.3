@@ -4,6 +4,7 @@ import { Navbar } from './components/Layout/Navbar';
 import { Hero } from './components/Home/Hero';
 import { Manifest } from './components/Home/Manifest';
 import { Transmissions } from './components/Home/Transmissions';
+import { ActivityFeed } from './components/Home/ActivityFeed';
 import { SeriesHero } from './components/Series/SeriesHero';
 import { EpisodeList } from './components/Series/EpisodeList';
 import { ChallengeHeader } from './components/Challenge/ChallengeHeader';
@@ -14,6 +15,8 @@ import { Toast } from './components/Common/Toast';
 import { AuthGate } from './components/Common/AuthGate';
 import { Leaderboard } from './components/Common/Leaderboard';
 import { AvatarSelectorModal } from './components/Common/AvatarSelectorModal';
+import { ProfilePage } from './components/Common/ProfilePage';
+import { SearchOverlay } from './components/Common/SearchOverlay';
 import { apiRequest } from './hooks/useApi';
 import { useCtf } from './hooks/useCtf';
 
@@ -38,6 +41,7 @@ function parseRoute() {
 
   if (path === '/series')      return { screen: 's-series' as const,      tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
   if (path === '/leaderboard') return { screen: 's-leaderboard' as const, tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
+  if (path === '/profile')     return { screen: 's-profile' as const,     tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
 
   return { screen: 's-home' as const, tab: 'brief' as const, arcId: null, episodeId: null, challengeId: null };
 }
@@ -81,6 +85,12 @@ export default function App() {
   const [dataStatus, setDataStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [apiError, setApiError] = useState('');
   const [curArc, setCurArc] = useState<number | null>(null);
+
+  // ── Challenge stats (first blood + solve counts) ──
+  const [chalStats, setChalStats] = useState<Record<string, { solveCount: number; firstBlood: string | null }>>({});
+
+  // ── Search overlay ──
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // ── Avatar / cover customization ──
   const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem('user_avatar') || '/one_piece/ONE PIECE.jpeg');
@@ -172,12 +182,39 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, setGctf]);
 
+  // ── Fetch challenge stats (solve counts, first blood) ──
+  useEffect(() => {
+    if (!user) return;
+    const fetchStats = () => {
+      apiRequest('/api/stats/challenges')
+        .then(d => setChalStats(d.stats || {}))
+        .catch(() => {});
+    };
+    fetchStats();
+    const iv = setInterval(fetchStats, 60_000);
+    return () => clearInterval(iv);
+  }, [user]);
+
   // ── Browser back/forward ──
   useEffect(() => {
     const handle = () => applyRoute(parseRoute());
     window.addEventListener('popstate', handle);
     return () => window.removeEventListener('popstate', handle);
   }, [applyRoute]);
+
+  // ── Keyboard shortcuts ──
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const navigate = useCallback((path: string) => {
     if (window.location.pathname !== path) window.history.pushState({}, '', path);
@@ -245,6 +282,7 @@ export default function App() {
     challengesSolved,
     userAvatar,
     onChangeAvatar: openPlayerAvatarSelector,
+    onOpenSearch: () => setSearchOpen(true),
   };
 
   return (
@@ -265,6 +303,7 @@ export default function App() {
             arcs={arcs}
             onArcSelect={(arcId) => { setCurArc(arcId); navigate('/series'); }}
           />
+          <ActivityFeed challenges={challenges} currentUserId={user.id} />
           <Manifest arcs={arcs} onShowSeries={() => navigate('/series')} />
           <Transmissions episodes={recentEpisodes} arcs={arcs} onNavigate={navigate} />
         </div>
@@ -310,6 +349,21 @@ export default function App() {
         </div>
       )}
 
+      {route.screen === 's-profile' && (
+        <div className="scr on">
+          <Navbar {...navProps} activeTab="profile" onBack={() => navigate('/')} />
+          <ProfilePage
+            userId={user.id}
+            displayName={user.name}
+            userAvatar={userAvatar}
+            navigate={navigate}
+            challengesSolved={challengesSolved}
+            userXp={userXp}
+            onChangeAvatar={openPlayerAvatarSelector}
+          />
+        </div>
+      )}
+
       {route.screen === 's-ep' && (
         <div className="scr on">
           <Navbar {...navProps} onBack={() => navigate('/series')} nodeId={currentEpisode?.id || 'EPISODE'} />
@@ -330,6 +384,8 @@ export default function App() {
                 submitFlag={submitFlag} toggleCTFHint={toggleCTFHint}
                 shake={shake} flagInputRef={flagInputRef}
                 episodeBasePath={episodeBasePath}
+                chalStats={chalStats}
+                currentUserId={user.id}
               />
             )}
           </div>
@@ -346,6 +402,8 @@ export default function App() {
         <span>EPISODES: <span className="sbar-v">{totalEpisodes}</span></span>
         <span className="sbar-sep">|</span>
         <span>XP: <span className="sbar-v">{userXp}</span></span>
+        <span className="sbar-sep">|</span>
+        <span className="sbar-search-hint">Press <kbd>/</kbd> to search</span>
         <div className="sbar-r">
           <span>OPERATOR: <span className="sbar-v" style={{ color: '#00ff41' }}>{user.name}</span></span>
           <button className="sbar-logout" onClick={() => {
@@ -365,6 +423,17 @@ export default function App() {
         currentAvatar={avatarModalMode === 'player' ? userAvatar : (selectedArc ? (arcCovers[selectedArc.id] || getArcCover(selectedArc.id)) : '')}
         title={avatarModalMode === 'player' ? 'Choose Operator Avatar' : `Set Volume V${(avatarModalMode as any).arcId} Cover Art`}
       />
+
+      {/* Global Search Overlay */}
+      {searchOpen && (
+        <SearchOverlay
+          challenges={challenges}
+          gctf={gctf}
+          navigate={navigate}
+          episodeBasePath={episodeBasePath}
+          onClose={() => setSearchOpen(false)}
+        />
+      )}
     </div>
   );
 }

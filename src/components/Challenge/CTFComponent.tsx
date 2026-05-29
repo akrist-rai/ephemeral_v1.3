@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { WriteupModal } from '../Common/WriteupModal';
 
 interface CTFComponentProps {
   gctf: any;
@@ -14,6 +15,8 @@ interface CTFComponentProps {
   shake: boolean;
   flagInputRef: any;
   episodeBasePath: string;
+  chalStats?: Record<string, { solveCount: number; firstBlood: string | null }>;
+  currentUserId?: string;
 }
 
 const CAT_META: Record<string, { color: string; icon: string; label: string }> = {
@@ -57,7 +60,9 @@ const Scanlines = () => <div className="ctf-scanlines" />;
 export const CTFComponent: React.FC<CTFComponentProps> = ({
   gctf, showToast, challenges, navigate, dataStatus, apiError,
   submitFlag, toggleCTFHint, shake, flagInputRef, setUserXp, episodeBasePath,
+  chalStats = {}, currentUserId = '',
 }) => {
+  const [writeupChal, setWriteupChal] = useState<{ id: string; title: string } | null>(null);
   const [flagInput, setFlagInput] = useState('');
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [filterCat, setFilterCat] = useState<string>('ALL');
@@ -196,6 +201,8 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
                   const tried = att < ch.attemptsAllowed && !ok && !failed;
                   const meta = CAT_META[ch.category] || { color: '#fff', icon: '□', label: ch.category };
                   const isHov = hoveredCard === ch.id;
+                  const stats = chalStats[ch.id];
+                  const isFirstBlood = stats?.firstBlood === currentUserId && ok;
 
                   return (
                     <div
@@ -211,6 +218,11 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
 
                       {/* Status glow on solved */}
                       {ok && <div className="ch-solved-glow" />}
+
+                      {/* First blood badge */}
+                      {isFirstBlood && (
+                        <div className="ch-first-blood" title="First Blood — You solved this first!">🩸 1ST</div>
+                      )}
 
                       {/* Top row */}
                       <div className="ch-card-top">
@@ -238,6 +250,13 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
                             <span key={i} style={{ color: i < ch.difficulty ? meta.color : 'rgba(255,255,255,0.12)', marginRight: '2px' }}>★</span>
                           ))}
                         </span>
+                        {/* Solve count */}
+                        {stats && stats.solveCount > 0 && (
+                          <span className="ch-solve-count">
+                            {stats.firstBlood && <span className="ch-fb-icon" title={`First Blood: ${stats.firstBlood}`}>🩸</span>}
+                            {stats.solveCount} solve{stats.solveCount !== 1 ? 's' : ''}
+                          </span>
+                        )}
                         {tried && att > 0 && (
                           <span className="ch-attempts-left" style={{ color: '#f9a825' }}>
                             {att} ATTEMPT{att !== 1 ? 'S' : ''} LEFT
@@ -436,6 +455,16 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
               <div className="ctf-explanation-text">{ch.explanation}</div>
             </div>
           )}
+
+          {/* Write-up button (after solve) */}
+          {ok && (
+            <button
+              className="ctf-writeup-btn"
+              onClick={() => setWriteupChal({ id: ch.id, title: ch.title })}
+            >
+              ✎ WRITE-UP
+            </button>
+          )}
         </div>
 
         {/* RIGHT COLUMN — evidence */}
@@ -464,6 +493,15 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Write-up modal */}
+      {writeupChal && (
+        <WriteupModal
+          challengeId={writeupChal.id}
+          challengeTitle={writeupChal.title}
+          onClose={() => setWriteupChal(null)}
+        />
+      )}
     </div>
   );
 };

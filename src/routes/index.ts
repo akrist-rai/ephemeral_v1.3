@@ -2,6 +2,7 @@ import Router from '@koa/router';
 import { ContentController } from '../controllers/content.controller';
 import { UserController } from '../controllers/user.controller';
 import { SystemController } from '../controllers/system.controller';
+import { StatsController } from '../controllers/stats.controller';
 import { validate } from '../middleware/validate';
 import { rateLimit } from '../middleware';
 import { config } from '../config';
@@ -48,5 +49,12 @@ router.post(
 //  LEADERBOARD
 // ═══════════════════════════════════════════════
 router.get('/leaderboard', validate(leaderboardQuerySchema, 'query'), UserController.getLeaderboard);
+
+// ═══════════════════════════════════════════════
+//  STATS — Challenge solve counts, activity, profiles
+// ═══════════════════════════════════════════════
+router.get('/stats/challenges', StatsController.getChallengeStats);
+router.get('/stats/activity', StatsController.getActivity);
+router.get('/stats/profile/:userId', validate(userIdParamSchema, 'params'), StatsController.getUserProfile);
 
 export default router;

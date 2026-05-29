@@ -14,11 +14,13 @@ interface NavbarProps {
   challengesSolved: number;
   userAvatar?: string;
   onChangeAvatar?: () => void;
+  onOpenSearch?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onHome, onSeries, onBack, userXp, userId, displayName, showToast,
   activeTab, nodeId, navigate, challengesSolved, userAvatar, onChangeAvatar,
+  onOpenSearch,
 }) => {
   const go = (href: string, action: () => void) => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -42,13 +44,23 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="nav-mid">
         <a href="/" onClick={go('/', onHome)} className={activeTab === 'home' ? 'on' : ''}>HOME</a>
         {onSeries && <a href="/series" onClick={go('/series', onSeries)} className={activeTab === 'series' ? 'on' : ''}>SERIES</a>}
-        <a href="/leaderboard" onClick={go('/leaderboard', () => navigate('/leaderboard'))} className={activeTab === 'leaderboard' ? 'on' : ''}>LEADERBOARD</a>
+        <a href="/leaderboard" onClick={go('/leaderboard', () => navigate('/leaderboard'))} className={activeTab === 'leaderboard' ? 'on' : ''}>BOUNTY BOARD</a>
+        <a href="/profile" onClick={go('/profile', () => navigate('/profile'))} className={activeTab === 'profile' ? 'on' : ''}>PROFILE</a>
       </div>
 
       {/* Right side */}
       <div className="nav-r">
         {onBack && <button className="nav-btn" onClick={onBack}>← BACK</button>}
         {!nodeId && <span className="nav-status"><span className="nav-dot" />LIVE</span>}
+
+        {/* Search button */}
+        <button
+          className="nav-search-btn"
+          onClick={onOpenSearch}
+          title="Search challenges [/]"
+        >
+          ⌕
+        </button>
 
         {/* XP counter */}
         <span className="nav-xp-pill">
@@ -60,8 +72,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           ◈ <span className="nav-xp-val">{challengesSolved}</span> FLAGS
         </span>
 
-        {/* User avatar + name */}
-        <div className="nav-profile-wrap" onClick={onChangeAvatar} title="Change Avatar">
+        {/* User avatar + name — navigates to profile */}
+        <div className="nav-profile-wrap" onClick={() => navigate('/profile')} title="View Profile">
           {userAvatar
             ? <img src={userAvatar} alt="avatar" className="nav-avatar-img" onError={e => { e.currentTarget.style.display = 'none'; }} />
             : <div className="nav-avatar-fallback">{name.slice(0, 2)}</div>
