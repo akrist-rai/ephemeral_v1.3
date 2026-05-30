@@ -10,6 +10,7 @@ import {
   submitFlagSchema,
   userIdParamSchema,
   arcIdParamSchema,
+  episodeIdParamSchema,
   challengeIdParamSchema,
   leaderboardQuerySchema,
   challengeFilterSchema,
@@ -29,6 +30,8 @@ router.get('/ping', SystemController.ping);
 router.get('/arcs', ContentController.getArcs);
 router.get('/arcs/:arcId', validate(arcIdParamSchema, 'params'), ContentController.getArcById);
 router.get('/episodes/:arcId', validate(arcIdParamSchema, 'params'), ContentController.getEpisodes);
+// Episode-scoped challenge fetch — the canonical CTF arena loader
+router.get('/episodes/:arcId/:episodeId/challenges', validate(episodeIdParamSchema, 'params'), ContentController.getChallengesByEpisode);
 router.get('/challenges', validate(challengeFilterSchema, 'query'), ContentController.getChallenges);
 router.get('/challenges/:challengeId', validate(challengeIdParamSchema, 'params'), ContentController.getChallengeById);
 router.get('/avatars', ContentController.getAvatars);

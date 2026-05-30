@@ -36,6 +36,7 @@ export interface Artifact {
 
 export interface Challenge {
   id: string;
+  episodeId: string;
   tier: number;
   category: string;
   points: number;

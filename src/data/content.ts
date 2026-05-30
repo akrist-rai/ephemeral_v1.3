@@ -163,75 +163,10 @@ export const EPISODES = [
   { id: 'S1E4_A9', arcId: 9, n: 4, title: "JS Event Loop — Strict Equality Gates", description: "JavaScript's loose comparison introduces vulnerability through type coercion. Establish absolute equality checks using strict operations.", type: "ctf", min: 12, xp: 55, done: false, art: "⚡\n===\n==", bg: "#000502" }
 ];
 
-/** Maps each challenge ID → the arc it belongs to.
- *  Arc 1 = The Eclipse (Algorithms/CS)
- *  Arc 2 = Grand Line  (Cybersecurity)
- *  Arc 3 = Johan's Lab (Machine Learning)
- *  Arc 4 = The Knot    (Networks)
- *  Arc 5 = Prophecy    (Data Structures)
- *  Arc 6 = ONE PUNCH   (Comp. Prog)
- *  Arc 7 = UNIT-01     (Mathematics)
- */
-export const CHALLENGE_ARC_MAP: Record<string, number> = {
-  // Arc 1 — Algorithms / CS
-  'ARRAY_BASICS_001': 1,
-  'GRAPH_001':        1,
-
-  // Arc 2 — Cybersecurity (Grand Line)
-  'WEB_SQLI_001':      2,
-  'PWN_STACK_001':     2,
-  'REV_XOR_001':       2,
-  'CRY_PADDING_001':   2,
-  'ML_ADVERSARIAL_001':2,
-  'CRYPTO_001':        2,
-
-  // Arc 3 — Machine Learning (Johan's Lab)
-  'GRAD_001':   3,
-  'VIT_001':    3,
-  'DEPLOY_001': 3,
-  'LEAK_001':   3,
-  'LR_001':     3,
-  'TOK_001':    3,
-  'OVER_001':   3,
-  'MEM_001':    3,
-
-  // Arc 4 — Networks (The Knot / Dark)
-  // (add challenges here when created)
-
-  // Arc 5 — Data Structures (Prophecy)
-  // Arc 6 — Comp. Prog (ONE PUNCH)
-  // Arc 7 — Mathematics (UNIT-01)
-
-  // Cross-arc / shared
-    // Cross-arc / shared
-  'BIAS_001': 3,
-
-  // Arc 4 — Networks (The Knot)
-  'NET_PORT_001': 4,
-  'NET_DNS_001':  4,
-
-  // Arc 5 — Data Structures (Prophecy)
-  'DS_HASH_001':  5,
-  'DS_BLOOM_001': 5,
-
-  // Arc 6 — Comp. Prog (ONE PUNCH)
-  'CP_KNAP_001':  6,
-  'CP_DIJK_001':  6,
-
-  // Arc 7 — Mathematics (UNIT-01)
-  'MATH_RSA_001': 7,
-  'MATH_ECC_001': 7,
-
-  // Arc 9 — The Initiation
-  'PY_001': 9,
-  'C_001':  9,
-  'GO_001': 9,
-  'JS_001': 9,
-};
-
 export const CHALLENGES = [
   {
     id: 'ARRAY_BASICS_001',
+    episodeId: 'S1E3_A1',
     tier: 1,
     category: 'SCRIPTING',
     points: 100,
@@ -253,6 +188,7 @@ export const CHALLENGES = [
   },
   {
     id: 'WEB_SQLI_001',
+    episodeId: 'S1E2_A2',
     tier: 1,
     category: 'WEB',
     points: 200,
@@ -279,6 +215,7 @@ export const CHALLENGES = [
   },
   {
     id: 'PWN_STACK_001',
+    episodeId: 'S1E2_A2',
     tier: 2,
     category: 'PWN',
     points: 300,
@@ -300,6 +237,7 @@ export const CHALLENGES = [
   },
   {
     id: 'REV_XOR_001',
+    episodeId: 'S1E2_A2',
     tier: 2,
     category: 'REVERSE',
     points: 250,
@@ -321,6 +259,7 @@ export const CHALLENGES = [
   },
   {
     id: 'CRY_PADDING_001',
+    episodeId: 'S1E4_A2',
     tier: 3,
     category: 'CRYPTO',
     points: 350,
@@ -342,6 +281,7 @@ export const CHALLENGES = [
   },
   {
     id: 'ML_ADVERSARIAL_001',
+    episodeId: 'S1E3_A2',
     tier: 3,
     category: 'ML_SECURITY',
     points: 300,
@@ -361,20 +301,21 @@ export const CHALLENGES = [
     hint: 'It stands for Fast Gradient Sign Method, introduced by Ian Goodfellow et al.',
     explanation: 'FGSM computes the gradient of the loss function with respect to the input image, then takes the sign of that gradient and scales it by epsilon. This shifts the image in the direction that maximizes loss, causing a misclassification with imperceptible changes.'
   },
-  { id: 'GRAD_001', tier: 1, category: 'GRADIENT', points: 100, difficulty: 1, title: 'The Silent Network', scenario: 'A 6-layer MLP stopped learning at epoch 1. The engineer logged gradient norms across all layers immediately after the first backward pass.', task: 'Find the index of the last layer where the gradient has vanished (norm < 0.0001). Layers are 1-indexed.', artifacts: [ { type: 'table', label: 'GRADIENT NORMS — EPOCH 1, STEP 1', content: 'Layer  │ Gradient Norm\n───────┼──────────────\n  1    │ 0.00000012\n  2    │ 0.00000089\n  3    │ 0.00000341\n  4    │ 0.00000008  ← \n  5    │ 0.48271000\n  6    │ 1.20443000\n' }, { type: 'config', label: 'MODEL CONFIG', content: 'activation : sigmoid\nweight_init: xavier_uniform\noptimizer  : adam\nlr         : 0.001' } ], flag: '4', attemptsAllowed: 3, hint: 'Check which activation is configured and what its gradient saturation behaviour is.', explanation: 'Sigmoid saturates — gradients near 0 or 1 output become ~0. Layer 4 shows the last vanished norm (0.00000008). Switch to ReLU.' },
-  { id: 'VIT_001', tier: 1, category: 'ARCHITECTURE', points: 100, difficulty: 1, title: 'The Indivisible Head', scenario: 'A ViT training run crashes immediately at the first forward pass with a shape error. No code change was made — only the config was updated.', task: 'Find the value of the parameter that makes the head dimension non-integer. Submit the exact value from the config.', artifacts: [ { type: 'config', label: 'VIT CONFIG — CURRENT (BROKEN)', content: 'model_type   : vit-base\nimage_size   : 224\npatch_size   : 16\nembed_dim    : 768\nnum_heads    : 10\nnum_layers   : 12\nmlp_ratio    : 4\ndropout      : 0.1' }, { type: 'log', label: 'CRASH LOG', content: 'RuntimeError: embed_dim (768) must be\ndivisible by num_heads.\n768 / 10 = 76.8  ← not an integer\n\nTrace: MultiHeadAttention.forward() line 47' } ], flag: '10', attemptsAllowed: 3, hint: 'Head dimension = embed_dim / num_heads. It must be a whole number.', explanation: '768 / 10 = 76.8 — invalid. num_heads must divide 768 evenly. Valid values: 1,2,3,4,6,8,12,16,24,32,48,64,96,192,256,384,768.' },
-  { id: 'DEPLOY_001', tier: 1, category: 'INFERENCE', points: 100, difficulty: 1, title: 'The Unstable Oracle', scenario: 'A deployed classifier returns different predictions for the same input on every call. The model was working fine in training. No randomness in the data pipeline.', task: 'Identify the exact configuration key that is set incorrectly for deployment. Submit its current value.', artifacts: [ { type: 'config', label: 'TRAINING CONFIG', content: 'dropout_rate : 0.5\nbn_momentum  : 0.1\nmode         : train' }, { type: 'config', label: 'INFERENCE CONFIG', content: 'dropout_rate : 0.5\nbn_momentum  : 0.1\nmode         : train   ← deployed as-is' }, { type: 'log', label: 'INFERENCE CALLS — SAME INPUT', content: 'call_1: [0.71, 0.18, 0.11]\ncall_2: [0.43, 0.39, 0.18]\ncall_3: [0.68, 0.22, 0.10]\n# predictions change every call\n# source: stochastic operation still active' } ], flag: 'train', attemptsAllowed: 3, hint: 'What PyTorch operation produces different outputs each forward pass?', explanation: 'model.train() keeps dropout active — random neurons zeroed each call. Deployment requires model.eval() which disables dropout and uses running BN stats.' },
-  { id: 'LEAK_001', tier: 2, category: 'DATA LEAK', points: 200, difficulty: 2, title: 'The Time Traveler', scenario: 'A fraud detection model achieves 99.97% accuracy on test data but fails catastrophically in production. The data scientist insists the train/test split was random and stratified. An auditor discovered that one feature column contains information that should be impossible to know at prediction time.', task: 'Identify the column name causing data leakage. Submit the exact column name from the feature list.', artifacts: [ { type: 'table', label: 'FEATURE LIST', content: 'Column Name        │ Description\n───────────────────┼────────────────────────────────────\ntx_amount          │ Transaction amount in USD\ntx_timestamp       │ Unix epoch of transaction\nmerchant_category  │ MCC code of the merchant\ncard_country       │ Country of card issuance\ndevice_fingerprint │ Browser/device hash\nfraud_report_date  │ Date fraud was reported to bank\naccount_age_days   │ Days since account creation\ntx_velocity_1h     │ Transactions in last 1 hour\n' }, { type: 'log', label: 'PRODUCTION METRICS', content: 'Week 1: precision=0.02, recall=0.89\nWeek 2: precision=0.01, recall=0.91\n# Model flags nearly everything as fraud\n# False positive rate: 98.3%' } ], flag: 'fraud_report_date', attemptsAllowed: 3, hint: 'Which feature could only exist AFTER the event you are trying to predict?', explanation: 'fraud_report_date is generated AFTER a transaction is flagged as fraud — it leaks the label directly. At prediction time this field would be null for legitimate transactions, causing the model to use its absence as the primary fraud signal.' },
-  { id: 'LR_001', tier: 2, category: 'TRAINING', points: 200, difficulty: 2, title: 'The Exploding Cosmos', scenario: 'A ResNet-50 training run diverges at epoch 3 with loss going to NaN. The training was fine for 2 epochs with steadily decreasing loss. The only change between the stable run and the divergent run was in the optimizer configuration.', task: 'Find the learning rate value that caused the divergence. Submit the exact number from the broken config.', artifacts: [ { type: 'config', label: 'STABLE RUN CONFIG', content: 'optimizer    : SGD\nlearning_rate: 0.01\nmomentum     : 0.9\nweight_decay : 1e-4\nscheduler    : cosine_annealing\nT_max        : 100' }, { type: 'config', label: 'BROKEN RUN CONFIG', content: 'optimizer    : SGD\nlearning_rate: 0.1\nmomentum     : 0.9\nweight_decay : 1e-4\nscheduler    : step_lr\nstep_size    : 30\ngamma        : 10.0  ← NOTE: should be < 1' }, { type: 'log', label: 'TRAINING LOG — BROKEN RUN', content: 'Epoch 1: loss=2.45, lr=0.100\nEpoch 2: loss=1.83, lr=0.100\nEpoch 3: loss=NaN,  lr=1.000  ← lr INCREASED\nEpoch 4: loss=NaN,  lr=10.00\n# scheduler multiplied LR by 10 instead of decaying' } ], flag: '10.0', attemptsAllowed: 3, hint: 'Look at the scheduler gamma parameter. What should its normal range be?', explanation: 'gamma=10.0 causes StepLR to MULTIPLY the learning rate by 10 every 30 epochs. Normal gamma is 0.1 (divide by 10). At epoch 3, LR jumped from 0.1 to 1.0 — 10x too high — causing gradient explosion and NaN loss.' },
-  { id: 'TOK_001', tier: 2, category: 'NLP', points: 250, difficulty: 3, title: 'The Fragmented Lexicon', scenario: 'A sentiment analysis model performs well on English text but returns random predictions on customer reviews containing emojis, URLs, and mixed-language content. The model architecture is fine — the problem is in preprocessing.', task: 'How many tokens does the tokenizer produce for the test input? Submit the exact count.', artifacts: [ { type: 'config', label: 'TOKENIZER CONFIG', content: 'type          : BPE (byte-pair encoding)\nvocab_size    : 30522\nmax_length    : 128\npad_token     : [PAD]\nunk_token     : [UNK]\ndo_lower_case : true\nstrip_accents : true' }, { type: 'log', label: 'TOKENIZATION DEBUG', content: 'Input: "Great product! 👍 Visit müller.de/réviews"\n\nTokens: ["great", "product", "!", "[UNK]",\n         "visit", "[UNK]", ".", "[UNK]",\n         "/", "[UNK]"]\n\nToken count: 10\n[UNK] ratio: 4/10 = 40%\n\n# 40% of input is unknown to the model\n# Emojis, accented chars, and URLs all map to [UNK]' } ], flag: '10', attemptsAllowed: 3, hint: 'Count every token in the debug output, including [UNK] tokens.', explanation: 'The BPE tokenizer with strip_accents=true and limited vocab maps emojis (👍), accented characters (ü, é), and URL fragments to [UNK]. 4 out of 10 tokens carry zero semantic information, making the model blind to 40% of the input.' },
-  { id: 'OVER_001', tier: 3, category: 'OVERFITTING', points: 300, difficulty: 3, title: 'The Perfect Student', scenario: 'A medical imaging classifier achieves 99.8% accuracy on the test set but only 54% on external hospital data. The training and test sets were properly split with no data leakage. The model genuinely learned — but it learned the wrong thing entirely.', task: 'Identify the shortcut feature the model memorized. Submit the exact two-word artifact label that reveals the answer.', artifacts: [ { type: 'table', label: 'DATASET STATISTICS', content: 'Split     │ Hospital A │ Hospital B │ Positive %\n──────────┼────────────┼────────────┼───────────\nTrain     │    8,200   │      0     │   12.3%\nTest      │    2,050   │      0     │   12.1%\nExternal  │      0     │    3,000   │   11.8%' }, { type: 'log', label: 'SCANNER METADATA', content: 'Hospital A: Siemens MAGNETOM Vida 3T\n  - Metal tag overlay: "SIEMENS" in corner\n  - Positive cases: tag position shifted 2px down\n  - Negative cases: tag position at default\n\nHospital B: GE SIGNA Premier 3T\n  - No text overlay on images\n  - Clean DICOM without manufacturer watermark' }, { type: 'config', label: 'GRAD-CAM HEATMAP', content: 'Attention hotspot: bottom-right corner\nRegion of interest: 8x12 pixel area\nContains: manufacturer text overlay\nCorrelation with label: r=0.994' } ], flag: 'SCANNER METADATA', attemptsAllowed: 3, hint: 'The model is not looking at the medical image content. Check where Grad-CAM says it is looking.', explanation: 'The model memorized the Siemens text overlay position — positive cases had the tag shifted 2px down. It achieved 99.8% by reading the watermark position, not the pathology. External data from GE scanners has no overlay, making the learned feature absent. This is a textbook example of shortcut learning.' },
-  { id: 'MEM_001', tier: 3, category: 'SYSTEMS', points: 300, difficulty: 3, title: 'The Corrupted Weights', scenario: 'A production model suddenly starts producing garbage outputs after a routine server migration. The model file (model.pt) was copied successfully — file sizes match, no errors in transfer. But inference results are completely wrong. The ops team suspects bit corruption during transfer.', task: 'Calculate the SHA-256 checksum difference. How many bytes differ between the original and corrupted file? Submit the exact count.', artifacts: [ { type: 'log', label: 'FILE COMPARISON', content: 'Original:  model_v2.3_prod.pt  (487,291,904 bytes)\nMigrated:  model_v2.3_new.pt   (487,291,904 bytes)\n\nSHA-256 original:  a3f8c2...9d41e7\nSHA-256 migrated:  a3f8c2...9d41e8  ← last byte differs\n\nbinary diff:\nOffset 0x1A00FF30: 0x42 → 0x43  (1 byte)\nOffset 0x1A00FF31: 0x3E → 0x3F  (1 byte)\nOffset 0x1A00FF32: 0x00 → 0x01  (1 byte)\n\nAffected tensor: classifier.weight[0][127]\nOriginal value:  0.04687500 (float32)\nCorrupted value: 2.45812e+18 (float32)' }, { type: 'config', label: 'IMPACT ANALYSIS', content: 'Layer affected: final classifier FC layer\nNeuron affected: output neuron 0 (class "benign")\nResult: all inputs classified as class 1+ (never benign)\nCause: 3 bit flips in IEEE 754 exponent field\nProbability of random 3-byte flip: 1 in 10^26' } ], flag: '3', attemptsAllowed: 3, hint: 'Count the exact number of byte offsets shown in the binary diff.', explanation: '3 bytes were corrupted at consecutive offsets. In IEEE 754 float32 representation, these 3 bytes span the exponent and mantissa fields, turning a small weight (0.047) into an astronomically large value (2.46e18). This single corrupted neuron overwhelms the softmax output, making the model never predict class 0. The probability of exactly 3 consecutive bit flips suggests hardware failure (ECC memory error) rather than random corruption.' },
-  { id: 'CRYPTO_001', tier: 1, category: 'CRYPTO', points: 150, difficulty: 2, title: 'The Caesar Cipher', scenario: 'Marine intelligence intercepts a pirate crew using a Caesar cipher. A known plaintext fragment maps GOMU to TBZH.', task: 'What shift value was used? Submit the integer 0-25.', artifacts: [{ type: 'log', label: 'INTERCEPT', content: 'CIPHERTEXT: JBHF EBBF\nG->T, O->B, M->Z, U->H\ndiff = 13 for all chars' }], flag: '13', attemptsAllowed: 3, hint: 'ROT-13 is its own inverse.', explanation: 'ROT-13 shifts each character 13 positions. G(6)+13=T(19). All four chars confirm shift=13.' },
-  { id: 'GRAPH_001', tier: 2, category: 'ALGORITHMS', points: 200, difficulty: 2, title: 'The Straw Hat Network', scenario: 'The Straw Hat crew spans 9 islands. Find the minimum cost Den Den Mushi network connecting all islands.', task: 'What is the total MST cost? Submit the exact integer.', artifacts: [{ type: 'table', label: 'EDGE COSTS', content: 'Luffy-Nami:2 Chopper-Sanji:1 Franky-Brook:2 Nami-Usopp:3 Brook-Jinbe:3 Luffy-Zoro:4 Robin-Franky:4 Nami-Robin:5 Zoro-Sanji:5' }], flag: '24', attemptsAllowed: 3, hint: 'Apply Kruskal: sort edges by weight, add if no cycle.', explanation: 'MST edges: 1+2+2+3+3+4+4+5 = 24. Sorted selection avoids all cycles.' },
-  { id: 'BIAS_001', tier: 2, category: 'FAIRNESS', points: 250, difficulty: 3, title: 'The Unequal Tribunal', scenario: 'The World Government sentencing model shows 30% conviction rate for Blue Sea vs 70% for Grand Line defendants.', task: 'Calculate the demographic parity gap as an integer percentage.', artifacts: [{ type: 'table', label: 'OUTCOMES', content: 'Blue Sea: 360/1200 = 30%\nGrand Line: 560/800 = 70%\nGap = |70-30| = ???' }], flag: '40', attemptsAllowed: 3, hint: 'Demographic parity gap = |P(y=1|GroupA) - P(y=1|GroupB)|.', explanation: 'Gap = |70% - 30%| = 40pp. The model is 2.33x more likely to convict Grand Line pirates. Classic demographic disparity.' }
+  { id: 'GRAD_001', episodeId: 'S1E3', tier: 1, category: 'GRADIENT', points: 100, difficulty: 1, title: 'The Silent Network', scenario: 'A 6-layer MLP stopped learning at epoch 1. The engineer logged gradient norms across all layers immediately after the first backward pass.', task: 'Find the index of the last layer where the gradient has vanished (norm < 0.0001). Layers are 1-indexed.', artifacts: [ { type: 'table', label: 'GRADIENT NORMS — EPOCH 1, STEP 1', content: 'Layer  │ Gradient Norm\n───────┼──────────────\n  1    │ 0.00000012\n  2    │ 0.00000089\n  3    │ 0.00000341\n  4    │ 0.00000008  ← \n  5    │ 0.48271000\n  6    │ 1.20443000\n' }, { type: 'config', label: 'MODEL CONFIG', content: 'activation : sigmoid\nweight_init: xavier_uniform\noptimizer  : adam\nlr         : 0.001' } ], flag: '4', attemptsAllowed: 3, hint: 'Check which activation is configured and what its gradient saturation behaviour is.', explanation: 'Sigmoid saturates — gradients near 0 or 1 output become ~0. Layer 4 shows the last vanished norm (0.00000008). Switch to ReLU.' },
+  { id: 'VIT_001', episodeId: 'S2E3', tier: 1, category: 'ARCHITECTURE', points: 100, difficulty: 1, title: 'The Indivisible Head', scenario: 'A ViT training run crashes immediately at the first forward pass with a shape error. No code change was made — only the config was updated.', task: 'Find the value of the parameter that makes the head dimension non-integer. Submit the exact value from the config.', artifacts: [ { type: 'config', label: 'VIT CONFIG — CURRENT (BROKEN)', content: 'model_type   : vit-base\nimage_size   : 224\npatch_size   : 16\nembed_dim    : 768\nnum_heads    : 10\nnum_layers   : 12\nmlp_ratio    : 4\ndropout      : 0.1' }, { type: 'log', label: 'CRASH LOG', content: 'RuntimeError: embed_dim (768) must be\ndivisible by num_heads.\n768 / 10 = 76.8  ← not an integer\n\nTrace: MultiHeadAttention.forward() line 47' } ], flag: '10', attemptsAllowed: 3, hint: 'Head dimension = embed_dim / num_heads. It must be a whole number.', explanation: '768 / 10 = 76.8 — invalid. num_heads must divide 768 evenly. Valid values: 1,2,3,4,6,8,12,16,24,32,48,64,96,192,256,384,768.' },
+  { id: 'DEPLOY_001', episodeId: 'S2E3', tier: 1, category: 'INFERENCE', points: 100, difficulty: 1, title: 'The Unstable Oracle', scenario: 'A deployed classifier returns different predictions for the same input on every call. The model was working fine in training. No randomness in the data pipeline.', task: 'Identify the exact configuration key that is set incorrectly for deployment. Submit its current value.', artifacts: [ { type: 'config', label: 'TRAINING CONFIG', content: 'dropout_rate : 0.5\nbn_momentum  : 0.1\nmode         : train' }, { type: 'config', label: 'INFERENCE CONFIG', content: 'dropout_rate : 0.5\nbn_momentum  : 0.1\nmode         : train   ← deployed as-is' }, { type: 'log', label: 'INFERENCE CALLS — SAME INPUT', content: 'call_1: [0.71, 0.18, 0.11]\ncall_2: [0.43, 0.39, 0.18]\ncall_3: [0.68, 0.22, 0.10]\n# predictions change every call\n# source: stochastic operation still active' } ], flag: 'train', attemptsAllowed: 3, hint: 'What PyTorch operation produces different outputs each forward pass?', explanation: 'model.train() keeps dropout active — random neurons zeroed each call. Deployment requires model.eval() which disables dropout and uses running BN stats.' },
+  { id: 'LEAK_001', episodeId: 'S2E1', tier: 2, category: 'DATA LEAK', points: 200, difficulty: 2, title: 'The Time Traveler', scenario: 'A fraud detection model achieves 99.97% accuracy on test data but fails catastrophically in production. The data scientist insists the train/test split was random and stratified. An auditor discovered that one feature column contains information that should be impossible to know at prediction time.', task: 'Identify the column name causing data leakage. Submit the exact column name from the feature list.', artifacts: [ { type: 'table', label: 'FEATURE LIST', content: 'Column Name        │ Description\n───────────────────┼────────────────────────────────────\ntx_amount          │ Transaction amount in USD\ntx_timestamp       │ Unix epoch of transaction\nmerchant_category  │ MCC code of the merchant\ncard_country       │ Country of card issuance\ndevice_fingerprint │ Browser/device hash\nfraud_report_date  │ Date fraud was reported to bank\naccount_age_days   │ Days since account creation\ntx_velocity_1h     │ Transactions in last 1 hour\n' }, { type: 'log', label: 'PRODUCTION METRICS', content: 'Week 1: precision=0.02, recall=0.89\nWeek 2: precision=0.01, recall=0.91\n# Model flags nearly everything as fraud\n# False positive rate: 98.3%' } ], flag: 'fraud_report_date', attemptsAllowed: 3, hint: 'Which feature could only exist AFTER the event you are trying to predict?', explanation: 'fraud_report_date is generated AFTER a transaction is flagged as fraud — it leaks the label directly. At prediction time this field would be null for legitimate transactions, causing the model to use its absence as the primary fraud signal.' },
+  { id: 'LR_001', episodeId: 'S1E3', tier: 2, category: 'TRAINING', points: 200, difficulty: 2, title: 'The Exploding Cosmos', scenario: 'A ResNet-50 training run diverges at epoch 3 with loss going to NaN. The training was fine for 2 epochs with steadily decreasing loss. The only change between the stable run and the divergent run was in the optimizer configuration.', task: 'Find the learning rate value that caused the divergence. Submit the exact number from the broken config.', artifacts: [ { type: 'config', label: 'STABLE RUN CONFIG', content: 'optimizer    : SGD\nlearning_rate: 0.01\nmomentum     : 0.9\nweight_decay : 1e-4\nscheduler    : cosine_annealing\nT_max        : 100' }, { type: 'config', label: 'BROKEN RUN CONFIG', content: 'optimizer    : SGD\nlearning_rate: 0.1\nmomentum     : 0.9\nweight_decay : 1e-4\nscheduler    : step_lr\nstep_size    : 30\ngamma        : 10.0  ← NOTE: should be < 1' }, { type: 'log', label: 'TRAINING LOG — BROKEN RUN', content: 'Epoch 1: loss=2.45, lr=0.100\nEpoch 2: loss=1.83, lr=0.100\nEpoch 3: loss=NaN,  lr=1.000  ← lr INCREASED\nEpoch 4: loss=NaN,  lr=10.00\n# scheduler multiplied LR by 10 instead of decaying' } ], flag: '10.0', attemptsAllowed: 3, hint: 'Look at the scheduler gamma parameter. What should its normal range be?', explanation: 'gamma=10.0 causes StepLR to MULTIPLY the learning rate by 10 every 30 epochs. Normal gamma is 0.1 (divide by 10). At epoch 3, LR jumped from 0.1 to 1.0 — 10x too high — causing gradient explosion and NaN loss.' },
+  { id: 'TOK_001', episodeId: 'S2E2', tier: 2, category: 'NLP', points: 250, difficulty: 3, title: 'The Fragmented Lexicon', scenario: 'A sentiment analysis model performs well on English text but returns random predictions on customer reviews containing emojis, URLs, and mixed-language content. The model architecture is fine — the problem is in preprocessing.', task: 'How many tokens does the tokenizer produce for the test input? Submit the exact count.', artifacts: [ { type: 'config', label: 'TOKENIZER CONFIG', content: 'type          : BPE (byte-pair encoding)\nvocab_size    : 30522\nmax_length    : 128\npad_token     : [PAD]\nunk_token     : [UNK]\ndo_lower_case : true\nstrip_accents : true' }, { type: 'log', label: 'TOKENIZATION DEBUG', content: 'Input: "Great product! 👍 Visit müller.de/réviews"\n\nTokens: ["great", "product", "!", "[UNK]",\n         "visit", "[UNK]", ".", "[UNK]",\n         "/", "[UNK]"]\n\nToken count: 10\n[UNK] ratio: 4/10 = 40%\n\n# 40% of input is unknown to the model\n# Emojis, accented chars, and URLs all map to [UNK]' } ], flag: '10', attemptsAllowed: 3, hint: 'Count every token in the debug output, including [UNK] tokens.', explanation: 'The BPE tokenizer with strip_accents=true and limited vocab maps emojis (👍), accented characters (ü, é), and URL fragments to [UNK]. 4 out of 10 tokens carry zero semantic information, making the model blind to 40% of the input.' },
+  { id: 'OVER_001', episodeId: 'S2E3', tier: 3, category: 'OVERFITTING', points: 300, difficulty: 3, title: 'The Perfect Student', scenario: 'A medical imaging classifier achieves 99.8% accuracy on the test set but only 54% on external hospital data. The training and test sets were properly split with no data leakage. The model genuinely learned — but it learned the wrong thing entirely.', task: 'Identify the shortcut feature the model memorized. Submit the exact two-word artifact label that reveals the answer.', artifacts: [ { type: 'table', label: 'DATASET STATISTICS', content: 'Split     │ Hospital A │ Hospital B │ Positive %\n──────────┼────────────┼────────────┼───────────\nTrain     │    8,200   │      0     │   12.3%\nTest      │    2,050   │      0     │   12.1%\nExternal  │      0     │    3,000   │   11.8%' }, { type: 'log', label: 'SCANNER METADATA', content: 'Hospital A: Siemens MAGNETOM Vida 3T\n  - Metal tag overlay: "SIEMENS" in corner\n  - Positive cases: tag position shifted 2px down\n  - Negative cases: tag position at default\n\nHospital B: GE SIGNA Premier 3T\n  - No text overlay on images\n  - Clean DICOM without manufacturer watermark' }, { type: 'config', label: 'GRAD-CAM HEATMAP', content: 'Attention hotspot: bottom-right corner\nRegion of interest: 8x12 pixel area\nContains: manufacturer text overlay\nCorrelation with label: r=0.994' } ], flag: 'SCANNER METADATA', attemptsAllowed: 3, hint: 'The model is not looking at the medical image content. Check where Grad-CAM says it is looking.', explanation: 'The model memorized the Siemens text overlay position — positive cases had the tag shifted 2px down. It achieved 99.8% by reading the watermark position, not the pathology. External data from GE scanners has no overlay, making the learned feature absent. This is a textbook example of shortcut learning.' },
+  { id: 'MEM_001', episodeId: 'S2E3', tier: 3, category: 'SYSTEMS', points: 300, difficulty: 3, title: 'The Corrupted Weights', scenario: 'A production model suddenly starts producing garbage outputs after a routine server migration. The model file (model.pt) was copied successfully — file sizes match, no errors in transfer. But inference results are completely wrong. The ops team suspects bit corruption during transfer.', task: 'Calculate the SHA-256 checksum difference. How many bytes differ between the original and corrupted file? Submit the exact count.', artifacts: [ { type: 'log', label: 'FILE COMPARISON', content: 'Original:  model_v2.3_prod.pt  (487,291,904 bytes)\nMigrated:  model_v2.3_new.pt   (487,291,904 bytes)\n\nSHA-256 original:  a3f8c2...9d41e7\nSHA-256 migrated:  a3f8c2...9d41e8  ← last byte differs\n\nbinary diff:\nOffset 0x1A00FF30: 0x42 → 0x43  (1 byte)\nOffset 0x1A00FF31: 0x3E → 0x3F  (1 byte)\nOffset 0x1A00FF32: 0x00 → 0x01  (1 byte)\n\nAffected tensor: classifier.weight[0][127]\nOriginal value:  0.04687500 (float32)\nCorrupted value: 2.45812e+18 (float32)' }, { type: 'config', label: 'IMPACT ANALYSIS', content: 'Layer affected: final classifier FC layer\nNeuron affected: output neuron 0 (class "benign")\nResult: all inputs classified as class 1+ (never benign)\nCause: 3 bit flips in IEEE 754 exponent field\nProbability of random 3-byte flip: 1 in 10^26' } ], flag: '3', attemptsAllowed: 3, hint: 'Count the exact number of byte offsets shown in the binary diff.', explanation: '3 bytes were corrupted at consecutive offsets. In IEEE 754 float32 representation, these 3 bytes span the exponent and mantissa fields, turning a small weight (0.047) into an astronomically large value (2.46e18). This single corrupted neuron overwhelms the softmax output, making the model never predict class 0. The probability of exactly 3 consecutive bit flips suggests hardware failure (ECC memory error) rather than random corruption.' },
+  { id: 'CRYPTO_001', episodeId: 'S1E4_A2', tier: 1, category: 'CRYPTO', points: 150, difficulty: 2, title: 'The Caesar Cipher', scenario: 'Marine intelligence intercepts a pirate crew using a Caesar cipher. A known plaintext fragment maps GOMU to TBZH.', task: 'What shift value was used? Submit the integer 0-25.', artifacts: [{ type: 'log', label: 'INTERCEPT', content: 'CIPHERTEXT: JBHF EBBF\nG->T, O->B, M->Z, U->H\ndiff = 13 for all chars' }], flag: '13', attemptsAllowed: 3, hint: 'ROT-13 is its own inverse.', explanation: 'ROT-13 shifts each character 13 positions. G(6)+13=T(19). All four chars confirm shift=13.' },
+  { id: 'GRAPH_001', episodeId: 'S1E1_A1', tier: 2, category: 'ALGORITHMS', points: 200, difficulty: 2, title: 'The Straw Hat Network', scenario: 'The Straw Hat crew spans 9 islands. Find the minimum cost Den Den Mushi network connecting all islands.', task: 'What is the total MST cost? Submit the exact integer.', artifacts: [{ type: 'table', label: 'EDGE COSTS', content: 'Luffy-Nami:2 Chopper-Sanji:1 Franky-Brook:2 Nami-Usopp:3 Brook-Jinbe:3 Luffy-Zoro:4 Robin-Franky:4 Nami-Robin:5 Zoro-Sanji:5' }], flag: '24', attemptsAllowed: 3, hint: 'Apply Kruskal: sort edges by weight, add if no cycle.', explanation: 'MST edges: 1+2+2+3+3+4+4+5 = 24. Sorted selection avoids all cycles.' },
+  { id: 'BIAS_001', episodeId: 'S2E1', tier: 2, category: 'FAIRNESS', points: 250, difficulty: 3, title: 'The Unequal Tribunal', scenario: 'The World Government sentencing model shows 30% conviction rate for Blue Sea vs 70% for Grand Line defendants.', task: 'Calculate the demographic parity gap as an integer percentage.', artifacts: [{ type: 'table', label: 'OUTCOMES', content: 'Blue Sea: 360/1200 = 30%\nGrand Line: 560/800 = 70%\nGap = |70-30| = ???' }], flag: '40', attemptsAllowed: 3, hint: 'Demographic parity gap = |P(y=1|GroupA) - P(y=1|GroupB)|.', explanation: 'Gap = |70% - 30%| = 40pp. The model is 2.33x more likely to convict Grand Line pirates. Classic demographic disparity.' }
 ,
   {
     id: 'NET_PORT_001',
+    episodeId: 'S1E1_A4',
     tier: 1,
     category: 'NETWORKS',
     points: 150,
@@ -401,6 +342,7 @@ export const CHALLENGES = [
   },
   {
     id: 'NET_DNS_001',
+    episodeId: 'S1E1_A4',
     tier: 2,
     category: 'NETWORKS',
     points: 250,
@@ -422,6 +364,7 @@ export const CHALLENGES = [
   },
   {
     id: 'DS_HASH_001',
+    episodeId: 'S1E1_A5',
     tier: 2,
     category: 'DATA_STRUCT',
     points: 200,
@@ -443,6 +386,7 @@ export const CHALLENGES = [
   },
   {
     id: 'DS_BLOOM_001',
+    episodeId: 'S1E2_A5',
     tier: 3,
     category: 'DATA_STRUCT',
     points: 300,
@@ -464,6 +408,7 @@ export const CHALLENGES = [
   },
   {
     id: 'CP_KNAP_001',
+    episodeId: 'S1E3_A6',
     tier: 2,
     category: 'ALGORITHMS',
     points: 250,
@@ -485,6 +430,7 @@ export const CHALLENGES = [
   },
   {
     id: 'CP_DIJK_001',
+    episodeId: 'S1E1_A6',
     tier: 2,
     category: 'ALGORITHMS',
     points: 200,
@@ -506,6 +452,7 @@ export const CHALLENGES = [
   },
   {
     id: 'MATH_RSA_001',
+    episodeId: 'S1E2_A7',
     tier: 3,
     category: 'MATH',
     points: 350,
@@ -527,6 +474,7 @@ export const CHALLENGES = [
   },
   {
     id: 'MATH_ECC_001',
+    episodeId: 'S1E3_A7',
     tier: 3,
     category: 'MATH',
     points: 400,
@@ -548,6 +496,7 @@ export const CHALLENGES = [
   },
   {
     id: 'PY_001',
+    episodeId: 'S1E1_A9',
     tier: 1,
     category: 'SCRIPTING',
     points: 100,
@@ -569,6 +518,7 @@ export const CHALLENGES = [
   },
   {
     id: 'C_001',
+    episodeId: 'S1E2_A9',
     tier: 1,
     category: 'REVERSE',
     points: 100,
@@ -590,6 +540,7 @@ export const CHALLENGES = [
   },
   {
     id: 'GO_001',
+    episodeId: 'S1E3_A9',
     tier: 1,
     category: 'SCRIPTING',
     points: 100,
@@ -611,6 +562,7 @@ export const CHALLENGES = [
   },
   {
     id: 'JS_001',
+    episodeId: 'S1E4_A9',
     tier: 1,
     category: 'WEB',
     points: 100,

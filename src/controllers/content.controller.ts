@@ -32,13 +32,25 @@ export class ContentController {
   }
 
   /**
-   * GET /api/challenges — Fetch all challenges (flags excluded)
+   * GET /api/challenges — Fetch challenges, optionally scoped to an episode.
+   * Supports query params: episodeId, tier, category, difficulty
    */
   static async getChallenges(ctx: Context) {
     const filters = ctx.state.validatedQuery || {};
-    const challenges = filters.tier || filters.category || filters.difficulty
+    const hasFilters = filters.episodeId || filters.tier || filters.category || filters.difficulty;
+    const challenges = hasFilters
       ? await ChallengeService.getFiltered(filters)
       : await ChallengeService.getAll();
+    ok(ctx, { challenges, count: challenges.length });
+  }
+
+  /**
+   * GET /api/episodes/:arcId/:episodeId/challenges — Fetch all challenges for one episode.
+   * This is the canonical way for the client to load a CTF arena.
+   */
+  static async getChallengesByEpisode(ctx: Context) {
+    const { episodeId } = ctx.params;
+    const challenges = await ChallengeService.getByEpisodeId(episodeId);
     ok(ctx, { challenges, count: challenges.length });
   }
 

@@ -24,7 +24,6 @@ import { BootTour } from './components/Effects/BootTour';
 
 import type { Arc, Episode } from './types';
 import { getArcCover } from './lib/imageMapping';
-import { CHALLENGE_ARC_MAP } from './data/content';
 
 // ── Route parsing ──────────────────────────────────────────────────────────
 function parseRoute() {
@@ -295,11 +294,10 @@ export default function App() {
   const selectedArc = useMemo(() => arcs.find(a => a.id === curArc) || arcs[0] || null, [arcs, curArc]);
 
   const ctfChallenges = useMemo(() => {
-    const arcId = currentArc?.id;
-    if (!arcId) return challenges;
-    const scoped = challenges.filter(c => CHALLENGE_ARC_MAP[c.id] === arcId);
-    return scoped.length > 0 ? scoped : challenges;
-  }, [currentArc, challenges]);
+    const episodeId = currentEpisode?.id;
+    if (!episodeId) return [];
+    return challenges.filter(c => c.episodeId === episodeId);
+  }, [currentEpisode, challenges]);
 
   const episodeBasePath = (currentEpisode && currentArc)
     ? `/episode/${currentArc.id}/${currentEpisode.id}`

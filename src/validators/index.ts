@@ -41,7 +41,16 @@ export const leaderboardQuerySchema = z.object({
 
 // ── CHALLENGE FILTER QUERY ──
 export const challengeFilterSchema = z.object({
+  episodeId: z.string().optional(),
   tier: z.coerce.number().int().min(1).optional(),
   category: z.string().optional(),
   difficulty: z.coerce.number().int().min(1).max(5).optional(),
+});
+
+// ── EPISODE ID PARAM ──
+export const episodeIdParamSchema = z.object({
+  arcId: z.string().refine((val) => !Number.isNaN(Number.parseInt(val, 10)), {
+    message: 'arcId must be a numeric string',
+  }),
+  episodeId: z.string().min(1, 'episodeId is required').max(64),
 });

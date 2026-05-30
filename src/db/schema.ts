@@ -40,6 +40,7 @@ export const episodes = pgTable('episodes', {
 // ── CHALLENGES TABLE ──
 export const challenges = pgTable('challenges', {
   id: text('id').primaryKey(),
+  episodeId: text('episode_id').notNull().references(() => episodes.id),
   tier: integer('tier').notNull(),
   category: text('category').notNull(),
   points: integer('points').notNull(),
@@ -47,7 +48,7 @@ export const challenges = pgTable('challenges', {
   title: text('title').notNull(),
   scenario: text('scenario').notNull(),
   task: text('task').notNull(),
-  artifacts: jsonb('artifacts').notNull(), // List of {type, label, content}
+  artifacts: jsonb('artifacts').notNull(),
   flag: text('flag').notNull(),
   attemptsAllowed: integer('attempts_allowed').notNull(),
   hint: text('hint'),

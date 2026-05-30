@@ -1,11 +1,12 @@
 import { db } from '../db';
 import { challenges } from '../db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { NotFoundError } from '../lib/errors';
 
-// Columns exposed to the client — flag is NEVER included
+// Columns exposed to the client — flag is NEVER included in list/filter endpoints.
 const PUBLIC_COLUMNS = {
   id: true,
+  episodeId: true,
   tier: true,
   category: true,
   points: true,
@@ -30,12 +31,22 @@ export class ChallengeService {
   }
 
   /**
-   * Get a single challenge by ID (includes flag — internal use only).
+   * Get all challenges belonging to a specific episode.
+   */
+  static async getByEpisodeId(episodeId: string) {
+    return await db.query.challenges.findMany({
+      columns: PUBLIC_COLUMNS,
+      where: eq(challenges.episodeId, episodeId),
+    });
+  }
+
+  /**
+   * Get a single challenge by ID (includes flag — internal/submission use only).
    */
   static async getById(id: string) {
     return await db.query.challenges.findFirst({
       where: eq(challenges.id, id),
-    }) || null;
+    }) ?? null;
   }
 
   /**
@@ -46,22 +57,28 @@ export class ChallengeService {
       where: eq(challenges.id, id),
       columns: PUBLIC_COLUMNS,
     });
-
     if (!challenge) throw new NotFoundError('Challenge');
     return challenge;
   }
 
   /**
-   * Get challenges filtered by category/tier/difficulty.
+   * Get challenges filtered by category / tier / difficulty.
+   * Optionally scope to a specific episode.
    */
-  static async getFiltered(filters: { tier?: number; category?: string; difficulty?: number }) {
+  static async getFiltered(filters: {
+    episodeId?: string;
+    tier?: number;
+    category?: string;
+    difficulty?: number;
+  }) {
     return await db.query.challenges.findMany({
       columns: PUBLIC_COLUMNS,
-      where: (challenges, { eq, and }) => {
+      where: (ch, { eq, and }) => {
         const conditions = [];
-        if (filters.tier) conditions.push(eq(challenges.tier, filters.tier));
-        if (filters.category) conditions.push(eq(challenges.category, filters.category));
-        if (filters.difficulty) conditions.push(eq(challenges.difficulty, filters.difficulty));
+        if (filters.episodeId) conditions.push(eq(ch.episodeId, filters.episodeId));
+        if (filters.tier)      conditions.push(eq(ch.tier, filters.tier));
+        if (filters.category)  conditions.push(eq(ch.category, filters.category));
+        if (filters.difficulty) conditions.push(eq(ch.difficulty, filters.difficulty));
         return conditions.length > 0 ? and(...conditions) : undefined;
       },
     });
