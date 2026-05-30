@@ -337,13 +337,5 @@ bun run dev:full
 | **Security** | Koa-Helmet, CORS |
 | **DevOps** | Bun, Concurrently, GitHub Actions |
 
-## 📦 DEPLOYMENT
 
-1. Push to GitHub.
-2. Link repository to Vercel.
-3. Add `DATABASE_URL` to Vercel Environment Variables.
-4. Deploy.
 
----
-*// THE MONSTER WITHOUT A NAME // RUHENHEIM_511*
->>>>>>> 6f9336f (initial commit: ephemeral ctf engine v1.0)
