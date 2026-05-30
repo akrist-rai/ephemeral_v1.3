@@ -88,6 +88,17 @@ export const ARCS = [
     domain: 'PROBABILITY', 
     arcName: 'DIVERGENCE ARC', 
     progressWidth: '0%' 
+  },
+  { 
+    id: 9, 
+    title: 'Initiation', 
+    description: 'ACADEMY BOOTCAMP',
+    accColor: 'var(--lime)', 
+    bgColor: '#000502', 
+    asciiArt: `┌──────────┐\n│ I N I T  │\n│  0 1 0 1 │\n│ ──────── │\n│  B O O T │\n└──────────┘\n SYSTEM_NEW\n FRESHMAN_OP`, 
+    domain: 'PROGRAMMING BASICS', 
+    arcName: 'ACADEMY BOOTCAMP', 
+    progressWidth: '100%' 
   }
 ];
 
@@ -143,7 +154,13 @@ export const EPISODES = [
   { id: 'S1E4_A5', arcId: 5, n: 4, title: '20th Century Boys - Segment Trees', description: 'Kenji needed to query records across arbitrary time ranges. Build a segment tree for range-sum and range-min in O(log n). Add lazy propagation and persistent versions preserving all historical states.', type: 'ctf', min: 45, xp: 240, done: false, art: 'SGTREE', bg: '#080010' },
   { id: 'S1E4_A6', arcId: 6, n: 4, title: 'King vs Garou - Minimax', description: 'When King faced Garou, the illusion of power was itself a strategy. Implement minimax with alpha-beta pruning for two-player zero-sum games. Apply to combat scenarios where Saitama finds the guaranteed winning strategy.', type: 'research', min: 36, xp: 165, done: false, art: 'MINMAX', bg: '#0d0d00' },
   { id: 'S1E4_A7', arcId: 7, n: 4, title: 'Rei and Asuka - Lagrangian Duality', description: 'Rei represents the primal, constrained by form. Asuka represents the dual, seeing the problem from another angle. Study Lagrangian duality in convex optimization and apply KKT conditions to SVM derivation.', type: 'quiz', min: 50, xp: 240, done: false, art: 'PRIMAL', bg: '#00060d' },
-  { id: 'S1E4_A8', arcId: 8, n: 4, title: 'Divergence Meter - Hypothesis Testing', description: 'The divergence meter reads 1.048596%. Is this statistically significant? Implement t-tests, chi-square, ANOVA, and bootstrap resampling. Apply Bonferroni correction for multiple comparisons across 100+ worldlines.', type: 'research', min: 35, xp: 150, done: false, art: 'p<0.05', bg: '#0d0400' }
+  { id: 'S1E4_A8', arcId: 8, n: 4, title: 'Divergence Meter - Hypothesis Testing', description: 'The divergence meter reads 1.048596%. Is this statistically significant? Implement t-tests, chi-square, ANOVA, and bootstrap resampling. Apply Bonferroni correction for multiple comparisons across 100+ worldlines.', type: 'research', min: 35, xp: 150, done: false, art: 'p<0.05', bg: '#0d0400' },
+  
+  // ═══ Arc 9: The Initiation — PROGRAMMING BASICS ═══
+  { id: 'S1E1_A9', arcId: 9, n: 1, title: "Python Basics — Type Coercion Safety", description: "In active training, your primary task is ensuring input streams map safely to appropriate runtime classes. Leverage Python type conversion explicitly.", type: "ctf", min: 10, xp: 50, done: false, art: "🐍\nINT\nSTR", bg: "#000502" },
+  { id: 'S1E2_A9', arcId: 9, n: 2, title: "C Anatomy — Pointer Dereferences", description: "Direct memory access requires complete precision. Master the address-of and dereference operations to safely mutate variables.", type: "ctf", min: 15, xp: 60, done: false, art: "⚙️\n*P\n&X", bg: "#000502" },
+  { id: 'S1E3_A9', arcId: 9, n: 3, title: "Go Threads — Concurrency Primitives", description: "The Go scheduler executes processes in parallel. Master goroutine dispatching and channel operations to prevent deadlocks.", type: "ctf", min: 15, xp: 65, done: false, art: "🐹\nGO\nCHAN", bg: "#000502" },
+  { id: 'S1E4_A9', arcId: 9, n: 4, title: "JS Event Loop — Strict Equality Gates", description: "JavaScript's loose comparison introduces vulnerability through type coercion. Establish absolute equality checks using strict operations.", type: "ctf", min: 12, xp: 55, done: false, art: "⚡\n===\n==", bg: "#000502" }
 ];
 
 /** Maps each challenge ID → the arc it belongs to.
@@ -204,6 +221,12 @@ export const CHALLENGE_ARC_MAP: Record<string, number> = {
   // Arc 7 — Mathematics (UNIT-01)
   'MATH_RSA_001': 7,
   'MATH_ECC_001': 7,
+
+  // Arc 9 — The Initiation
+  'PY_001': 9,
+  'C_001':  9,
+  'GO_001': 9,
+  'JS_001': 9,
 };
 
 export const CHALLENGES = [
@@ -522,6 +545,90 @@ export const CHALLENGES = [
     attemptsAllowed: 4,
     hint: 'It stands for Elliptic Curve Discrete Logarithm Problem.',
     explanation: 'ECC security relies on the hardness of the Elliptic Curve Discrete Logarithm Problem (ECDLP), which states that given points G and dG, it is computationally intractable to find d.'
+  },
+  {
+    id: 'PY_001',
+    tier: 1,
+    category: 'SCRIPTING',
+    points: 100,
+    difficulty: 1,
+    title: 'Python: Safe Type Adding',
+    scenario: 'A dynamic addition operation in our Python script crashes when trying to add a string representation of an integer to an actual integer. It throws a TypeError.',
+    task: 'Determine the correct conversion syntax inside Python to cast a string variable `a` into an integer and add it to `b`. Submit the single line of code.',
+    artifacts: [
+      {
+        type: 'config',
+        label: 'DYNAMIC_ADD.PY',
+        content: 'a = "10"\nb = 20\n# Solve type mismatch:\nresult = int(a) + b'
+      }
+    ],
+    flag: 'int(a) + b',
+    attemptsAllowed: 3,
+    hint: 'Use the built-in int() function to cast the string first.',
+    explanation: 'Python does not support implicit string-to-integer coercion. Casting "a" explicitly via int(a) allows the mathematical addition to compile.'
+  },
+  {
+    id: 'C_001',
+    tier: 1,
+    category: 'REVERSE',
+    points: 100,
+    difficulty: 1,
+    title: 'C: Dereference Mutation',
+    scenario: 'A passcode validation checker in C fails because a memory location pointed to by pointer `p` is not updated with the correct value.',
+    task: 'Submit the standard C statement that dereferences a pointer `p` to assign it the integer value `1337`. Remember the ending semicolon.',
+    artifacts: [
+      {
+        type: 'config',
+        label: 'MUTATION.C',
+        content: 'int x = 10;\nint *p = &x;\n// Dereference p to set x to 1337:\n*p = 1337;'
+      }
+    ],
+    flag: '*p = 1337;',
+    attemptsAllowed: 3,
+    hint: 'Use the asterisk (*) operator to dereference a pointer.',
+    explanation: 'To modify the target of a pointer, dereference it with *p, then perform the standard assignment.'
+  },
+  {
+    id: 'GO_001',
+    tier: 1,
+    category: 'SCRIPTING',
+    points: 100,
+    difficulty: 1,
+    title: 'Go: Goroutine Dispatcher',
+    scenario: 'A thread dispatcher in Go blocks synchronously instead of running a function concurrently.',
+    task: 'Submit the keyword and function call that executes `calculate()` in a new concurrent goroutine.',
+    artifacts: [
+      {
+        type: 'config',
+        label: 'CONCURRENCY.GO',
+        content: '// Run calculate in parallel:\ngo calculate()'
+      }
+    ],
+    flag: 'go calculate()',
+    attemptsAllowed: 3,
+    hint: 'Prefix the function call with the "go" keyword.',
+    explanation: 'Prepend "go" before any function call in Golang to dispatch it onto a concurrent thread managed by the scheduler.'
+  },
+  {
+    id: 'JS_001',
+    tier: 1,
+    category: 'WEB',
+    points: 100,
+    difficulty: 1,
+    title: 'JS: Loose Coercion Bypass',
+    scenario: 'A database verification comparison in Node.js uses double-equals (==), allowing loose type coercion which leads to security bypasses.',
+    task: 'Submit the strict comparison check for variables `num` and `str` that prevents loose type coercion and ensures both value and type are matching.',
+    artifacts: [
+      {
+        type: 'config',
+        label: 'STRICT_COMPARE.JS',
+        content: 'let num = 5;\nlet str = "5";\n// Perform strict check:\nnum === str'
+      }
+    ],
+    flag: 'num === str',
+    attemptsAllowed: 3,
+    hint: 'Use the triple-equals comparison operator.',
+    explanation: 'Triple-equals (===) enforces strict equality comparison, evaluating to false if the data types of the operands differ.'
   }];
 
 export interface Resource {
@@ -559,5 +666,17 @@ export const EPISODE_RESOURCES: Record<string, Resource[]> = {
         color: 'var(--yellow)'
       }
     }
+  ],
+  'S1E1_A9': [
+    { icon: '🐍', title: 'Python Official Docs: Data Types', tag: 'DOCS', tagClass: 'rtag-a', src: 'python.org · 10 min', desc: 'Understand dynamic typing, operators, and casting functions in Python 3.', link: 'https://docs.python.org/3/tutorial/introduction.html', iconStyle: { background: 'rgba(79,195,247,.08)', border: '1px solid rgba(79,195,247,.15)', color: '#4fc3f7' } }
+  ],
+  'S1E2_A9': [
+    { icon: '⚙️', title: 'C Programming: Pointers & Addresses', tag: 'GUIDE', tagClass: 'rtag-p', src: 'c-prog.org · 15 min', desc: 'Deep dive into standard pointer allocation, address-of (&), and dereference (*) operators.', link: 'https://www.tutorialspoint.com/cprogramming/c_pointers.htm', iconStyle: { background: 'rgba(239,83,80,.08)', border: '1px solid rgba(239,83,80,.15)', color: '#ef5350' } }
+  ],
+  'S1E3_A9': [
+    { icon: '🐹', title: 'A Tour of Go: Goroutines', tag: 'INTERACTIVE', tagClass: 'rtag-v', src: 'go.dev · 8 min', desc: 'Google\'s interactive sandbox teaching concurrent functions and channels.', link: 'https://go.dev/tour/concurrency/1', iconStyle: { background: 'rgba(0,229,255,.08)', border: '1px solid rgba(0,229,255,.15)', color: '#00e5ff' } }
+  ],
+  'S1E4_A9': [
+    { icon: '⚡', title: 'MDN: Strict Equality (===)', tag: 'DOCS', tagClass: 'rtag-a', src: 'developer.mozilla.org', desc: 'Why double-equals coercion is dangerous and when to enforce strict comparisons.', link: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality', iconStyle: { background: 'rgba(255,213,79,.08)', border: '1px solid rgba(255,213,79,.15)', color: '#ffd54f' } }
   ]
 };

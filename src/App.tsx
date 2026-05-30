@@ -20,6 +20,7 @@ import { ProfilePage } from './components/Common/ProfilePage';
 import { SearchOverlay } from './components/Common/SearchOverlay';
 import { apiRequest } from './hooks/useApi';
 import { useCtf } from './hooks/useCtf';
+import { BootTour } from './components/Effects/BootTour';
 
 import type { Arc, Episode, Challenge } from './types';
 import { getArcCover } from './lib/imageMapping';
@@ -93,6 +94,36 @@ export default function App() {
 
   // ── Search overlay ──
   const [searchOpen, setSearchOpen] = useState(false);
+
+  // ── Immersive Tour Onboarding State ──
+  const [showTour, setShowTour] = useState(false);
+
+  // Auto trigger tour if they have not completed it yet
+  useEffect(() => {
+    if (user) {
+      const tourCompleted = localStorage.getItem('ephemeral_tour_completed');
+      if (!tourCompleted) {
+        // Auto trigger onboarding tour after a brief delay so page is fully rendered
+        const timer = setTimeout(() => setShowTour(true), 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [user]);
+
+  // Award XP function that syncs to server database
+  const awardCalibrationXp = useCallback(async (xp: number) => {
+    if (!user) return;
+    try {
+      setUserXp(prev => prev + xp);
+      showToast(`CALIBRATION COMPLETE: +${xp} XP INTEGRATED`);
+      await apiRequest(`/api/progress/${encodeURIComponent(user.id)}/add-xp`, {
+        method: 'POST',
+        body: JSON.stringify({ xp })
+      });
+    } catch (err: any) {
+      console.error('Failed to sync calibration XP to backend database:', err);
+    }
+  }, [user, showToast]);
 
   // ── Avatar / cover customization ──
   const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem('user_avatar') || '/one_piece/ONE PIECE.jpeg');
@@ -285,6 +316,7 @@ export default function App() {
     userAvatar,
     onChangeAvatar: openPlayerAvatarSelector,
     onOpenSearch: () => setSearchOpen(true),
+    onOpenGuide: () => setShowTour(true),
   };
 
   return (
@@ -446,6 +478,14 @@ export default function App() {
           navigate={navigate}
           episodeBasePath={episodeBasePath}
           onClose={() => setSearchOpen(false)}
+        />
+      )}
+
+      {/* Immersive Onboarding HUD Calibration Tour */}
+      {showTour && (
+        <BootTour 
+          onClose={() => setShowTour(false)} 
+          onAwardXp={awardCalibrationXp} 
         />
       )}
     </div>

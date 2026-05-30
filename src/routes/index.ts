@@ -37,6 +37,7 @@ router.get('/avatars', ContentController.getAvatars);
 //  USER — Progress & flag submission
 // ═══════════════════════════════════════════════
 router.get('/progress/:userId', validate(userIdParamSchema, 'params'), UserController.getProgress);
+router.post('/progress/:userId/add-xp', validate(userIdParamSchema, 'params'), UserController.addXp);
 
 router.post(
   '/submit',

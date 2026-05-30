@@ -18,6 +18,7 @@ interface NavbarProps {
   userAvatar?: string;
   onChangeAvatar?: () => void;
   onOpenSearch?: () => void;
+  onOpenGuide?: () => void;
 }
 
 function getRankLabel(xp: number): { label: string; color: string } {
@@ -32,7 +33,7 @@ function getRankLabel(xp: number): { label: string; color: string } {
 export const Navbar: React.FC<NavbarProps> = ({
   onHome, onSeries, onBack, userXp, userId, displayName, showToast,
   activeTab, nodeId, navigate, challengesSolved, userAvatar, onChangeAvatar,
-  onOpenSearch,
+  onOpenSearch, onOpenGuide,
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const name = displayName || userId;
@@ -107,6 +108,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           PROFILE
         </a>
+        {onOpenGuide && (
+          <a 
+            href="#guide" 
+            onClick={go('#guide', onOpenGuide)} 
+            onMouseEnter={handleMouseEnter}
+            className="nb-link"
+            style={{ color: 'var(--lime)', textShadow: '0 0 4px rgba(0,255,65,0.4)', fontWeight: 'bold' }}
+          >
+            HUD GUIDE
+          </a>
+        )}
       </div>
 
       {/* ── Right Side ── */}

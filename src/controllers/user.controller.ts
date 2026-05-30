@@ -29,6 +29,19 @@ export class UserController {
   }
 
   /**
+   * POST /api/progress/:userId/add-xp — Manually award calibration XP
+   */
+  static async addXp(ctx: Context) {
+    const { userId } = ctx.params;
+    const { xp } = ctx.request.body as { xp: number };
+    await UserService.ensureUser(userId);
+    await UserService.addXp(userId, xp);
+    log.info(`Awarded ${xp} XP to operator ${userId} for system calibration.`);
+    const updatedUser = await UserService.ensureUser(userId);
+    ok(ctx, { success: true, newXp: updatedUser.xp });
+  }
+
+  /**
    * POST /api/submit — Submit a flag attempt
    */
   static async submitFlag(ctx: Context) {

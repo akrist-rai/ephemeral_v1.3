@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { WriteupModal } from '../Common/WriteupModal';
 import { playSound } from '../../lib/sound';
 import { GlitchText } from '../Effects/GlitchText';
 import { getChaptersForChallenge } from '../../data/ctfChapters';
+import { CodexPanel } from './CodexPanel';
 
 interface CTFComponentProps {
   gctf: any; setGctf: any; setUserXp: any;
@@ -36,6 +37,121 @@ const CAT_META: Record<string, { color: string; icon: string }> = {
   OVERFITTING:  { color: 'var(--red)',  icon: '⤴'  },
 };
 
+// ── CUSTOM OPERATOR WORKSPACE DATA ───────────────────────────────────────────
+const SANDBOX_TEMPLATES: Record<string, { lang: 'python' | 'javascript' | 'sql'; code: string; runLogic: (code: string) => { success: boolean; logs: string[] } }> = {
+  'ARRAY_BASICS_001': {
+    lang: 'python',
+    code: `# Camera manifest array query\ncameras = ["Main Entrance", "Lobby", "Breakroom", "Server Room", "Loading Dock"]\n\n# Target is "Loading Dock". Find its correct index:\nindex = 4\nprint(f"Target Camera: {cameras[index]} (Query Index: {index})")`,
+    runLogic: (code) => {
+      const clean = code.replace(/\s+/g, '');
+      if (clean.includes('cameras[4]') || clean.includes('index=4') || clean.includes('index=4;')) {
+        return {
+          success: true,
+          logs: [
+            '[INFO] Synchronizing Serpent Interpreter environment...',
+            '[EVAL] cameras = ["Main Entrance", "Lobby", "Breakroom", "Server Room", "Loading Dock"]',
+            '[EXEC] Fetching cameras[4]...',
+            '[OUT] Target Camera: Loading Dock (Query Index: 4)',
+            '>>> RUNTIME SUCCESS: Index 4 resolves to "Loading Dock". Direct match verified.'
+          ]
+        };
+      }
+      return {
+        success: false,
+        logs: [
+          '[INFO] Synchronizing Serpent Interpreter...',
+          '[FATAL] IndexError: list index out of range. Check array bounds: items exist from index 0 to 4.'
+        ]
+      };
+    }
+  },
+  'WEB_SQLI_001': {
+    lang: 'sql',
+    code: `-- SQL injection bypass query template\nSELECT * FROM operators \nWHERE username = 'admin' OR '1'='1' \nAND passcode = 'INPUT_SECRET';`,
+    runLogic: (code) => {
+      const clean = code.replace(/\s+/g, '');
+      if (clean.includes("'1'='1'") || clean.includes("'1'='1'") || clean.includes("admin'OR'1'='1'")) {
+        return {
+          success: true,
+          logs: [
+            '[DB_SYS] Booting SQL Relational Core...',
+            '[EXEC] Evaluating query check: username = \'admin\' OR \'1\'=\'1\'',
+            '[DB_SYS] WHERE evaluated to: TRUE (Logical OR bypass triggered)',
+            '[OUT] Selected Rows: 1',
+            '[OUT] op_id | username | security_clearance',
+            '[OUT] 1     | admin    | Level-5 (Full Bypass Active)',
+            '>>> LOGICAL SUCCESS: Database authentication bypassed successfully.'
+          ]
+        };
+      }
+      return {
+        success: false,
+        logs: [
+          '[DB_SYS] SQL Query completed.',
+          '[OUT] Selected Rows: 0 (Credentials did not match. Access Denied.)'
+        ]
+      };
+    }
+  },
+  'PWN_STACK_001': {
+    lang: 'python',
+    code: `# File descriptor conversion helper\n# Equation: fd = atoi(argv[1]) - 0x1234\n# Target: We need fd = 0 (stdin)\n\nhex_subtraction = 0x1234\n\n# Convert 0x1234 to decimal:\nsolve_dec = hex_subtraction\nprint(f"Decimal output required: {solve_dec}")`,
+    runLogic: (code) => {
+      const clean = code.replace(/\s+/g, '');
+      if (clean.includes('4660') || clean.includes('0x1234')) {
+        return {
+          success: true,
+          logs: [
+            '[INFO] Preprocessing GCC stack architecture symbols...',
+            '[EXEC] Initializing fd = input_dec - 0x1234',
+            '[EXEC] Computing 4660 - 4660...',
+            '[OUT] File Descriptor fd is set to: 0 (stdin)',
+            '>>> COMPILE SUCCESS: fd = 0 opens standard input. Key bypass validated.'
+          ]
+        };
+      }
+      return {
+        success: false,
+        logs: [
+          '[INFO] Compiling GCC binaries...',
+          '[FATAL] fd bound to secondary descriptor != 0. Key bypass failed.'
+        ]
+      };
+    }
+  },
+  'REV_XOR_001': {
+    lang: 'python',
+    code: `# crackme.exe XOR Key calculator\ntarget_signature = [0x11, 0x1F, 0x03, 0x0A, 0x0D, 0x14]\nxor_key = 0x5A\n\n# Calculate plaintext: signature ^ key\nlicense_key = "".join(chr(b ^ xor_key) for b in target_signature)\nprint(f"License Key: {license_key}")`,
+    runLogic: (code) => {
+      const clean = code.replace(/\s+/g, '');
+      if (clean.includes('0x5A') && (clean.includes('^') || clean.includes('xor'))) {
+        return {
+          success: true,
+          logs: [
+            '[INFO] Loading byte-wise XOR decryption protocols...',
+            '[EXEC] Resolving byte arrays: target_signature ^ xor_key',
+            '[OUT] Byte 0: 0x11 ^ 0x5A = 0x4B (\'K\')',
+            '[OUT] Byte 1: 0x1F ^ 0x5A = 0x45 (\'E\')',
+            '[OUT] Byte 2: 0x03 ^ 0x5A = 0x59 (\'Y\')',
+            '[OUT] Byte 3: 0x0A ^ 0x5A = 0x50 (\'P\')',
+            '[OUT] Byte 4: 0x0D ^ 0x5A = 0x57 (\'W\')',
+            '[OUT] Byte 5: 0x14 ^ 0x5A = 0x4E (\'N\')',
+            '[OUT] Calculated License Key: KEYPWN',
+            '>>> COMPUTE SUCCESS: License key calculated matching target signature.'
+          ]
+        };
+      }
+      return {
+        success: false,
+        logs: [
+          '[INFO] Compiling reversing module...',
+          '[FATAL] Compilation error: Key mismatch or invalid bitwise operators.'
+        ]
+      };
+    }
+  }
+};
+
 export const CTFComponent: React.FC<CTFComponentProps> = ({
   gctf, showToast, challenges, navigate, dataStatus, apiError,
   submitFlag, toggleCTFHint, shake, flagInputRef, setUserXp, episodeBasePath,
@@ -48,18 +164,41 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   const [solvedChaps, setSolvedChaps] = useState<Record<string, boolean>>({});
   const [chapShake, setChapShake] = useState(false);
   const [expandedArt, setExpandedArt] = useState<number | null>(0);
+
+  // ── WORKSPACE PLAYGROUND / SANDBOX STATE ──
+  const [sandboxOpen, setSandboxOpen] = useState(false);
+  const [sandboxLang, setSandboxLang] = useState<'python' | 'javascript' | 'sql'>('javascript');
+  const [sandboxCode, setSandboxCode] = useState('');
+  const [consoleLogs, setConsoleLogs] = useState<string[]>(['// Workspace Sandbox ready. Preload template or write custom code.']);
+  const [sandboxRunning, setSandboxRunning] = useState(false);
+
   const activeChalId = gctf.active || '';
 
+  // Synchronize challenge specific code sandbox templates
   useEffect(() => {
     setActiveChapIdx(0);
     setChapAnswers({});
     setExpandedArt(0);
+    setSandboxOpen(false);
+    setConsoleLogs(['// Workspace Sandbox ready. Preload template or write custom code.']);
+    
     if (activeChalId) {
       try {
         const s = localStorage.getItem(`eph_chaps_${activeChalId}`);
         setSolvedChaps(s ? JSON.parse(s) : {});
       } catch { setSolvedChaps({}); }
-    } else { setSolvedChaps({}); }
+
+      const t = SANDBOX_TEMPLATES[activeChalId];
+      if (t) {
+        setSandboxCode(t.code);
+        setSandboxLang(t.lang);
+      } else {
+        setSandboxCode(`// Operational scratchpad. Write any JS logic to solve the challenge:\nfunction solve() {\n  let calculation = 53 * 61; // e.g. RSA helper\n  return "Telemetry result: " + calculation;\n}\nconsole.log(solve());`);
+        setSandboxLang('javascript');
+      }
+    } else {
+      setSolvedChaps({});
+    }
   }, [activeChalId]);
 
   const totalPts = Object.values(gctf.solved).reduce((a: any, s: any) => a + (s.pts_earned || 0), 0) as number;
@@ -74,6 +213,99 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   const closeChallenge = () => {
     playSound.click();
     navigate(`${episodeBasePath}/ctf`);
+  };
+
+  // Preload code template helper
+  const handlePreloadTemplate = () => {
+    playSound.success();
+    const t = SANDBOX_TEMPLATES[activeChalId];
+    if (t) {
+      setSandboxCode(t.code);
+      setSandboxLang(t.lang);
+      setConsoleLogs([`[SYS] Loaded official operational code template for challenge #${activeChalId}.`]);
+    } else {
+      setSandboxCode(`// Custom JavaScript Playground\nlet hex_target = [0x11, 0x1F, 0x03, 0x0A, 0x0D, 0x14];\nlet key = 0x5A;\nlet result = hex_target.map(byte => String.fromCharCode(byte ^ key)).join('');\nconsole.log("Calculated output:", result);`);
+      setSandboxLang('javascript');
+      setConsoleLogs(['[SYS] Preloaded custom JavaScript decoding algorithm.']);
+    }
+  };
+
+  // Copy from Codex snippet straight into compiler
+  const handleInjectCodexSnippet = (snippet: string) => {
+    setSandboxCode(prev => prev + '\n' + snippet);
+    setConsoleLogs(prev => [...prev, `[SYS] Injected Codex directive into buffer: "${snippet}"`]);
+    showToast('DIRECTIVE INJECTED INTO WORKSPACE');
+  };
+
+  // Safe JavaScript Execution Engine
+  const runJsSandbox = (code: string): { success: boolean; logs: string[] } => {
+    const logs: string[] = ['[SYS] Initializing JS V8 local worker scope...'];
+    const mockConsole = {
+      log: (...args: any[]) => {
+        logs.push('[OUT] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+      }
+    };
+    try {
+      const runnable = new Function('console', code);
+      runnable(mockConsole);
+      logs.push('>>> SCRIPT EXECUTION FINISHED SUCCESSFULLY.');
+      return { success: true, logs };
+    } catch (err: any) {
+      logs.push(`[FATAL] ReferenceError / SyntaxError: ${err.message}`);
+      return { success: false, logs };
+    }
+  };
+
+  // Execute workspace sandbox compiler
+  const handleExecuteSandbox = () => {
+    playSound.click();
+    setSandboxRunning(true);
+    setConsoleLogs(prev => [...prev, '[SYS] Compiling workspace source buffer...', '[SYS] Loading virtual machine thread...']);
+
+    setTimeout(() => {
+      let result;
+      // If challenge has preloaded logical simulations, run them
+      if (sandboxLang !== 'javascript' && SANDBOX_TEMPLATES[activeChalId] && sandboxLang === SANDBOX_TEMPLATES[activeChalId].lang) {
+        result = SANDBOX_TEMPLATES[activeChalId].runLogic(sandboxCode);
+      } else {
+        // Run as functional Javascript sandbox in user browser
+        result = runJsSandbox(sandboxCode);
+      }
+
+      setConsoleLogs(prev => [...prev, ...result.logs]);
+      setSandboxRunning(false);
+      if (result.success) {
+        playSound.success();
+      } else {
+        playSound.error();
+      }
+    }, 850);
+  };
+
+  // Submissions
+  const handleSubmit = async (chapIdx: number) => {
+    const chap = chapters[chapIdx];
+    const isLast = chapIdx === chapters.length - 1;
+    const ans = (chapAnswers[chap.id] || '').trim();
+    if (!ans) return;
+    if (isLast) {
+      await submitFlag(ch.id, ans, challenges, setUserXp);
+    } else {
+      const norm = (s: string) => s.trim().toLowerCase();
+      if (norm(ans) === norm(chap.answer)) {
+        playSound.success();
+        const next = { ...solvedChaps, [chap.id]: true };
+        setSolvedChaps(next);
+        localStorage.setItem(`eph_chaps_${ch.id}`, JSON.stringify(next));
+        showToast('✓ STAGE CLEARED — NEXT UNLOCKED');
+        setTimeout(() => setActiveChapIdx(chapIdx + 1), 350);
+      } else {
+        playSound.error();
+        setChapShake(true);
+        setTimeout(() => setChapShake(false), 380);
+        showToast('✗ WRONG ANSWER');
+      }
+    }
   };
 
   // ── BOARD ──────────────────────────────────────────────────────────────────
@@ -227,31 +459,6 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   const isChapOk  = (chap: any, idx: number) => isOk ? true : idx === chapters.length - 1 ? isOk : !!solvedChaps[chap.id];
   const isChapOn  = (_: any, idx: number)     => isOk ? true : idx === 0 ? true : !!solvedChaps[chapters[idx - 1].id];
 
-  const handleSubmit = async (chapIdx: number) => {
-    const chap = chapters[chapIdx];
-    const isLast = chapIdx === chapters.length - 1;
-    const ans = (chapAnswers[chap.id] || '').trim();
-    if (!ans) return;
-    if (isLast) {
-      await submitFlag(ch.id, ans, challenges, setUserXp);
-    } else {
-      const norm = (s: string) => s.trim().toLowerCase();
-      if (norm(ans) === norm(chap.answer)) {
-        playSound.success();
-        const next = { ...solvedChaps, [chap.id]: true };
-        setSolvedChaps(next);
-        localStorage.setItem(`eph_chaps_${ch.id}`, JSON.stringify(next));
-        showToast('✓ STAGE CLEARED — NEXT UNLOCKED');
-        setTimeout(() => setActiveChapIdx(chapIdx + 1), 350);
-      } else {
-        playSound.error();
-        setChapShake(true);
-        setTimeout(() => setChapShake(false), 380);
-        showToast('✗ WRONG ANSWER');
-      }
-    }
-  };
-
   const curChap = chapters[activeChapIdx];
   const curOk   = isChapOk(curChap, activeChapIdx);
   const curOn   = isChapOn(curChap, activeChapIdx);
@@ -349,15 +556,186 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
 
               <p className="bp ctf-desc">{curChap.description}</p>
 
+              {/* Codex Panel Drawer (Beginner Assistant) */}
+              <CodexPanel category={ch.category} onCopySnippet={handleInjectCodexSnippet} />
+
               {/* Question block — matches .mommy style */}
-              <div className="mommy" style={{ borderLeftColor: meta.color }}>
+              <div className="mommy" style={{ borderLeftColor: meta.color, marginTop: '1rem' }}>
                 <div className="mommy-k" style={{ color: meta.color }}>▶ INPUT TARGET QUERY</div>
                 <div className="mommy-q" style={{ fontSize: '.82rem' }}>{curChap.question}</div>
               </div>
 
+              {/* Workspace sandbox activator */}
+              {!curOk && !isFail && (
+                <div 
+                  className="sandbox-widget" 
+                  style={{ 
+                    marginTop: '1.2rem', 
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    background: 'rgba(0,4,8,0.4)',
+                    padding: '0.8rem',
+                    borderRadius: '2px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+                    <span style={{ fontSize: '0.58rem', fontFamily: 'var(--mono)', color: meta.color }}>
+                      ⚡ OPERATOR WORKSPACE SCRATCHPAD {sandboxOpen ? '[ACTIVE]' : '[COLLAPSED]'}
+                    </span>
+                    <button 
+                      onClick={() => { playSound.click(); setSandboxOpen(!sandboxOpen); }}
+                      style={{
+                        background: 'transparent',
+                        border: `1px solid ${meta.color}33`,
+                        color: meta.color,
+                        fontSize: '0.45rem',
+                        fontFamily: 'var(--mono)',
+                        padding: '0.15rem 0.4rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {sandboxOpen ? 'HIDE SCRATCHPAD' : 'EXPAND SCRATCHPAD'}
+                    </button>
+                  </div>
+
+                  {sandboxOpen && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      {/* Sandbox configuration header */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)' }}>ENV:</span>
+                          <select 
+                            value={sandboxLang} 
+                            onChange={(e) => setSandboxLang(e.target.value as any)}
+                            style={{
+                              background: '#000',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              color: 'var(--paper)',
+                              fontSize: '0.5rem',
+                              fontFamily: 'var(--mono)',
+                              padding: '0.1rem 0.3rem',
+                              outline: 'none'
+                            }}
+                          >
+                            <option value="javascript">JAVASCRIPT (Safe Sandbox)</option>
+                            <option value="python">PYTHON (Mock Env)</option>
+                            <option value="sql">SQL (Mock DB)</option>
+                          </select>
+                        </div>
+                        <button 
+                          onClick={handlePreloadTemplate}
+                          style={{
+                            background: 'rgba(255,255,255,0.02)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: 'var(--lime)',
+                            fontSize: '0.5rem',
+                            fontFamily: 'var(--mono)',
+                            cursor: 'pointer',
+                            padding: '0.1rem 0.4rem'
+                          }}
+                        >
+                          📋 PRELOAD CASE TEMPLATE
+                        </button>
+                      </div>
+
+                      {/* Code Area */}
+                      <div style={{ display: 'flex', background: '#000', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        {/* Mock Line Numbers */}
+                        <div 
+                          style={{ 
+                            padding: '0.5rem 0.3rem', 
+                            color: 'rgba(255,255,255,0.15)', 
+                            textAlign: 'right', 
+                            background: 'rgba(255,255,255,0.01)',
+                            borderRight: '1px solid rgba(255,255,255,0.04)',
+                            fontFamily: 'var(--mono)',
+                            fontSize: '0.5rem',
+                            lineHeight: '1.4',
+                            userSelect: 'none'
+                          }}
+                        >
+                          {Array.from({ length: sandboxCode.split('\n').length || 4 }).map((_, i) => (
+                            <div key={i}>{String(i + 1).padStart(2, '0')}</div>
+                          ))}
+                        </div>
+                        <textarea
+                          value={sandboxCode}
+                          onChange={e => setSandboxCode(e.target.value)}
+                          spellCheck={false}
+                          style={{
+                            flex: 1,
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#e2e8f0',
+                            fontFamily: 'var(--mono)',
+                            fontSize: '0.52rem',
+                            padding: '0.5rem',
+                            outline: 'none',
+                            minHeight: '100px',
+                            lineHeight: '1.4',
+                            resize: 'vertical'
+                          }}
+                        />
+                      </div>
+
+                      {/* Sandbox Actions */}
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                          onClick={handleExecuteSandbox}
+                          disabled={sandboxRunning}
+                          style={{
+                            flex: 1,
+                            background: meta.color,
+                            color: meta.color === 'var(--lime)' || meta.color === '#ccff00' ? '#000' : '#fff',
+                            border: 'none',
+                            fontFamily: 'var(--mono)',
+                            fontSize: '0.55rem',
+                            fontWeight: 'bold',
+                            padding: '0.4rem 0.8rem',
+                            cursor: sandboxRunning ? 'not-allowed' : 'pointer',
+                            textAlign: 'center'
+                          }}
+                        >
+                          {sandboxRunning ? 'COMPILING BUFFER...' : '⚡ EXECUTE SOURCE BUFFER'}
+                        </button>
+                      </div>
+
+                      {/* Sandbox Console */}
+                      <div>
+                        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.45rem', marginBottom: '0.2rem' }}>// TELEMETRY TERMINAL OUTPUT:</div>
+                        <div 
+                          style={{
+                            background: '#000',
+                            border: '1px solid rgba(0,255,65,0.15)',
+                            padding: '0.5rem',
+                            maxHeight: '100px',
+                            overflowY: 'auto',
+                            fontFamily: 'var(--mono)',
+                            fontSize: '0.5rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.15rem'
+                          }}
+                        >
+                          {consoleLogs.map((log, i) => {
+                            let color = '#00ff41';
+                            if (log.startsWith('[FATAL]') || log.startsWith('[ERROR]')) color = '#ff4466';
+                            if (log.startsWith('[SYS]') || log.startsWith('//')) color = 'rgba(255,255,255,0.35)';
+                            if (log.startsWith('[EVAL]')) color = '#4fc3f7';
+                            if (log.startsWith('[OUT]')) color = '#fff';
+                            return (
+                              <div key={i} style={{ color, wordBreak: 'break-all' }}>{log}</div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Answer zone */}
               {curOk ? (
-                <div className="ctf-answer-ok">
+                <div className="ctf-answer-ok" style={{ marginTop: '1.2rem' }}>
                   <div className="ctf-answer-ok-top">
                     <span className="ctf-ok-check">✓</span>
                     <span className="ctf-ok-label">{isLast ? 'FLAG ACCEPTED' : 'STAGE CLEARED'}</span>
@@ -370,12 +748,12 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
                   )}
                 </div>
               ) : isFail && isLast ? (
-                <div className="ctf-answer-fail">
+                <div className="ctf-answer-fail" style={{ marginTop: '1.2rem' }}>
                   <div className="ctf-fail-msg">✗ OUT OF ATTEMPTS — CASE SEALED</div>
                   <div className="ctf-flag-reveal" style={{ opacity: .4 }}>EPHEMERAL{`{${ch.flag}}`}</div>
                 </div>
               ) : (
-                <div className="ctf-flag-zone" style={{ borderColor: `${meta.color}44` }}>
+                <div className="ctf-flag-zone" style={{ borderColor: `${meta.color}44`, marginTop: '1.2rem' }}>
                   <div className="ctf-flag-zone-lbl" style={{ color: meta.color }}>
                     {isLast ? '// DEPLOY FINAL FLAG' : '// SUBMIT STAGE ANSWER'}
                   </div>
@@ -427,7 +805,7 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
 
               {/* Post-mortem */}
               {(isOk || isFail) && isLast && ch.explanation && (
-                <div className="ctf-postmortem" style={{ borderTopColor: isOk ? 'var(--crt)' : 'var(--red)' }}>
+                <div className="ctf-postmortem" style={{ borderTopColor: isOk ? 'var(--crt)' : 'var(--red)', marginTop: '1.2rem' }}>
                   <div className="bk" style={{ color: isOk ? 'var(--crt)' : 'var(--red)' }}>// CASE ANALYSIS</div>
                   <p className="bp" style={{ marginBottom: '.8rem' }}>{ch.explanation}</p>
                   {isOk && (
