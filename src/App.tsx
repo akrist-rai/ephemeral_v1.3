@@ -300,9 +300,12 @@ export default function App() {
             totalEpisodes={totalEpisodes}
             totalDomains={totalDomains}
             arcCoverUrl={featuredArc ? (arcCovers[featuredArc.id] || getArcCover(featuredArc.id)) : undefined}
-            onChangeCover={featuredArc ? () => openArcCoverSelector(featuredArc.id) : undefined}
+            onChangeCover={openArcCoverSelector}
             arcs={arcs}
             onArcSelect={(arcId) => { setCurArc(arcId); navigate('/series'); }}
+            arcEpisodes={arcEpisodes}
+            arcCovers={arcCovers}
+            navigate={navigate}
           />
           <ActivityFeed challenges={challenges} currentUserId={user.id} />
           <RankedSiege navigate={navigate} />

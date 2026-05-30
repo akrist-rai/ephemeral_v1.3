@@ -3,7 +3,6 @@ import type { Arc, Episode } from '../../types';
 import { getArcCover } from '../../lib/imageMapping';
 import { playSound } from '../../lib/sound';
 import { TextScramble } from '../Effects/TextScramble';
-import { PointerGlow } from '../Effects/PointerGlow';
 
 interface HeroProps {
   onPlay: () => void;
@@ -13,36 +12,68 @@ interface HeroProps {
   totalEpisodes: number;
   totalDomains: number;
   arcCoverUrl?: string;
-  onChangeCover?: () => void;
+  onChangeCover?: (arcId: number) => void;
   arcs?: Arc[];
   onArcSelect?: (arcId: number) => void;
+  arcEpisodes?: Record<number, Episode[]>;
+  arcCovers?: Record<number, string>;
+  navigate: (path: string) => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({
   onPlay, onMoreInfo, featuredEpisode, featuredArc,
   totalEpisodes, totalDomains, arcCoverUrl, onChangeCover,
-  arcs = [], onArcSelect,
+  arcs = [], onArcSelect, arcEpisodes = {}, arcCovers = {}, navigate,
 }) => {
-  const [hoveredArc, setHoveredArc] = useState<number | null>(null);
+  const [activeArcId, setActiveArcId] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
+
+  // Sync initial and prop changes of featuredArc to active state
+  useEffect(() => {
+    if (featuredArc) {
+      setActiveArcId(featuredArc.id);
+    }
+  }, [featuredArc]);
 
   useEffect(() => {
     const iv = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(iv);
   }, []);
 
-  const acc = featuredArc?.accColor || '#e8000d';
-  const domain = featuredArc?.domain || 'LOADING';
-  const arcName = featuredArc?.arcName || '';
-  const title = featuredArc?.title || 'LOADING';
-  const epTitle = featuredEpisode?.title || '';
-  const epDesc = featuredEpisode?.description || '';
-  const epType = featuredEpisode?.type || 'ctf';
-  const epXp = featuredEpisode?.xp || 0;
-  const epN = featuredEpisode?.n || 0;
-  const epId = featuredEpisode?.id || '';
-  const bgUrl = arcCoverUrl || '';
-  const isLive = featuredEpisode?.active ?? false;
+  const currentDispArc = useMemo(() => {
+    return arcs.find(a => a.id === activeArcId) || featuredArc;
+  }, [arcs, activeArcId, featuredArc]);
+
+  const dispEpisodes = useMemo(() => {
+    if (!currentDispArc) return [];
+    return arcEpisodes[currentDispArc.id] || [];
+  }, [arcEpisodes, currentDispArc]);
+
+  const currentDispEpisode = useMemo(() => {
+    if (!currentDispArc) return featuredEpisode;
+    const active = dispEpisodes.find(e => e.active);
+    if (active) return active;
+    return dispEpisodes[0] || featuredEpisode;
+  }, [currentDispArc, dispEpisodes, featuredEpisode]);
+
+  const acc = currentDispArc?.accColor || '#e8000d';
+  const domain = currentDispArc?.domain || 'LOADING';
+  const arcName = currentDispArc?.arcName || '';
+  const title = currentDispArc?.title || 'LOADING';
+  const epTitle = currentDispEpisode?.title || '';
+  const epDesc = currentDispEpisode?.description || '';
+  const epType = currentDispEpisode?.type || 'ctf';
+  const epXp = currentDispEpisode?.xp || 0;
+  const epN = currentDispEpisode?.n || 0;
+  const epId = currentDispEpisode?.id || '';
+
+  // Get background cover image
+  const bgUrl = useMemo(() => {
+    if (!currentDispArc) return arcCoverUrl || '';
+    return arcCovers[currentDispArc.id] || getArcCover(currentDispArc.id) || arcCoverUrl || '';
+  }, [currentDispArc, arcCovers, arcCoverUrl]);
+
+  const isLive = currentDispEpisode?.active ?? false;
 
   const typeLabel: Record<string, string> = {
     ctf: '⚡ CTF',
@@ -71,8 +102,18 @@ export const Hero: React.FC<HeroProps> = ({
     action();
   };
 
-  const handleMouseEnter = () => {
+  const handleRowHover = (arcId: number) => {
     playSound.hover();
+    setActiveArcId(arcId);
+  };
+
+  const handlePlayClick = () => {
+    playSound.click();
+    if (currentDispEpisode && currentDispArc) {
+      navigate(`/episode/${currentDispArc.id}/${currentDispEpisode.id}`);
+    } else {
+      onPlay();
+    }
   };
 
   return (
@@ -91,7 +132,7 @@ export const Hero: React.FC<HeroProps> = ({
       <div className="pg-hero-aurora" style={{ '--aurora-acc': acc } as any} />
 
       {/* Layered overlays */}
-      <div className="pg-hero-grad-l" style={{ background: `linear-gradient(90deg, ${featuredArc?.bgColor || '#06060e'}f8 0%, ${featuredArc?.bgColor || '#06060e'}bb 55%, transparent 100%)` }} />
+      <div className="pg-hero-grad-l" style={{ background: `linear-gradient(90deg, ${currentDispArc?.bgColor || '#06060e'}f8 0%, ${currentDispArc?.bgColor || '#06060e'}bb 55%, transparent 100%)` }} />
       <div className="pg-hero-grad-b" />
       <div className="pg-hero-grad-t" />
       <div className="pg-hero-scanlines" />
@@ -150,11 +191,11 @@ export const Hero: React.FC<HeroProps> = ({
           <span className="pg-hm-val" style={{ color: '#ffb830' }}>⚡ {epXp} XP</span>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '.6rem' }}>
-          {onChangeCover && (
+          {onChangeCover && currentDispArc && (
             <button 
               className="pg-cover-btn" 
-              onClick={() => handleButtonClick(onChangeCover)}
-              onMouseEnter={handleMouseEnter}
+              onClick={() => handleButtonClick(() => onChangeCover(currentDispArc.id))}
+              onMouseEnter={() => playSound.hover()}
             >
               ⬡ COVER ART
             </button>
@@ -180,7 +221,7 @@ export const Hero: React.FC<HeroProps> = ({
           </h1>
 
           <div className="pg-hero-ep-name" style={{ color: acc }}>
-            // <TextScramble text={epTitle} triggerOnHover speed={35} />
+            // <TextScramble text={epTitle} speed={35} />
           </div>
 
           <p className="pg-hero-desc">
@@ -201,15 +242,15 @@ export const Hero: React.FC<HeroProps> = ({
             <button
               className="pg-btn-play"
               style={{ background: acc, color: acc === '#f9a825' || acc === '#b9ff00' ? '#000' : '#fff', boxShadow: `0 0 32px ${acc}55` }}
-              onClick={() => handleButtonClick(onPlay)}
-              onMouseEnter={handleMouseEnter}
+              onClick={handlePlayClick}
+              onMouseEnter={() => playSound.hover()}
             >
               ▶ PLAY EPISODE {epN}
             </button>
             <button 
               className="pg-btn-browse" 
               onClick={() => handleButtonClick(onMoreInfo)}
-              onMouseEnter={handleMouseEnter}
+              onMouseEnter={() => playSound.hover()}
             >
               BROWSE SERIES
             </button>
@@ -239,23 +280,18 @@ export const Hero: React.FC<HeroProps> = ({
             <div className="pg-arc-panel-list">
               {arcs.map(arc => {
                 const img = getArcCover(arc.id);
-                const isActive = arc.id === featuredArc?.id;
-                const isHov = hoveredArc === arc.id;
+                const isActive = arc.id === activeArcId;
                 return (
                   <div
                     key={arc.id}
-                    className={`pg-arc-panel-row ${isActive ? 'active' : ''} ${isHov ? 'hov' : ''}`}
+                    className={`pg-arc-panel-row ${isActive ? 'active' : ''}`}
                     style={{ '--row-acc': arc.accColor } as any}
                     onClick={() => {
                       if (onArcSelect) {
                         handleButtonClick(() => onArcSelect(arc.id));
                       }
                     }}
-                    onMouseEnter={() => {
-                      setHoveredArc(arc.id);
-                      handleMouseEnter();
-                    }}
-                    onMouseLeave={() => setHoveredArc(null)}
+                    onMouseEnter={() => handleRowHover(arc.id)}
                   >
                     <img
                       src={img}
@@ -282,23 +318,18 @@ export const Hero: React.FC<HeroProps> = ({
         <div className="pg-arc-strip">
           {arcs.map(arc => {
             const img = getArcCover(arc.id);
-            const isActive = arc.id === featuredArc?.id;
-            const isHov = hoveredArc === arc.id;
+            const isActive = arc.id === activeArcId;
             return (
               <div
                 key={arc.id}
-                className={`pg-arc-chip ${isActive ? 'active' : ''} ${isHov ? 'hov' : ''}`}
+                className={`pg-arc-chip ${isActive ? 'active' : ''}`}
                 style={{ '--chip-acc': arc.accColor } as any}
                 onClick={() => {
                   if (onArcSelect) {
                     handleButtonClick(() => onArcSelect(arc.id));
                   }
                 }}
-                onMouseEnter={() => {
-                  setHoveredArc(arc.id);
-                  handleMouseEnter();
-                }}
-                onMouseLeave={() => setHoveredArc(null)}
+                onMouseEnter={() => handleRowHover(arc.id)}
               >
                 <img
                   src={img}
