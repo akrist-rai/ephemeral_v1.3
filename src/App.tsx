@@ -22,7 +22,7 @@ import { apiRequest } from './hooks/useApi';
 import { useCtf } from './hooks/useCtf';
 import { BootTour } from './components/Effects/BootTour';
 
-import type { Arc, Episode, Challenge } from './types';
+import type { Arc, Episode } from './types';
 import { getArcCover } from './lib/imageMapping';
 import { CHALLENGE_ARC_MAP } from './data/content';
 
@@ -255,7 +255,7 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [applyRoute]);
 
-  // ── Derived state ──
+
   const totalEpisodes = useMemo(() => Object.values(arcEpisodes).reduce((s, eps) => s + eps.length, 0), [arcEpisodes]);
   const totalDomains = arcs.length;
 
@@ -293,6 +293,13 @@ export default function App() {
   }, [arcs, arcEpisodes]);
 
   const selectedArc = useMemo(() => arcs.find(a => a.id === curArc) || arcs[0] || null, [arcs, curArc]);
+
+  const ctfChallenges = useMemo(() => {
+    const arcId = currentArc?.id;
+    if (!arcId) return challenges;
+    const scoped = challenges.filter(c => CHALLENGE_ARC_MAP[c.id] === arcId);
+    return scoped.length > 0 ? scoped : challenges;
+  }, [currentArc, challenges]);
 
   const episodeBasePath = (currentEpisode && currentArc)
     ? `/episode/${currentArc.id}/${currentEpisode.id}`
@@ -414,26 +421,24 @@ export default function App() {
             </div>
             {route.tab === 'brief' && <Brief episode={currentEpisode} arc={currentArc} onStartResources={() => navigate(`${episodeBasePath}/resources`)} />}
             {route.tab === 'res' && <Resources episode={currentEpisode} onEnterArena={() => navigate(`${episodeBasePath}/ctf`)} />}
-            {route.tab === 'ctf' && (() => {
-              const arcId = currentArc?.id;
-              const arcChallenges = arcId
-                ? challenges.filter((c: Challenge) => CHALLENGE_ARC_MAP[c.id] === arcId)
-                : challenges;
-              // Fallback: if arc exists but has no mapped challenges, show all
-              const ctfChallenges = arcChallenges.length > 0 ? arcChallenges : challenges;
-              return (
-                <CTFComponent
-                  gctf={gctf} setGctf={setGctf} setUserXp={setUserXp}
-                  showToast={showToast} challenges={ctfChallenges} navigate={navigate}
-                  dataStatus={dataStatus} apiError={apiError}
-                  submitFlag={submitFlag} toggleCTFHint={toggleCTFHint}
-                  shake={shake} flagInputRef={flagInputRef}
-                  episodeBasePath={episodeBasePath}
-                  chalStats={chalStats}
-                  currentUserId={user.id}
-                />
-              );
-            })()}
+            {route.tab === 'ctf' && (
+              <CTFComponent
+                gctf={gctf}
+                setUserXp={setUserXp}
+                showToast={showToast}
+                challenges={ctfChallenges}
+                navigate={navigate}
+                dataStatus={dataStatus}
+                apiError={apiError}
+                submitFlag={submitFlag}
+                toggleCTFHint={toggleCTFHint}
+                shake={shake}
+                flagInputRef={flagInputRef}
+                episodeBasePath={episodeBasePath}
+                chalStats={chalStats}
+                currentUserId={user.id}
+              />
+            )}
           </div>
         </div>
       )}

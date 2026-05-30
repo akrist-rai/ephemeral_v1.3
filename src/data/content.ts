@@ -643,6 +643,61 @@ export interface Resource {
 }
 
 export const EPISODE_RESOURCES: Record<string, Resource[]> = {
+  // ── Arc 1 ──────────────────────────────────────────────────────
+  'S1E1_A1': [
+    { icon: '📄', title: 'Introduction to Graph Theory', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'cs.cornell.edu', desc: 'Covers directed/undirected graphs, weighted edges, adjacency matrices and lists.', link: 'https://www.cs.cornell.edu/courses/cs2800/2015fa/handouts/graph_theory.pdf', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '▶', title: "Kruskal's and Prim's MST Algorithms", tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · Abdul Bari · 18 min', desc: 'Clear walkthrough of both MST algorithms with animated examples.', link: 'https://www.youtube.com/watch?v=4ZlRH0eK-qQ', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+  ],
+  'S1E2_A1': [
+    { icon: '📄', title: 'Cook-Levin Theorem — P vs NP', tag: 'PAPER', tagClass: 'rtag-p', src: 'arxiv.org', desc: 'The foundational paper establishing NP-completeness and SAT reductions.', link: 'https://arxiv.org/abs/0910.4698', iconStyle: { background: 'rgba(185,255,0,.08)', border: '1px solid rgba(185,255,0,.15)', color: 'var(--lime)' } },
+    { icon: '▶', title: 'P vs NP — Explained Visually', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · Computerphile · 10 min', desc: 'Intuitive introduction to the hardest open problem in computer science.', link: 'https://www.youtube.com/watch?v=YX40hbAHx3s', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+  ],
+  'S1E3_A1': [
+    { icon: '◈', title: 'Greedy vs Dynamic Programming', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'geeksforgeeks.org', desc: 'When greedy fails and why DP finds the global optimum — with Knapsack examples.', link: 'https://www.geeksforgeeks.org/greedy-approach-vs-dynamic-programming/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+    { icon: '▶', title: '0/1 Knapsack Dynamic Programming', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · Abdul Bari · 22 min', desc: 'Full derivation of the DP table for 0/1 Knapsack with complexity analysis.', link: 'https://www.youtube.com/watch?v=8LusJS5-AGo', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+  ],
+  'S1E4_A1': [
+    { icon: '◈', title: "Dijkstra's Algorithm — Step by Step", tag: 'ARTICLE', tagClass: 'rtag-a', src: 'geeksforgeeks.org', desc: 'Implementation and complexity analysis of Dijkstra with min-heap priority queue.', link: 'https://www.geeksforgeeks.org/dijkstras-shortest-path-algorithm-greedy-algo-7/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+    { icon: '◈', title: 'Bellman-Ford vs Dijkstra', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'cp-algorithms.com', desc: 'When negative weights require Bellman-Ford and why Dijkstra breaks on them.', link: 'https://cp-algorithms.com/graph/bellman_ford.html', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  // ── Arc 2 ──────────────────────────────────────────────────────
+  'S1E1_A2': [
+    { icon: '◈', title: 'iptables Firewall Rules Guide', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'digitalocean.com', desc: 'Practical guide to configuring stateful packet filtering with iptables on Linux.', link: 'https://www.digitalocean.com/community/tutorials/iptables-essentials-common-firewall-rules-and-commands', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+    { icon: '◈', title: 'Network Address Translation (NAT) Explained', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'cloudflare.com', desc: 'How NAT maps private IPs to public IPs and why it matters for security architecture.', link: 'https://www.cloudflare.com/learning/network-layer/what-is-nat/', iconStyle: { background: 'rgba(79,195,247,.08)', border: '1px solid rgba(79,195,247,.15)', color: '#4fc3f7' } },
+  ],
+  'S1E2_A2': [
+    { icon: '▶', title: 'Buffer Overflow Attack — Explained', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · LiveOverflow · 14 min', desc: 'Stack smashing, return address overwriting, and NOP sleds demonstrated live.', link: 'https://www.youtube.com/watch?v=T03idxny9jE', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Smashing the Stack for Fun and Profit', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'phrack.org', desc: 'The classic 1996 paper by Aleph One — the definitive stack overflow reference.', link: 'http://phrack.org/issues/49/14.html', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E3_A2': [
+    { icon: '◈', title: 'DDoS Attack Types and Mitigation', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'cloudflare.com', desc: 'SYN floods, amplification attacks, and traffic scrubbing techniques.', link: 'https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/', iconStyle: { background: 'rgba(79,195,247,.08)', border: '1px solid rgba(79,195,247,.15)', color: '#4fc3f7' } },
+    { icon: '◈', title: 'Snort IDS Rule Writing Guide', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'snort.org', desc: 'Writing custom detection rules for network intrusion detection systems.', link: 'https://www.snort.org/documents', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E4_A2': [
+    { icon: '📄', title: 'RSA Cryptosystem — Original Paper', tag: 'PAPER', tagClass: 'rtag-p', src: 'cacm.acm.org · Rivest, Shamir, Adleman 1978', desc: 'The original 1978 paper introducing RSA public-key cryptography.', link: 'https://dl.acm.org/doi/10.1145/359340.359342', iconStyle: { background: 'rgba(185,255,0,.08)', border: '1px solid rgba(185,255,0,.15)', color: 'var(--lime)' } },
+    { icon: '▶', title: 'RSA Encryption — How it Works', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · Computerphile · 12 min', desc: 'Modular exponentiation, key generation, and why factoring is hard.', link: 'https://www.youtube.com/watch?v=wXB-V_Keiu8', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+  ],
+  // ── Arc 3 ──────────────────────────────────────────────────────
+  'S1E1': [
+    { icon: '▶', title: 'Neural Networks from Scratch', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · 3Blue1Brown · 19 min', desc: 'Build intuition for neurons, weighted sums, and activation functions visually.', link: 'https://www.youtube.com/watch?v=aircAruvnKk', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'McCulloch-Pitts Neuron — Original Model', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'towardsdatascience.com', desc: 'History and math behind the first computational model of a neuron.', link: 'https://towardsdatascience.com/mcculloch-pitts-model-5fdf65ac5dd1', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E2': [
+    { icon: '▶', title: 'Why Hidden Layers Matter — XOR Problem', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · 3Blue1Brown · 21 min', desc: 'Visual proof of why single-layer perceptrons cannot solve XOR.', link: 'https://www.youtube.com/watch?v=IHZwWFHWa-w', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Universal Approximation Theorem', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'neuralnetworksanddeeplearning.com', desc: 'Why two-layer networks can approximate any continuous function.', link: 'http://neuralnetworksanddeeplearning.com/chap4.html', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E3': [
+    { icon: '▶', title: 'Backpropagation Explained', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · 3Blue1Brown · 14 min', desc: 'Chain rule derivation of backprop with animated gradient flow through layers.', link: 'https://www.youtube.com/watch?v=Ilg3gGewQ5U', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '📄', title: 'Vanishing Gradients & ReLU', tag: 'PAPER', tagClass: 'rtag-p', src: 'proceedings.mlr.press · Glorot & Bengio 2010', desc: 'The paper demonstrating vanishing gradients and proposing ReLU as a fix.', link: 'http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf', iconStyle: { background: 'rgba(185,255,0,.08)', border: '1px solid rgba(185,255,0,.15)', color: 'var(--lime)' } },
+  ],
+  'S2E1': [
+    { icon: '📄', title: 'Attention Is All You Need', tag: 'PAPER', tagClass: 'rtag-p', src: 'arxiv.org · Vaswani et al. 2017', desc: 'The original Transformer paper introducing scaled dot-product attention.', link: 'https://arxiv.org/abs/1706.03762', iconStyle: { background: 'rgba(185,255,0,.08)', border: '1px solid rgba(185,255,0,.15)', color: 'var(--lime)' } },
+    { icon: '◈', title: 'Illustrated Transformer', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'jalammar.github.io', desc: 'Step-by-step visual breakdown of the attention mechanism and Transformer architecture.', link: 'https://jalammar.github.io/illustrated-transformer/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S2E2': [
+    { icon: '◈', title: 'The Annotated Transformer', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'nlp.seas.harvard.edu', desc: 'Line-by-line PyTorch implementation of the full Transformer encoder-decoder.', link: 'https://nlp.seas.harvard.edu/annotated-transformer/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+    { icon: '▶', title: 'Multi-Head Attention — Explained', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · Yannic Kilcher · 25 min', desc: 'Deep dive into multi-head attention splitting, residual connections, and layer norm.', link: 'https://www.youtube.com/watch?v=iDulhoQ2pro', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+  ],
   'S2E3': [
     { icon: '📄', title: 'An Image is Worth 16x16 Words: ViT', tag: 'PAPER', tagClass: 'rtag-p', src: 'arxiv.org · Dosovitskiy et al. 2020', desc: 'The foundational ViT paper. Understand patch-embedding before the math.', link: 'https://arxiv.org/abs/2010.11929', iconStyle: { background: 'rgba(185,255,0,.08)', border: '1px solid rgba(185,255,0,.15)', color: 'var(--lime)' } },
     { icon: '▶', title: 'But what is a convolution?', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · 3Blue1Brown · 23 min', desc: 'Build intuition for CNNs before learning what ViTs replace.', link: 'https://www.youtube.com/watch?v=TrdevFK_am4', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
@@ -678,5 +733,90 @@ export const EPISODE_RESOURCES: Record<string, Resource[]> = {
   ],
   'S1E4_A9': [
     { icon: '⚡', title: 'MDN: Strict Equality (===)', tag: 'DOCS', tagClass: 'rtag-a', src: 'developer.mozilla.org', desc: 'Why double-equals coercion is dangerous and when to enforce strict comparisons.', link: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality', iconStyle: { background: 'rgba(255,213,79,.08)', border: '1px solid rgba(255,213,79,.15)', color: '#ffd54f' } }
-  ]
+  ],
+  // ── Arc 4 ──────────────────────────────────────────────────────
+  'S1E1_A4': [
+    { icon: '◈', title: 'Network Topology Types', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'cloudflare.com', desc: 'Star, ring, mesh, and tree topologies — tradeoffs in redundancy and cost.', link: 'https://www.cloudflare.com/learning/network-layer/what-is-a-network-topology/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+    { icon: '▶', title: 'BFS and DFS Graph Traversal', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · Abdul Bari · 16 min', desc: 'Breadth-first and depth-first search with adjacency list implementation.', link: 'https://www.youtube.com/watch?v=pcKY4hjDrxk', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+  ],
+  'S1E2_A4': [
+    { icon: '◈', title: 'TCP Three-Way Handshake', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'cloudflare.com', desc: 'SYN, SYN-ACK, ACK — how TCP establishes a reliable connection.', link: 'https://www.cloudflare.com/learning/ddos/glossary/tcp-ip/', iconStyle: { background: 'rgba(79,195,247,.08)', border: '1px solid rgba(79,195,247,.15)', color: '#4fc3f7' } },
+    { icon: '◈', title: 'Sequence Number Prediction Attacks', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'cs.columbia.edu', desc: 'How predictable TCP ISNs enable session hijacking — historical analysis.', link: 'https://www.cs.columbia.edu/~smb/papers/ipext.pdf', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E3_A4': [
+    { icon: '📄', title: 'In Search of an Understandable Consensus Algorithm (Raft)', tag: 'PAPER', tagClass: 'rtag-p', src: 'raft.github.io · Ongaro & Ousterhout 2014', desc: 'The original Raft paper — leader election, log replication, and safety proofs.', link: 'https://raft.github.io/raft.pdf', iconStyle: { background: 'rgba(185,255,0,.08)', border: '1px solid rgba(185,255,0,.15)', color: 'var(--lime)' } },
+    { icon: '◈', title: 'CAP Theorem Explained', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'ibm.com', desc: 'Consistency, Availability, Partition tolerance — and why you can only guarantee two.', link: 'https://www.ibm.com/topics/cap-theorem', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E4_A4': [
+    { icon: '◈', title: 'BGP Explained — How the Internet Routes', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'cloudflare.com', desc: 'AS paths, LOCAL_PREF, MED, and how BGP selects the best route.', link: 'https://www.cloudflare.com/learning/security/glossary/what-is-bgp/', iconStyle: { background: 'rgba(79,195,247,.08)', border: '1px solid rgba(79,195,247,.15)', color: '#4fc3f7' } },
+    { icon: '◈', title: 'BGP Hijacking Incidents', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'bgpmon.net', desc: 'Real-world BGP hijack case studies and how RPKI prevents them.', link: 'https://www.bgpmon.net/bgp-hijacking/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  // ── Arc 5 ──────────────────────────────────────────────────────
+  'S1E1_A5': [
+    { icon: '▶', title: 'Hash Tables — How They Work', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · CS Dojo · 14 min', desc: 'Chaining, open addressing, load factor, and amortised O(1) lookup.', link: 'https://www.youtube.com/watch?v=KyUTuwz_b7Q', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Trie Data Structure', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'geeksforgeeks.org', desc: 'Prefix trie implementation for autocomplete and word search in O(m) time.', link: 'https://www.geeksforgeeks.org/trie-insert-and-search/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E2_A5': [
+    { icon: '▶', title: 'Binary Heap and Priority Queue', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · WilliamFiset · 12 min', desc: 'Min-heap, heapify, extract-min, and insert with O(log n) guarantee.', link: 'https://www.youtube.com/watch?v=t0Cq6tVNRBA', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Fibonacci Heap vs Binary Heap', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'cs.princeton.edu', desc: 'Amortised complexity comparison — when Fibonacci heaps outperform binary heaps.', link: 'https://www.cs.princeton.edu/~wayne/cs423/fibonacci/FibonacciHeapAlgorithm.html', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E3_A5': [
+    { icon: '▶', title: 'AVL Trees — Rotations Explained', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · Abdul Bari · 26 min', desc: 'LL, RR, LR, RL rotations with step-by-step visualisation and height proofs.', link: 'https://www.youtube.com/watch?v=jDM6_TnYIqE', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Self-Balancing BSTs Comparison', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'geeksforgeeks.org', desc: 'AVL vs Red-Black trees — when to use each and their complexity guarantees.', link: 'https://www.geeksforgeeks.org/avl-tree-vs-red-black-tree/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E4_A5': [
+    { icon: '▶', title: 'Segment Trees — Range Queries', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · WilliamFiset · 19 min', desc: 'Build, query, and update a segment tree in O(log n) with lazy propagation.', link: 'https://www.youtube.com/watch?v=ZBHKZF5w4YU', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Persistent Segment Trees', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'cp-algorithms.com', desc: 'Preserve historical versions of segment trees for offline range queries.', link: 'https://cp-algorithms.com/data_structures/segment_tree.html', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  // ── Arc 6 ──────────────────────────────────────────────────────
+  'S1E1_A6': [
+    { icon: '◈', title: 'Bit Manipulation Tricks', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'geeksforgeeks.org', desc: 'Popcount, lowest set bit, XOR duplicate detection, and power-of-two checks.', link: 'https://www.geeksforgeeks.org/bits-manipulation-important-tactics/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+    { icon: '◈', title: 'Sean Anderson Bit Tricks', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'graphics.stanford.edu', desc: 'The famous Stanford bit-twiddling hacks reference used in competitive programming.', link: 'https://graphics.stanford.edu/~seander/bithacks.html', iconStyle: { background: 'rgba(79,195,247,.08)', border: '1px solid rgba(79,195,247,.15)', color: '#4fc3f7' } },
+  ],
+  'S1E2_A6': [
+    { icon: '▶', title: 'Quicksort vs Introsort', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · Back To Back SWE · 17 min', desc: 'Partition schemes, worst-case pivots, and why introsort is used in production.', link: 'https://www.youtube.com/watch?v=MZaf_9IZCrc', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Introsort Algorithm', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'geeksforgeeks.org', desc: 'How introsort combines quicksort, heapsort, and insertion sort for O(n log n) worst-case.', link: 'https://www.geeksforgeeks.org/introsort-or-introspective-sort/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E3_A6': [
+    { icon: '◈', title: "Kadane's Algorithm — Maximum Subarray", tag: 'ARTICLE', tagClass: 'rtag-a', src: 'geeksforgeeks.org', desc: 'O(n) dynamic programming solution to the maximum subarray sum problem.', link: 'https://www.geeksforgeeks.org/largest-sum-contiguous-subarray/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+    { icon: '▶', title: 'Sliding Window Technique', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · NeetCode · 13 min', desc: 'Fixed and variable-length sliding window patterns for O(n) substring problems.', link: 'https://www.youtube.com/watch?v=jM2dhDPYMQM', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+  ],
+  'S1E4_A6': [
+    { icon: '▶', title: 'Minimax with Alpha-Beta Pruning', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · Sebastian Lague · 20 min', desc: 'Game tree search, pruning redundant branches, and applying it to chess.', link: 'https://www.youtube.com/watch?v=l-hh51ncgDI', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Alpha-Beta Pruning Explained', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'cs.cornell.edu', desc: 'Formal correctness proof and complexity analysis of alpha-beta pruning.', link: 'https://www.cs.cornell.edu/courses/cs312/2002sp/lectures/rec21.htm', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  // ── Arc 7 ──────────────────────────────────────────────────────
+  'S1E1_A7': [
+    { icon: '▶', title: 'Essence of Linear Algebra', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · 3Blue1Brown · Series', desc: 'Visual intuition for vectors, matrices, determinants, and eigenvectors.', link: 'https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'MIT 18.06 Linear Algebra — Gilbert Strang', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'ocw.mit.edu', desc: 'The classic linear algebra course — lecture notes, assignments, and exams.', link: 'https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E2_A7': [
+    { icon: '▶', title: 'Singular Value Decomposition (SVD) Visually', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · 3Blue1Brown · 11 min', desc: 'Geometric intuition for SVD and its connection to eigendecomposition.', link: 'https://www.youtube.com/watch?v=vSczTbgc8Rc', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'PCA via SVD — Step by Step', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'towardsdatascience.com', desc: 'How truncated SVD enables dimensionality reduction and image compression.', link: 'https://towardsdatascience.com/pca-using-python-scikit-learn-e653f8989e60', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E3_A7': [
+    { icon: '▶', title: 'Gradient Descent — How Neural Networks Learn', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · 3Blue1Brown · 21 min', desc: 'Loss landscapes, saddle points, and learning rate intuition visualised.', link: 'https://www.youtube.com/watch?v=IHZwWFHWa-w', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '📄', title: 'Adam: A Method for Stochastic Optimization', tag: 'PAPER', tagClass: 'rtag-p', src: 'arxiv.org · Kingma & Ba 2015', desc: 'The foundational Adam optimizer paper combining momentum and RMSProp.', link: 'https://arxiv.org/abs/1412.6980', iconStyle: { background: 'rgba(185,255,0,.08)', border: '1px solid rgba(185,255,0,.15)', color: 'var(--lime)' } },
+  ],
+  'S1E4_A7': [
+    { icon: '📄', title: 'A Tutorial on Support Vector Machines', tag: 'PAPER', tagClass: 'rtag-p', src: 'cs.cornell.edu · Burges 1998', desc: 'Lagrangian duality and KKT conditions applied to the SVM derivation.', link: 'https://www.cs.cornell.edu/courses/cs4780/2018fa/lectures/lecturenote09.html', iconStyle: { background: 'rgba(185,255,0,.08)', border: '1px solid rgba(185,255,0,.15)', color: 'var(--lime)' } },
+    { icon: '▶', title: 'Lagrange Multipliers — Explained Visually', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · Khan Academy · 9 min', desc: 'Constrained optimisation and KKT conditions with geometric intuition.', link: 'https://www.youtube.com/watch?v=yuqB-d5MjZA', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+  ],
+  // ── Arc 8 ──────────────────────────────────────────────────────
+  'S1E1_A8': [
+    { icon: '▶', title: "Bayes' Theorem — Explained Simply", tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · 3Blue1Brown · 15 min', desc: 'Prior, likelihood, and posterior distributions with visual examples.', link: 'https://www.youtube.com/watch?v=HZGCoVF3YvM', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Naive Bayes Classifier', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'towardsdatascience.com', desc: 'Implementation and probability theory behind the Naive Bayes text classifier.', link: 'https://towardsdatascience.com/naive-bayes-classifier-81d512f50a7c', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E2_A8': [
+    { icon: '▶', title: 'Markov Chains — Clearly Explained', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · StatQuest · 18 min', desc: 'Transition matrices, stationary distributions, and convergence analysis.', link: 'https://www.youtube.com/watch?v=i3AkTO9HLXo', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Absorbing Markov Chains', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'dartmouth.edu', desc: 'Absorbing states, fundamental matrix, and first-passage time computation.', link: 'https://www.dartmouth.edu/~chance/teaching_aids/books_articles/probability_book/Chapter11.pdf', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E3_A8': [
+    { icon: '▶', title: 'Monte Carlo Simulation Explained', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · ritvikmath · 12 min', desc: 'Estimating π, importance sampling, and convergence by the Law of Large Numbers.', link: 'https://www.youtube.com/watch?v=7ESK5SaP-bc', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Metropolis-Hastings MCMC Algorithm', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'towardsdatascience.com', desc: 'Step-by-step derivation and Python implementation of the MCMC sampler.', link: 'https://towardsdatascience.com/metropolis-hastings-algorithm-52cd76d20af0', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
+  'S1E4_A8': [
+    { icon: '▶', title: 'Hypothesis Testing — t-test and p-values', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · StatQuest · 16 min', desc: 'Null hypotheses, p-values, Type I/II errors, and statistical power.', link: 'https://www.youtube.com/watch?v=5Z9OIYA8He8', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Bonferroni Correction — Multiple Comparisons', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'statisticshowto.com', desc: 'Why testing 100 hypotheses inflates false positives and how Bonferroni fixes it.', link: 'https://www.statisticshowto.com/bonferroni-correction/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
+  ],
 };

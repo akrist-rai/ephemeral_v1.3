@@ -1,20 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { WriteupModal } from '../Common/WriteupModal';
 import { playSound } from '../../lib/sound';
 import { GlitchText } from '../Effects/GlitchText';
 import { getChaptersForChallenge } from '../../data/ctfChapters';
 import { CodexPanel } from './CodexPanel';
+import type { Challenge, GctfState, ChallengeStats, SolveRecord } from '../../types';
 
 interface CTFComponentProps {
-  gctf: any; setGctf: any; setUserXp: any;
+  gctf: GctfState;
+  setUserXp: React.Dispatch<React.SetStateAction<number>>;
   showToast: (msg: string) => void;
-  challenges: any[];
+  challenges: Challenge[];
   navigate: (path: string) => void;
-  dataStatus: string; apiError: string;
-  submitFlag: any; toggleCTFHint: any;
-  shake: boolean; flagInputRef: any;
+  dataStatus: 'loading' | 'ready' | 'error';
+  apiError: string;
+  submitFlag: (id: string, flag: string, challenges: Challenge[], setUserXp: React.Dispatch<React.SetStateAction<number>>) => Promise<void>;
+  toggleCTFHint: (id: string) => void;
+  shake: boolean;
+  flagInputRef: React.RefObject<HTMLInputElement>;
   episodeBasePath: string;
-  chalStats?: Record<string, { solveCount: number; firstBlood: string | null }>;
+  chalStats?: Record<string, ChallengeStats>;
   currentUserId?: string;
 }
 
@@ -156,6 +161,7 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   gctf, showToast, challenges, navigate, dataStatus, apiError,
   submitFlag, toggleCTFHint, shake, flagInputRef, setUserXp, episodeBasePath,
   chalStats = {}, currentUserId = '',
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 }) => {
   const [writeupChal, setWriteupChal] = useState<{ id: string; title: string } | null>(null);
   const [filterCat, setFilterCat] = useState('ALL');
@@ -201,10 +207,10 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
     }
   }, [activeChalId]);
 
-  const totalPts = Object.values(gctf.solved).reduce((a: any, s: any) => a + (s.pts_earned || 0), 0) as number;
-  const solvedCount = Object.values(gctf.solved).filter((s: any) => s.solved).length;
+  const totalPts = Object.values(gctf.solved).reduce((sum: number, s: SolveRecord) => sum + (s.pts_earned || 0), 0);
+  const solvedCount = Object.values(gctf.solved).filter((s: SolveRecord) => s.solved).length;
   const pct = challenges.length > 0 ? Math.round((solvedCount / challenges.length) * 100) : 0;
-  const cats = ['ALL', ...Array.from(new Set(challenges.map((c: any) => c.category)))];
+  const cats = ['ALL', ...Array.from(new Set(challenges.map((c: Challenge) => c.category)))];
 
   const openChallenge = (id: string) => {
     playSound.click();
@@ -282,12 +288,14 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
     }, 850);
   };
 
-  // Submissions
-  const handleSubmit = async (chapIdx: number) => {
+  // Submissions — must be defined after ch is resolved in the detail view,
+  // so we hoist it here but guard against the board phase (ch will be null there).
+  const handleSubmit = async (ch: Challenge, chapters: ReturnType<typeof getChaptersForChallenge>, chapIdx: number) => {
     const chap = chapters[chapIdx];
     const isLast = chapIdx === chapters.length - 1;
     const ans = (chapAnswers[chap.id] || '').trim();
     if (!ans) return;
+
     if (isLast) {
       await submitFlag(ch.id, ans, challenges, setUserXp);
     } else {
@@ -378,49 +386,48 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
 
         {/* Challenge grid */}
         <div className="ctf-grid">
-          {filtered.map((ch: any) => {
+          {filtered.map((ch) => {
             const sv = gctf.solved[ch.id];
-            const isOk = !!(sv?.solved);
+            const isOk = !!sv?.solved;
             const att = gctf.chalAttempts[ch.id];
             const isFail = !!(sv?.failed || (!sv?.solved && att <= 0));
             const meta = CAT_META[ch.category] || { color: 'var(--paper)', icon: '□' };
             const stats = chalStats[ch.id];
             const isFirstBlood = stats?.firstBlood === currentUserId && isOk;
             const borderCol = isOk ? 'var(--crt)' : isFail ? 'var(--red)' : 'rgba(255,255,255,.06)';
+            const diffLabel = (['EASY', 'MED', 'HARD', 'ELITE', 'LEGEND'] as const)[ch.difficulty - 1] ?? '';
 
             return (
-              <div key={ch.id}
+              <div
+                key={ch.id}
                 className={`ctf-card ${isOk ? 'ctf-card--ok' : isFail ? 'ctf-card--fail' : ''}`}
-                style={{ borderColor: borderCol, '--ch-col': meta.color } as any}
-                onClick={() => openChallenge(ch.id)}>
-
-                {/* Top accent line */}
+                style={{ borderColor: borderCol, '--ch-col': meta.color } as React.CSSProperties}
+                onClick={() => openChallenge(ch.id)}
+              >
                 <div className="ctf-card-accent" style={{ background: meta.color }} />
 
-                {/* Header row */}
                 <div className="ctf-card-top">
                   <span className="ctf-card-cat" style={{ color: meta.color }}>{meta.icon} {ch.category}</span>
                   <span className="ctf-card-pts" style={{ color: isOk ? 'var(--crt)' : isFail ? 'var(--red)' : meta.color }}>
-                    {isOk ? `+${sv.pts_earned} ✓` : isFail ? '✗ LOCKED' : `${ch.points} PTS`}
+                    {isOk ? `+${sv!.pts_earned} ✓` : isFail ? '✗ LOCKED' : `${ch.points} PTS`}
                   </span>
                 </div>
 
-                {/* Title */}
                 <div className="ctf-card-title">
                   <GlitchText text={ch.title} triggerOnHover color={meta.color} />
                 </div>
                 <div className="ctf-card-id">#{ch.id}</div>
 
-                {/* Footer */}
                 <div className="ctf-card-foot">
                   <div className="ctf-diff-pips">
-                    {[1,2,3].map(i => (
-                      <div key={i} className="ctf-diff-pip"
-                        style={{ background: i <= ch.difficulty ? meta.color : 'rgba(255,255,255,.08)' }} />
+                    {[1, 2, 3].map(i => (
+                      <div
+                        key={i}
+                        className="ctf-diff-pip"
+                        style={{ background: i <= ch.difficulty ? meta.color : 'rgba(255,255,255,.08)' }}
+                      />
                     ))}
-                    <span className="ctf-diff-lbl" style={{ color: meta.color }}>
-                      {['', 'EASY', 'MED', 'HARD'][ch.difficulty] || ''}
-                    </span>
+                    <span className="ctf-diff-lbl" style={{ color: meta.color }}>{diffLabel}</span>
                   </div>
                   <div className="ctf-card-badges">
                     {isFirstBlood && <span className="ctf-fb">🩸 1ST</span>}
@@ -431,7 +438,6 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
                   </div>
                 </div>
 
-                {/* Hover scan line */}
                 <div className="ctf-card-scan" />
               </div>
             );
@@ -446,18 +452,20 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   if (dataStatus === 'loading') return <div className="ctf-wrap"><div className="ctf-boot">LOADING INCIDENT DATA...</div></div>;
   if (dataStatus === 'error')   return <div className="ctf-wrap"><div className="ctf-boot ctf-boot--err">BACKEND ERROR // {apiError}</div></div>;
 
-  const ch = challenges.find((c: any) => c.id === id);
+  const ch = challenges.find(c => c.id === id);
   if (!ch) return <div className="ctf-wrap"><div className="ctf-boot ctf-boot--err">CHALLENGE NOT FOUND // {id}</div></div>;
 
-  const sv = gctf.solved[id];
-  const isOk = !!(sv?.solved);
-  const att = gctf.chalAttempts[id] ?? ch.attemptsAllowed;
+  const sv   = gctf.solved[id!];
+  const isOk = !!sv?.solved;
+  const att  = gctf.chalAttempts[id!] ?? ch.attemptsAllowed;
   const isFail = !!(sv?.failed || (!sv?.solved && att <= 0));
-  const meta = CAT_META[ch.category] || { color: 'var(--red)', icon: '□' };
+  const meta    = CAT_META[ch.category] || { color: 'var(--red)', icon: '□' };
   const chapters = getChaptersForChallenge(ch.id, ch.flag);
 
-  const isChapOk  = (chap: any, idx: number) => isOk ? true : idx === chapters.length - 1 ? isOk : !!solvedChaps[chap.id];
-  const isChapOn  = (_: any, idx: number)     => isOk ? true : idx === 0 ? true : !!solvedChaps[chapters[idx - 1].id];
+  const isChapOk = (_chap: unknown, idx: number) =>
+    isOk ? true : idx === chapters.length - 1 ? isOk : !!solvedChaps[chapters[idx].id];
+  const isChapOn = (_chap: unknown, idx: number) =>
+    isOk ? true : idx === 0 ? true : !!solvedChaps[chapters[idx - 1].id];
 
   const curChap = chapters[activeChapIdx];
   const curOk   = isChapOk(curChap, activeChapIdx);
@@ -504,26 +512,32 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
             </span>
           </div>
 
-          {chapters.map((chap: any, idx: number) => {
+          {chapters.map((chap, idx) => {
             const ok  = isChapOk(chap, idx);
             const on  = isChapOn(chap, idx);
             const act = idx === activeChapIdx;
             return (
-              <button key={chap.id}
+              <button
+                key={chap.id}
                 className={`ctf-task-btn ${act ? 'on' : ''} ${ok ? 'done' : !on ? 'locked' : ''}`}
                 style={act ? { borderLeftColor: meta.color, color: 'var(--paper)' } : {}}
                 onClick={() => {
                   if (on) { playSound.click(); setActiveChapIdx(idx); }
                   else { playSound.error(); showToast('COMPLETE PRECEDING STAGES FIRST'); }
-                }}>
-                <span className="ctf-task-num"
-                  style={{ color: ok ? 'var(--crt)' : !on ? 'rgba(255,255,255,.15)' : meta.color }}>
+                }}
+              >
+                <span
+                  className="ctf-task-num"
+                  style={{ color: ok ? 'var(--crt)' : !on ? 'rgba(255,255,255,.15)' : meta.color }}
+                >
                   {ok ? '✓' : !on ? '🔒' : String(idx + 1).padStart(2, '0')}
                 </span>
                 <span className="ctf-task-info">
                   <span className="ctf-task-name">{chap.title}</span>
-                  <span className="ctf-task-status"
-                    style={{ color: ok ? 'var(--crt)' : !on ? 'rgba(255,255,255,.15)' : 'var(--muted)' }}>
+                  <span
+                    className="ctf-task-status"
+                    style={{ color: ok ? 'var(--crt)' : !on ? 'rgba(255,255,255,.15)' : 'var(--muted)' }}
+                  >
                     {ok ? 'CLEARED' : !on ? 'ENCRYPTED' : 'ACTIVE'}
                   </span>
                 </span>
@@ -759,28 +773,39 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
                   </div>
                   <div className="ctf-flag-row">
                     <span className="ctf-flag-pfx">{isLast ? 'EPHEMERAL{' : 'ANSWER{'}</span>
-                    <input className="ctf-flag-inp"
+                    <input
+                      ref={flagInputRef}
+                      className="ctf-flag-inp"
                       type="text"
-                      placeholder={curChap.placeholder || (isLast ? 'flag…' : 'answer…')}
+                      placeholder={curChap.placeholder ?? (isLast ? 'flag…' : 'answer…')}
                       value={chapAnswers[curChap.id] || ''}
                       onChange={e => setChapAnswers({ ...chapAnswers, [curChap.id]: e.target.value })}
-                      onKeyDown={e => e.key === 'Enter' && handleSubmit(activeChapIdx)}
-                      autoComplete="off" spellCheck={false}
-                      style={{ caretColor: meta.color }} />
+                      onKeyDown={e => e.key === 'Enter' && handleSubmit(ch, chapters, activeChapIdx)}
+                      autoComplete="off"
+                      spellCheck={false}
+                      style={{ caretColor: meta.color }}
+                    />
                     <span className="ctf-flag-pfx">{'}'}</span>
-                    <button className="btn-r ctf-submit-btn"
-                      style={{ background: meta.color === 'var(--red)' || meta.color === '#ff2a38' ? 'var(--red)' : meta.color,
-                               color: meta.color === 'var(--lime)' || meta.color === '#ccff00' ? '#000' : '#fff' }}
-                      onClick={() => handleSubmit(activeChapIdx)}>
+                    <button
+                      className="btn-r ctf-submit-btn"
+                      style={{
+                        background: meta.color,
+                        color: meta.color === 'var(--lime)' ? '#000' : '#fff',
+                      }}
+                      onClick={() => handleSubmit(ch, chapters, activeChapIdx)}
+                    >
                       SUBMIT
                     </button>
                   </div>
                   {isLast && (
                     <div className="ctf-att-row">
                       <div className="ctf-att-pips">
-                        {Array.from({ length: ch.attemptsAllowed }).map((_: any, i: number) => (
-                          <div key={i} className="ctf-att-pip"
-                            style={{ background: i < att ? meta.color : 'rgba(255,255,255,.08)' }} />
+                        {Array.from({ length: ch.attemptsAllowed }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="ctf-att-pip"
+                            style={{ background: i < att ? meta.color : 'rgba(255,255,255,.08)' }}
+                          />
                         ))}
                       </div>
                       <span className="ctf-att-lbl">{att} ATTEMPT{att !== 1 ? 'S' : ''} REMAINING</span>
@@ -826,18 +851,28 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
             <span style={{ color: meta.color }}>⊞</span> EVIDENCE
             <span className="ctf-evidence-count">{ch.artifacts.length} FILE{ch.artifacts.length !== 1 ? 'S' : ''}</span>
           </div>
-          {ch.artifacts.map((a: any, i: number) => {
-            const typeColor: Record<string, string> = { table: '#80cbc4', config: 'var(--lime)', log: '#4fc3f7', code: '#ce93d8', output: 'var(--crt)' };
-            const tc = typeColor[a.type] || meta.color;
+          {ch.artifacts.map((artifact, i) => {
+            const ARTIFACT_COLORS: Record<string, string> = {
+              table: '#80cbc4',
+              config: 'var(--lime)',
+              log: '#4fc3f7',
+              code: '#ce93d8',
+              output: 'var(--crt)',
+            };
+            const tc   = ARTIFACT_COLORS[artifact.type] ?? meta.color;
             const open = expandedArt === i;
             return (
-              <div key={i} className="ctf-artifact" style={{ borderLeftColor: open ? tc : 'rgba(255,255,255,.04)' }}>
+              <div
+                key={i}
+                className="ctf-artifact"
+                style={{ borderLeftColor: open ? tc : 'rgba(255,255,255,.04)' }}
+              >
                 <button className="ctf-artifact-hdr" onClick={() => setExpandedArt(open ? null : i)}>
-                  <span className="ctf-artifact-type" style={{ color: tc }}>{a.type.toUpperCase()}</span>
-                  <span className="ctf-artifact-name">{a.label}</span>
+                  <span className="ctf-artifact-type" style={{ color: tc }}>{artifact.type.toUpperCase()}</span>
+                  <span className="ctf-artifact-name">{artifact.label}</span>
                   <span className="ctf-artifact-arr">{open ? '▲' : '▼'}</span>
                 </button>
-                {open && <pre className="ctf-artifact-body">{a.content}</pre>}
+                {open && <pre className="ctf-artifact-body">{artifact.content}</pre>}
               </div>
             );
           })}

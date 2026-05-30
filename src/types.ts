@@ -1,4 +1,4 @@
-// ── SHARED FRONTEND TYPES ──
+// ── SHARED FRONTEND TYPES ──────────────────────────────────────────────────
 
 export interface Arc {
   id: number;
@@ -28,25 +28,46 @@ export interface Episode {
   done: boolean;
 }
 
+export interface Artifact {
+  type: 'table' | 'config' | 'log' | 'code' | 'output';
+  label: string;
+  content: string;
+}
+
 export interface Challenge {
   id: string;
   tier: number;
   category: string;
   points: number;
-  difficulty: number;
+  difficulty: 1 | 2 | 3 | 4 | 5;
   title: string;
   scenario: string;
   task: string;
   artifacts: Artifact[];
+  flag: string;
   hint: string | null;
   explanation: string | null;
   attemptsAllowed: number;
 }
 
-export interface Artifact {
-  type: string;
-  label: string;
-  content: string;
+export interface SolveRecord {
+  solved: boolean;
+  attempts_used: number;
+  pts_earned: number;
+  failed?: boolean;
+}
+
+export interface GctfState {
+  solved: Record<string, SolveRecord>;
+  active: string | null;
+  chalAttempts: Record<string, number>;
+  hintOn: Record<string, boolean>;
+  phase: 'board' | 'challenge';
+}
+
+export interface ChallengeStats {
+  solveCount: number;
+  firstBlood: string | null;
 }
 
 export interface LeaderboardEntry {
