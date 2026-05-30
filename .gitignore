@@ -5,6 +5,5 @@ dist
 *.env.backup
 .vercel
 *.log
-bun.lock
 .jetro/
 CLAUDE.md
