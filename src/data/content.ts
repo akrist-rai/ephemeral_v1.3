@@ -168,6 +168,116 @@ export const CHALLENGES = [
     hint: 'In most programming languages, arrays start counting at 0, not 1. Try counting the list items starting from 0.',
     explanation: 'Because arrays are zero-indexed, an array with 5 items has valid indices of 0, 1, 2, 3, and 4. The "Loading Dock" is at index 4. Querying index 5 (which would be a 6th item) causes the script to fail.'
   },
+  {
+    id: 'WEB_SQLI_001',
+    tier: 1,
+    category: 'WEB',
+    points: 200,
+    difficulty: 2,
+    title: 'Syndicate Access Bypass',
+    scenario: 'An external portal for Sector-7 allows authentication, but the database query is poorly sanitized. The endpoint uses standard string concatenation to verify operator credentials, making it highly vulnerable to structured query injection.',
+    task: 'Determine the standard SQL injection snippet that bypasses the credential check by forcing the WHERE clause to evaluate to TRUE. The application checks if any row is returned.',
+    artifacts: [
+      {
+        type: 'config',
+        label: 'AUTH_GATEWAY.SQL',
+        content: 'SELECT * FROM operators WHERE username = \'INPUT_USER\' AND passcode = \'INPUT_PASS\';'
+      },
+      {
+        type: 'table',
+        label: 'SYSTEM DUMP',
+        content: 'Table: operators\nColumns: op_id, username, passcode, security_clearance\n───────┼──────────────┼──────────┼───────────────────\n 1     │ admin        │ ******** │ Level-5'
+      }
+    ],
+    flag: 'admin\' OR \'1\'=\'1',
+    attemptsAllowed: 5,
+    hint: 'Use a single quote to close the username string parameter and introduce an OR condition that is always true.',
+    explanation: 'By entering "admin\' OR \'1\'=\'1", the query becomes: SELECT * FROM operators WHERE username = \'admin\' OR \'1\'=\'1\' AND passcode = \'...\'. Since \'1\'=\'1\' is always true, the database returns the first record, bypassing the login check.'
+  },
+  {
+    id: 'PWN_STACK_001',
+    tier: 2,
+    category: 'PWN',
+    points: 300,
+    difficulty: 3,
+    title: 'pwnable.kr: fd (File Descriptor)',
+    scenario: 'A setuid binary in the operators\' sandbox segment reads a number from argv[1], subtracts 0x1234 (4660 in decimal), and uses it as a file descriptor. It then reads 32 bytes from this file descriptor into a local stack buffer.',
+    task: 'Determine what decimal argument you need to pass to the binary so that the resulting file descriptor points to standard input (stdin, which has a descriptor value of 0), allowing you to inject "LETMEWIN" and print the flag.',
+    artifacts: [
+      {
+        type: 'config',
+        label: 'FD.C (SOURCE)',
+        content: '#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main(int argc, char* argv[]) {\n    if (argc < 2) return 0;\n    int fd = atoi(argv[1]) - 0x1234;\n    char buf[32];\n    int len = read(fd, buf, 32);\n    if (!strcmp("LETMEWIN\\n", buf)) {\n        printf("Flag: PWN_FD_SOLVED\\n");\n        return 0;\n    }\n    return 0;\n}'
+      }
+    ],
+    flag: '4660',
+    attemptsAllowed: 5,
+    hint: '0x1234 is hexadecimal. Convert 0x1234 to its decimal representation.',
+    explanation: 'The binary subtracts 0x1234 from your input to get the file descriptor. Standard input is 0. To make fd = 0, input must equal 0x1234. In decimal, 0x1234 is 4660.'
+  },
+  {
+    id: 'REV_XOR_001',
+    tier: 2,
+    category: 'REVERSE',
+    points: 250,
+    difficulty: 2,
+    title: 'crackme.exe: Hidden Key',
+    scenario: 'A suspicious malware sample has been decompiled. It reads a license key and performs a byte-wise XOR against a fixed array of length 6. The output is then compared to a static signature.',
+    task: 'Analyze the decompiler artifacts, extract the hex signature and the XOR key, and compute the original 6-character license key string.',
+    artifacts: [
+      {
+        type: 'table',
+        label: 'DECOMPILER DUMP',
+        content: 'XOR Key Array   : [0x5A, 0x5A, 0x5A, 0x5A, 0x5A, 0x5A]\nTarget Signature: [0x11, 0x1F, 0x03, 0x0A, 0x0D, 0x14]'
+      }
+    ],
+    flag: 'KEYPWN',
+    attemptsAllowed: 4,
+    hint: 'The XOR operation is reversible: Key = Signature ^ XOR_Key. Convert hex values to ASCII characters.',
+    explanation: 'Performing XOR: 0x11 ^ 0x5A = 0x4B (\'K\'), 0x1F ^ 0x5A = 0x45 (\'E\'), 0x03 ^ 0x5A = 0x59 (\'Y\'), 0x0A ^ 0x5A = 0x50 (\'P\'), 0x0D ^ 0x5A = 0x57 (\'W\'), 0x14 ^ 0x5A = 0x4E (\'N\'). Combined: KEYPWN.'
+  },
+  {
+    id: 'CRY_PADDING_001',
+    tier: 3,
+    category: 'CRYPTO',
+    points: 350,
+    difficulty: 4,
+    title: 'Oracle of Bleichenbacher',
+    scenario: 'An operator captured a ciphertext encrypted with RSA-1024. The target system returns a specific padding error ("Decryption Error 0x82") when the decrypted block does not begin with 0x00 0x02, leaking validity information.',
+    task: 'Identify the family name of the cryptanalyst who first discovered this padding oracle attack on PKCS#1 v1.5 padding.',
+    artifacts: [
+      {
+        type: 'config',
+        label: 'INTERCEPTED ENVELOPE',
+        content: 'Algorithm   : RSA-1024\nPadding Mode: PKCS#1 v1.5\nError Code  : Decryption Error 0x82 (Invalid Padding)'
+      }
+    ],
+    flag: 'Bleichenbacher',
+    attemptsAllowed: 3,
+    hint: 'The attack was published in 1998 by a Swiss cryptographer and is also known as the Million Message Attack.',
+    explanation: 'Daniel Bleichenbacher described the padding oracle attack against PKCS#1 v1.5, showing that an attacker could decrypt RSA ciphertexts by sending chosen-ciphertext queries and analyzing padding verification error responses.'
+  },
+  {
+    id: 'ML_ADVERSARIAL_001',
+    tier: 3,
+    category: 'ML_SECURITY',
+    points: 300,
+    difficulty: 3,
+    title: 'Adversarial Attack: Breaking ResNet',
+    scenario: 'An automated security drone uses ResNet-50 to classify weapons. We have white-box access to the model weights. The input image is classified as "weapon" with 98.7% confidence, but we must construct a minimal pixel perturbation to bypass classification.',
+    task: 'Identify the common one-shot adversarial algorithm shown in the formula. Submit its 4-letter acronym.',
+    artifacts: [
+      {
+        type: 'config',
+        label: 'DELTA_OPTIMIZER.PY',
+        content: 'x_adv = x + epsilon * sign(grad(loss(x, y), x))\n# generates minimal adversarial perturbation using the sign of the gradients'
+      }
+    ],
+    flag: 'FGSM',
+    attemptsAllowed: 3,
+    hint: 'It stands for Fast Gradient Sign Method, introduced by Ian Goodfellow et al.',
+    explanation: 'FGSM computes the gradient of the loss function with respect to the input image, then takes the sign of that gradient and scales it by epsilon. This shifts the image in the direction that maximizes loss, causing a misclassification with imperceptible changes.'
+  },
   { id: 'GRAD_001', tier: 1, category: 'GRADIENT', points: 100, difficulty: 1, title: 'The Silent Network', scenario: 'A 6-layer MLP stopped learning at epoch 1. The engineer logged gradient norms across all layers immediately after the first backward pass.', task: 'Find the index of the last layer where the gradient has vanished (norm < 0.0001). Layers are 1-indexed.', artifacts: [ { type: 'table', label: 'GRADIENT NORMS — EPOCH 1, STEP 1', content: 'Layer  │ Gradient Norm\n───────┼──────────────\n  1    │ 0.00000012\n  2    │ 0.00000089\n  3    │ 0.00000341\n  4    │ 0.00000008  ← \n  5    │ 0.48271000\n  6    │ 1.20443000\n' }, { type: 'config', label: 'MODEL CONFIG', content: 'activation : sigmoid\nweight_init: xavier_uniform\noptimizer  : adam\nlr         : 0.001' } ], flag: '4', attemptsAllowed: 3, hint: 'Check which activation is configured and what its gradient saturation behaviour is.', explanation: 'Sigmoid saturates — gradients near 0 or 1 output become ~0. Layer 4 shows the last vanished norm (0.00000008). Switch to ReLU.' },
   { id: 'VIT_001', tier: 1, category: 'ARCHITECTURE', points: 100, difficulty: 1, title: 'The Indivisible Head', scenario: 'A ViT training run crashes immediately at the first forward pass with a shape error. No code change was made — only the config was updated.', task: 'Find the value of the parameter that makes the head dimension non-integer. Submit the exact value from the config.', artifacts: [ { type: 'config', label: 'VIT CONFIG — CURRENT (BROKEN)', content: 'model_type   : vit-base\nimage_size   : 224\npatch_size   : 16\nembed_dim    : 768\nnum_heads    : 10\nnum_layers   : 12\nmlp_ratio    : 4\ndropout      : 0.1' }, { type: 'log', label: 'CRASH LOG', content: 'RuntimeError: embed_dim (768) must be\ndivisible by num_heads.\n768 / 10 = 76.8  ← not an integer\n\nTrace: MultiHeadAttention.forward() line 47' } ], flag: '10', attemptsAllowed: 3, hint: 'Head dimension = embed_dim / num_heads. It must be a whole number.', explanation: '768 / 10 = 76.8 — invalid. num_heads must divide 768 evenly. Valid values: 1,2,3,4,6,8,12,16,24,32,48,64,96,192,256,384,768.' },
   { id: 'DEPLOY_001', tier: 1, category: 'INFERENCE', points: 100, difficulty: 1, title: 'The Unstable Oracle', scenario: 'A deployed classifier returns different predictions for the same input on every call. The model was working fine in training. No randomness in the data pipeline.', task: 'Identify the exact configuration key that is set incorrectly for deployment. Submit its current value.', artifacts: [ { type: 'config', label: 'TRAINING CONFIG', content: 'dropout_rate : 0.5\nbn_momentum  : 0.1\nmode         : train' }, { type: 'config', label: 'INFERENCE CONFIG', content: 'dropout_rate : 0.5\nbn_momentum  : 0.1\nmode         : train   ← deployed as-is' }, { type: 'log', label: 'INFERENCE CALLS — SAME INPUT', content: 'call_1: [0.71, 0.18, 0.11]\ncall_2: [0.43, 0.39, 0.18]\ncall_3: [0.68, 0.22, 0.10]\n# predictions change every call\n# source: stochastic operation still active' } ], flag: 'train', attemptsAllowed: 3, hint: 'What PyTorch operation produces different outputs each forward pass?', explanation: 'model.train() keeps dropout active — random neurons zeroed each call. Deployment requires model.eval() which disables dropout and uses running BN stats.' },
@@ -176,7 +286,6 @@ export const CHALLENGES = [
   { id: 'TOK_001', tier: 2, category: 'NLP', points: 250, difficulty: 3, title: 'The Fragmented Lexicon', scenario: 'A sentiment analysis model performs well on English text but returns random predictions on customer reviews containing emojis, URLs, and mixed-language content. The model architecture is fine — the problem is in preprocessing.', task: 'How many tokens does the tokenizer produce for the test input? Submit the exact count.', artifacts: [ { type: 'config', label: 'TOKENIZER CONFIG', content: 'type          : BPE (byte-pair encoding)\nvocab_size    : 30522\nmax_length    : 128\npad_token     : [PAD]\nunk_token     : [UNK]\ndo_lower_case : true\nstrip_accents : true' }, { type: 'log', label: 'TOKENIZATION DEBUG', content: 'Input: "Great product! 👍 Visit müller.de/réviews"\n\nTokens: ["great", "product", "!", "[UNK]",\n         "visit", "[UNK]", ".", "[UNK]",\n         "/", "[UNK]"]\n\nToken count: 10\n[UNK] ratio: 4/10 = 40%\n\n# 40% of input is unknown to the model\n# Emojis, accented chars, and URLs all map to [UNK]' } ], flag: '10', attemptsAllowed: 3, hint: 'Count every token in the debug output, including [UNK] tokens.', explanation: 'The BPE tokenizer with strip_accents=true and limited vocab maps emojis (👍), accented characters (ü, é), and URL fragments to [UNK]. 4 out of 10 tokens carry zero semantic information, making the model blind to 40% of the input.' },
   { id: 'OVER_001', tier: 3, category: 'OVERFITTING', points: 300, difficulty: 3, title: 'The Perfect Student', scenario: 'A medical imaging classifier achieves 99.8% accuracy on the test set but only 54% on external hospital data. The training and test sets were properly split with no data leakage. The model genuinely learned — but it learned the wrong thing entirely.', task: 'Identify the shortcut feature the model memorized. Submit the exact two-word artifact label that reveals the answer.', artifacts: [ { type: 'table', label: 'DATASET STATISTICS', content: 'Split     │ Hospital A │ Hospital B │ Positive %\n──────────┼────────────┼────────────┼───────────\nTrain     │    8,200   │      0     │   12.3%\nTest      │    2,050   │      0     │   12.1%\nExternal  │      0     │    3,000   │   11.8%' }, { type: 'log', label: 'SCANNER METADATA', content: 'Hospital A: Siemens MAGNETOM Vida 3T\n  - Metal tag overlay: "SIEMENS" in corner\n  - Positive cases: tag position shifted 2px down\n  - Negative cases: tag position at default\n\nHospital B: GE SIGNA Premier 3T\n  - No text overlay on images\n  - Clean DICOM without manufacturer watermark' }, { type: 'config', label: 'GRAD-CAM HEATMAP', content: 'Attention hotspot: bottom-right corner\nRegion of interest: 8x12 pixel area\nContains: manufacturer text overlay\nCorrelation with label: r=0.994' } ], flag: 'SCANNER METADATA', attemptsAllowed: 3, hint: 'The model is not looking at the medical image content. Check where Grad-CAM says it is looking.', explanation: 'The model memorized the Siemens text overlay position — positive cases had the tag shifted 2px down. It achieved 99.8% by reading the watermark position, not the pathology. External data from GE scanners has no overlay, making the learned feature absent. This is a textbook example of shortcut learning.' },
   { id: 'MEM_001', tier: 3, category: 'SYSTEMS', points: 300, difficulty: 3, title: 'The Corrupted Weights', scenario: 'A production model suddenly starts producing garbage outputs after a routine server migration. The model file (model.pt) was copied successfully — file sizes match, no errors in transfer. But inference results are completely wrong. The ops team suspects bit corruption during transfer.', task: 'Calculate the SHA-256 checksum difference. How many bytes differ between the original and corrupted file? Submit the exact count.', artifacts: [ { type: 'log', label: 'FILE COMPARISON', content: 'Original:  model_v2.3_prod.pt  (487,291,904 bytes)\nMigrated:  model_v2.3_new.pt   (487,291,904 bytes)\n\nSHA-256 original:  a3f8c2...9d41e7\nSHA-256 migrated:  a3f8c2...9d41e8  ← last byte differs\n\nbinary diff:\nOffset 0x1A00FF30: 0x42 → 0x43  (1 byte)\nOffset 0x1A00FF31: 0x3E → 0x3F  (1 byte)\nOffset 0x1A00FF32: 0x00 → 0x01  (1 byte)\n\nAffected tensor: classifier.weight[0][127]\nOriginal value:  0.04687500 (float32)\nCorrupted value: 2.45812e+18 (float32)' }, { type: 'config', label: 'IMPACT ANALYSIS', content: 'Layer affected: final classifier FC layer\nNeuron affected: output neuron 0 (class "benign")\nResult: all inputs classified as class 1+ (never benign)\nCause: 3 bit flips in IEEE 754 exponent field\nProbability of random 3-byte flip: 1 in 10^26' } ], flag: '3', attemptsAllowed: 3, hint: 'Count the exact number of byte offsets shown in the binary diff.', explanation: '3 bytes were corrupted at consecutive offsets. In IEEE 754 float32 representation, these 3 bytes span the exponent and mantissa fields, turning a small weight (0.047) into an astronomically large value (2.46e18). This single corrupted neuron overwhelms the softmax output, making the model never predict class 0. The probability of exactly 3 consecutive bit flips suggests hardware failure (ECC memory error) rather than random corruption.' },
-
   { id: 'CRYPTO_001', tier: 1, category: 'CRYPTO', points: 150, difficulty: 2, title: 'The Caesar Cipher', scenario: 'Marine intelligence intercepts a pirate crew using a Caesar cipher. A known plaintext fragment maps GOMU to TBZH.', task: 'What shift value was used? Submit the integer 0-25.', artifacts: [{ type: 'log', label: 'INTERCEPT', content: 'CIPHERTEXT: JBHF EBBF\nG->T, O->B, M->Z, U->H\ndiff = 13 for all chars' }], flag: '13', attemptsAllowed: 3, hint: 'ROT-13 is its own inverse.', explanation: 'ROT-13 shifts each character 13 positions. G(6)+13=T(19). All four chars confirm shift=13.' },
   { id: 'GRAPH_001', tier: 2, category: 'ALGORITHMS', points: 200, difficulty: 2, title: 'The Straw Hat Network', scenario: 'The Straw Hat crew spans 9 islands. Find the minimum cost Den Den Mushi network connecting all islands.', task: 'What is the total MST cost? Submit the exact integer.', artifacts: [{ type: 'table', label: 'EDGE COSTS', content: 'Luffy-Nami:2 Chopper-Sanji:1 Franky-Brook:2 Nami-Usopp:3 Brook-Jinbe:3 Luffy-Zoro:4 Robin-Franky:4 Nami-Robin:5 Zoro-Sanji:5' }], flag: '24', attemptsAllowed: 3, hint: 'Apply Kruskal: sort edges by weight, add if no cycle.', explanation: 'MST edges: 1+2+2+3+3+4+4+5 = 24. Sorted selection avoids all cycles.' },
   { id: 'BIAS_001', tier: 2, category: 'FAIRNESS', points: 250, difficulty: 3, title: 'The Unequal Tribunal', scenario: 'The World Government sentencing model shows 30% conviction rate for Blue Sea vs 70% for Grand Line defendants.', task: 'Calculate the demographic parity gap as an integer percentage.', artifacts: [{ type: 'table', label: 'OUTCOMES', content: 'Blue Sea: 360/1200 = 30%\nGrand Line: 560/800 = 70%\nGap = |70-30| = ???' }], flag: '40', attemptsAllowed: 3, hint: 'Demographic parity gap = |P(y=1|GroupA) - P(y=1|GroupB)|.', explanation: 'Gap = |70% - 30%| = 40pp. The model is 2.33x more likely to convict Grand Line pirates. Classic demographic disparity.' }
