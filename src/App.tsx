@@ -23,6 +23,7 @@ import { useCtf } from './hooks/useCtf';
 
 import type { Arc, Episode, Challenge } from './types';
 import { getArcCover } from './lib/imageMapping';
+import { CHALLENGE_ARC_MAP } from './data/content';
 
 // ── Route parsing ──────────────────────────────────────────────────────────
 function parseRoute() {
@@ -381,18 +382,26 @@ export default function App() {
             </div>
             {route.tab === 'brief' && <Brief episode={currentEpisode} arc={currentArc} onStartResources={() => navigate(`${episodeBasePath}/resources`)} />}
             {route.tab === 'res' && <Resources episode={currentEpisode} onEnterArena={() => navigate(`${episodeBasePath}/ctf`)} />}
-            {route.tab === 'ctf' && (
-              <CTFComponent
-                gctf={gctf} setGctf={setGctf} setUserXp={setUserXp}
-                showToast={showToast} challenges={challenges} navigate={navigate}
-                dataStatus={dataStatus} apiError={apiError}
-                submitFlag={submitFlag} toggleCTFHint={toggleCTFHint}
-                shake={shake} flagInputRef={flagInputRef}
-                episodeBasePath={episodeBasePath}
-                chalStats={chalStats}
-                currentUserId={user.id}
-              />
-            )}
+            {route.tab === 'ctf' && (() => {
+              const arcId = currentArc?.id;
+              const arcChallenges = arcId
+                ? challenges.filter((c: Challenge) => CHALLENGE_ARC_MAP[c.id] === arcId)
+                : challenges;
+              // Fallback: if arc exists but has no mapped challenges, show all
+              const ctfChallenges = arcChallenges.length > 0 ? arcChallenges : challenges;
+              return (
+                <CTFComponent
+                  gctf={gctf} setGctf={setGctf} setUserXp={setUserXp}
+                  showToast={showToast} challenges={ctfChallenges} navigate={navigate}
+                  dataStatus={dataStatus} apiError={apiError}
+                  submitFlag={submitFlag} toggleCTFHint={toggleCTFHint}
+                  shake={shake} flagInputRef={flagInputRef}
+                  episodeBasePath={episodeBasePath}
+                  chalStats={chalStats}
+                  currentUserId={user.id}
+                />
+              );
+            })()}
           </div>
         </div>
       )}

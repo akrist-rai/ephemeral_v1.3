@@ -146,6 +146,49 @@ export const EPISODES = [
   { id: 'S1E4_A8', arcId: 8, n: 4, title: 'Divergence Meter - Hypothesis Testing', description: 'The divergence meter reads 1.048596%. Is this statistically significant? Implement t-tests, chi-square, ANOVA, and bootstrap resampling. Apply Bonferroni correction for multiple comparisons across 100+ worldlines.', type: 'research', min: 35, xp: 150, done: false, art: 'p<0.05', bg: '#0d0400' }
 ];
 
+/** Maps each challenge ID → the arc it belongs to.
+ *  Arc 1 = The Eclipse (Algorithms/CS)
+ *  Arc 2 = Grand Line  (Cybersecurity)
+ *  Arc 3 = Johan's Lab (Machine Learning)
+ *  Arc 4 = The Knot    (Networks)
+ *  Arc 5 = Prophecy    (Data Structures)
+ *  Arc 6 = ONE PUNCH   (Comp. Prog)
+ *  Arc 7 = UNIT-01     (Mathematics)
+ */
+export const CHALLENGE_ARC_MAP: Record<string, number> = {
+  // Arc 1 — Algorithms / CS
+  'ARRAY_BASICS_001': 1,
+  'GRAPH_001':        1,
+
+  // Arc 2 — Cybersecurity (Grand Line)
+  'WEB_SQLI_001':      2,
+  'PWN_STACK_001':     2,
+  'REV_XOR_001':       2,
+  'CRY_PADDING_001':   2,
+  'ML_ADVERSARIAL_001':2,
+  'CRYPTO_001':        2,
+
+  // Arc 3 — Machine Learning (Johan's Lab)
+  'GRAD_001':   3,
+  'VIT_001':    3,
+  'DEPLOY_001': 3,
+  'LEAK_001':   3,
+  'LR_001':     3,
+  'TOK_001':    3,
+  'OVER_001':   3,
+  'MEM_001':    3,
+
+  // Arc 4 — Networks (The Knot / Dark)
+  // (add challenges here when created)
+
+  // Arc 5 — Data Structures (Prophecy)
+  // Arc 6 — Comp. Prog (ONE PUNCH)
+  // Arc 7 — Mathematics (UNIT-01)
+
+  // Cross-arc / shared
+  'BIAS_001': 3,
+};
+
 export const CHALLENGES = [
   {
     id: 'ARRAY_BASICS_001',

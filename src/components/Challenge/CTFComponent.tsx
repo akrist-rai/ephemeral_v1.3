@@ -1,71 +1,40 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { WriteupModal } from '../Common/WriteupModal';
 import { playSound } from '../../lib/sound';
-import { TextScramble } from '../Effects/TextScramble';
-import { PointerGlow } from '../Effects/PointerGlow';
 import { GlitchText } from '../Effects/GlitchText';
 import { getChaptersForChallenge } from '../../data/ctfChapters';
 
 interface CTFComponentProps {
-  gctf: any;
-  setGctf: any;
-  setUserXp: any;
+  gctf: any; setGctf: any; setUserXp: any;
   showToast: (msg: string) => void;
   challenges: any[];
   navigate: (path: string) => void;
-  dataStatus: string;
-  apiError: string;
-  submitFlag: any;
-  toggleCTFHint: any;
-  shake: boolean;
-  flagInputRef: any;
+  dataStatus: string; apiError: string;
+  submitFlag: any; toggleCTFHint: any;
+  shake: boolean; flagInputRef: any;
   episodeBasePath: string;
   chalStats?: Record<string, { solveCount: number; firstBlood: string | null }>;
   currentUserId?: string;
 }
 
-const CAT_META: Record<string, { color: string; icon: string; label: string }> = {
-  GRADIENT:     { color: '#4fc3f7', icon: '∇', label: 'Gradient Flow' },
-  ARCHITECTURE: { color: '#f9a825', icon: '⬡', label: 'Architecture' },
-  INFERENCE:    { color: '#e8000d', icon: '◈', label: 'Inference' },
-  'DATA LEAK':  { color: '#ff6b35', icon: '⚠', label: 'Data Leak' },
-  TRAINING:     { color: '#ab47bc', icon: '⟳', label: 'Training' },
-  NLP:          { color: '#26c6da', icon: '⌥', label: 'NLP' },
-  OVERFITTING:  { color: '#ef5350', icon: '⤴', label: 'Overfitting' },
-  SYSTEMS:      { color: '#66bb6a', icon: '⚙', label: 'Systems' },
-  CRYPTO:       { color: '#ffd54f', icon: '🔐', label: 'Cryptography' },
-  ALGORITHMS:   { color: '#80cbc4', icon: '◇', label: 'Algorithms' },
-  FAIRNESS:     { color: '#ce93d8', icon: '⚖', label: 'Fairness' },
-  WEB:          { color: '#00e5ff', icon: '🌐', label: 'Web Exploitation' },
-  PWN:          { color: '#ff1744', icon: '☠', label: 'Binary Exploitation' },
-  REVERSE:      { color: '#d500f9', icon: '⇄', label: 'Reverse Engineering' },
-  ML_SECURITY:  { color: '#00e676', icon: '🧠', label: 'ML Security' },
-  SCRIPTING:    { color: '#ab47bc', icon: '📜', label: 'Scripting' },
+const CAT_META: Record<string, { color: string; icon: string }> = {
+  WEB:          { color: 'var(--red)',  icon: '🌐' },
+  PWN:          { color: '#ff4466',     icon: '☠' },
+  REVERSE:      { color: '#d500f9',     icon: '⇄' },
+  CRYPTO:       { color: 'var(--lime)', icon: '🔐' },
+  ML_SECURITY:  { color: 'var(--crt)',  icon: '🧠' },
+  SCRIPTING:    { color: '#ab47bc',     icon: '📜' },
+  GRADIENT:     { color: '#4fc3f7',     icon: '∇'  },
+  ARCHITECTURE: { color: 'var(--lime)', icon: '⬡'  },
+  INFERENCE:    { color: 'var(--red)',  icon: '◈'  },
+  TRAINING:     { color: '#ab47bc',     icon: '⟳'  },
+  NLP:          { color: '#26c6da',     icon: '⌥'  },
+  SYSTEMS:      { color: 'var(--crt)',  icon: '⚙'  },
+  ALGORITHMS:   { color: '#80cbc4',     icon: '◇'  },
+  FAIRNESS:     { color: '#ce93d8',     icon: '⚖'  },
+  'DATA LEAK':  { color: '#ff6b35',     icon: '⚠'  },
+  OVERFITTING:  { color: 'var(--red)',  icon: '⤴'  },
 };
-
-const TIER_META: Record<number, { label: string; color: string; glow: string }> = {
-  1: { label: 'ENTRY LEVEL',   color: '#66bb6a', glow: 'rgba(102,187,106,0.2)' },
-  2: { label: 'CORE MODULE',   color: '#f9a825', glow: 'rgba(249,168,37,0.2)' },
-  3: { label: 'RUHENHEIM',     color: '#ef5350', glow: 'rgba(239,83,80,0.2)'  },
-};
-
-/* Animated typing cursor */
-function TypedText({ text }: { text: string }) {
-  const [displayed, setDisplayed] = useState('');
-  useEffect(() => {
-    setDisplayed('');
-    let i = 0;
-    const iv = setInterval(() => {
-      if (i >= text.length) { clearInterval(iv); return; }
-      setDisplayed(t => t + text[i++]);
-    }, 12);
-    return () => clearInterval(iv);
-  }, [text]);
-  return <>{displayed}<span className="ctf-cursor">▌</span></>;
-}
-
-/* Scanline overlay */
-const Scanlines = () => <div className="ctf-scanlines" />;
 
 export const CTFComponent: React.FC<CTFComponentProps> = ({
   gctf, showToast, challenges, navigate, dataStatus, apiError,
@@ -73,634 +42,437 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   chalStats = {}, currentUserId = '',
 }) => {
   const [writeupChal, setWriteupChal] = useState<{ id: string; title: string } | null>(null);
-  const [flagInput, setFlagInput] = useState('');
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  const [filterCat, setFilterCat] = useState<string>('ALL');
-  const boardRef = useRef<HTMLDivElement>(null);
-
-  // Progressive chapters state (defined at top level to obey rules of hooks)
-  const [activeChapterIndex, setActiveChapterIndex] = useState(0);
-  const [chapterAnswers, setChapterAnswers] = useState<Record<string, string>>({});
-  const activeChalId = gctf.active || '';
-  const [solvedChapters, setSolvedChapters] = useState<Record<string, boolean>>({});
+  const [filterCat, setFilterCat] = useState('ALL');
+  const [activeChapIdx, setActiveChapIdx] = useState(0);
+  const [chapAnswers, setChapAnswers] = useState<Record<string, string>>({});
+  const [solvedChaps, setSolvedChaps] = useState<Record<string, boolean>>({});
   const [chapShake, setChapShake] = useState(false);
+  const [expandedArt, setExpandedArt] = useState<number | null>(0);
+  const activeChalId = gctf.active || '';
 
-  // Sync solved chapters state from localStorage when active challenge changes
   useEffect(() => {
-    setActiveChapterIndex(0);
-    setChapterAnswers({});
+    setActiveChapIdx(0);
+    setChapAnswers({});
+    setExpandedArt(0);
     if (activeChalId) {
       try {
-        const stored = localStorage.getItem(`ephemeral_solved_chaps_${activeChalId}`);
-        setSolvedChapters(stored ? JSON.parse(stored) : {});
-      } catch {
-        setSolvedChapters({});
-      }
-    } else {
-      setSolvedChapters({});
-    }
+        const s = localStorage.getItem(`eph_chaps_${activeChalId}`);
+        setSolvedChaps(s ? JSON.parse(s) : {});
+      } catch { setSolvedChaps({}); }
+    } else { setSolvedChaps({}); }
   }, [activeChalId]);
 
   const totalPts = Object.values(gctf.solved).reduce((a: any, s: any) => a + (s.pts_earned || 0), 0) as number;
   const solvedCount = Object.values(gctf.solved).filter((s: any) => s.solved).length;
-  const totalChallenges = challenges.length;
-  const pct = totalChallenges > 0 ? Math.round((solvedCount / totalChallenges) * 100) : 0;
-
-  const cats = ['ALL', ...Array.from(new Set(challenges.map(c => c.category)))];
-
-  const handleButtonClick = (action: () => void) => {
-    playSound.click();
-    action();
-  };
-
-  const handleMouseEnter = () => {
-    playSound.hover();
-  };
+  const pct = challenges.length > 0 ? Math.round((solvedCount / challenges.length) * 100) : 0;
+  const cats = ['ALL', ...Array.from(new Set(challenges.map((c: any) => c.category)))];
 
   const openChallenge = (id: string) => {
     playSound.click();
     navigate(`${episodeBasePath}/ctf/${encodeURIComponent(id)}`);
-    setFlagInput('');
-    setTimeout(() => { if (flagInputRef.current) flagInputRef.current.focus(); }, 80);
   };
-
   const closeChallenge = () => {
     playSound.click();
     navigate(`${episodeBasePath}/ctf`);
   };
 
-  // ── BOARD VIEW ──────────────────────────────────────────────────────────────
+  // ── BOARD ──────────────────────────────────────────────────────────────────
   if (gctf.phase === 'board') {
     if (dataStatus === 'loading') return (
-      <div className="ctf-shell">
-        <Scanlines />
-        <div className="ctf-boot-msg">SYNCHRONIZING CHALLENGE MATRIX<span className="ctf-dots" /></div>
+      <div className="ctf-wrap">
+        <div className="ctf-boot">
+          <span className="ctf-boot-dot" />SYNCHRONIZING CHALLENGE MATRIX<span className="ctf-boot-dot" />
+        </div>
       </div>
     );
     if (dataStatus === 'error') return (
-      <div className="ctf-shell">
-        <Scanlines />
-        <div className="ctf-boot-msg ctf-boot-err">BACKEND ERROR // {apiError}</div>
+      <div className="ctf-wrap">
+        <div className="ctf-boot ctf-boot--err">BACKEND ERROR // {apiError}</div>
       </div>
     );
 
-    const filteredChallenges = filterCat === 'ALL'
-      ? challenges
-      : challenges.filter(c => c.category === filterCat);
+    const filtered = filterCat === 'ALL' ? challenges : challenges.filter((c: any) => c.category === filterCat);
 
     return (
-      <div className="ctf-shell" ref={boardRef}>
-        <Scanlines />
-
-        {/* ── HEADER ── */}
-        <div className="ctf-board-header">
-          <div className="ctf-board-header-left">
-            <div className="ctf-board-eyebrow">// ACN_EPHEMERAL · INCIDENT_RESPONSE</div>
+      <div className="ctf-wrap">
+        {/* Header */}
+        <div className="ctf-board-hdr">
+          <div className="ctf-board-hdr-left">
+            <div className="ctf-board-eyebrow">// CTF_ARENA · INCIDENT_RESPONSE</div>
             <h2 className="ctf-board-title">
-              <GlitchText text="ML INCIDENT RESPONSE" triggerOnHover={true} color="var(--red)" />
+              <GlitchText text="CHALLENGE LAB" triggerOnHover color="var(--red)" />
             </h2>
-            <div className="ctf-board-subtitle">Investigate broken systems. Derive the flag from evidence alone.</div>
+            <p className="ctf-board-sub">Extract the flag from forensic evidence alone.</p>
           </div>
-
-          {/* Score ring */}
-          <div className="ctf-score-panel">
-            <svg className="ctf-score-ring" viewBox="0 0 80 80">
-              <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
-              <circle cx="40" cy="40" r="34" fill="none" stroke="#00ff41" strokeWidth="5"
-                strokeDasharray={`${213.63 * pct / 100} 213.63`}
-                strokeLinecap="round"
-                transform="rotate(-90 40 40)"
-                style={{ transition: 'stroke-dasharray 1s ease' }} />
-              <text x="40" y="37" textAnchor="middle" fill="#fff" fontSize="13" fontFamily="var(--disp)" letterSpacing="1">{pct}%</text>
-              <text x="40" y="50" textAnchor="middle" fill="rgba(255,255,255,.35)" fontSize="5.5" fontFamily="var(--mono)" letterSpacing="1">SOLVED</text>
-            </svg>
-            <div className="ctf-score-pts">
-              <span className="ctf-score-val">{totalPts}</span>
-              <span className="ctf-score-lbl">POINTS</span>
+          <div className="ctf-board-stats">
+            <div className="ctf-stat-block">
+              <span className="ctf-stat-val" style={{ color: 'var(--red)' }}>{solvedCount}/{challenges.length}</span>
+              <span className="ctf-stat-lbl">SOLVED</span>
             </div>
-            <div className="ctf-score-count">{solvedCount} / {totalChallenges} ACTIVE</div>
+            <div className="ctf-stat-sep" />
+            <div className="ctf-stat-block">
+              <span className="ctf-stat-val" style={{ color: 'var(--lime)' }}>{totalPts}</span>
+              <span className="ctf-stat-lbl">XP EARNED</span>
+            </div>
+            <div className="ctf-stat-sep" />
+            <div className="ctf-stat-block">
+              <span className="ctf-stat-val" style={{ color: 'var(--crt)' }}>{pct}%</span>
+              <span className="ctf-stat-lbl">COMPLETE</span>
+            </div>
           </div>
         </div>
 
-        {/* ── STATS BAR ── */}
-        <div className="ctf-stats-bar">
-          {[1, 2, 3].map(t => {
-            const tc = challenges.filter(c => c.tier === t);
-            const ts = tc.filter(c => gctf.solved[c.id]?.solved);
-            const tm = TIER_META[t];
-            return (
-              <div className="ctf-stat-item" key={t}>
-                <div className="ctf-stat-tier" style={{ color: tm.color }}>{tm.label}</div>
-                <div className="ctf-stat-progress">
-                  <div className="ctf-stat-bar">
-                    <div className="ctf-stat-fill" style={{ width: `${tc.length ? (ts.length / tc.length) * 100 : 0}%`, background: tm.color, boxShadow: `0 0 8px ${tm.color}` }} />
-                  </div>
-                  <span className="ctf-stat-frac" style={{ color: tm.color }}>{ts.length}/{tc.length}</span>
-                </div>
-              </div>
-            );
-          })}
-          <div className="ctf-stat-item">
-            <div className="ctf-stat-tier" style={{ color: 'rgba(255,255,255,.4)' }}>TOTAL EARNED</div>
-            <div className="ctf-stat-pts">{totalPts} <span style={{ fontSize: '.45rem', color: 'rgba(255,255,255,.3)' }}>XP</span></div>
-          </div>
+        {/* Progress bar */}
+        <div className="ctf-progress-rail">
+          <div className="ctf-progress-fill" style={{ width: `${pct}%` }} />
         </div>
 
-        {/* ── CATEGORY FILTER ── */}
-        <div className="ctf-cat-filter">
+        {/* Category filter */}
+        <div className="ctf-cat-strip">
           {cats.map(cat => {
-            const meta = CAT_META[cat];
-            const isActive = filterCat === cat;
+            const m = CAT_META[cat];
+            const active = filterCat === cat;
             return (
-              <button
-                key={cat}
-                className={`ctf-cat-btn ${isActive ? 'active' : ''}`}
-                onClick={() => handleButtonClick(() => setFilterCat(cat))}
-                onMouseEnter={handleMouseEnter}
-                style={isActive ? { borderColor: meta?.color || '#fff', color: meta?.color || '#fff', boxShadow: `0 0 10px ${meta?.color || '#fff'}33` } : {}}
-              >
-                {meta ? <span className="ctf-cat-icon">{meta.icon}</span> : null}
-                <TextScramble text={cat} triggerOnHover speed={40} />
+              <button key={cat}
+                className={`ctf-cat-btn ${active ? 'on' : ''}`}
+                onClick={() => { playSound.click(); setFilterCat(cat); }}
+                style={active ? { borderColor: m?.color || 'var(--red)', color: m?.color || 'var(--red)' } : {}}>
+                {m && <span className="ctf-cat-icon">{m.icon}</span>}
+                {cat}
               </button>
             );
           })}
         </div>
 
-        {/* ── CHALLENGE TIERS ── */}
-        {[1, 2, 3].map(tier => {
-          const tChallenges = filteredChallenges.filter(c => c.tier === tier);
-          if (tChallenges.length === 0) return null;
-          const tm = TIER_META[tier];
-          return (
-            <div className="ctf-tier-section" key={tier}>
-              <div className="ctf-tier-header">
-                <div className="ctf-tier-accent" style={{ background: tm.color }} />
-                <span className="ctf-tier-label" style={{ color: tm.color }}>TIER {tier}</span>
-                <span className="ctf-tier-name">{tm.label}</span>
-                <div className="ctf-tier-line" />
-                <span className="ctf-tier-pts" style={{ color: tm.color }}>{tChallenges[0]?.points} PTS</span>
+        {/* Challenge grid */}
+        <div className="ctf-grid">
+          {filtered.map((ch: any) => {
+            const sv = gctf.solved[ch.id];
+            const isOk = !!(sv?.solved);
+            const att = gctf.chalAttempts[ch.id];
+            const isFail = !!(sv?.failed || (!sv?.solved && att <= 0));
+            const meta = CAT_META[ch.category] || { color: 'var(--paper)', icon: '□' };
+            const stats = chalStats[ch.id];
+            const isFirstBlood = stats?.firstBlood === currentUserId && isOk;
+            const borderCol = isOk ? 'var(--crt)' : isFail ? 'var(--red)' : 'rgba(255,255,255,.06)';
+
+            return (
+              <div key={ch.id}
+                className={`ctf-card ${isOk ? 'ctf-card--ok' : isFail ? 'ctf-card--fail' : ''}`}
+                style={{ borderColor: borderCol, '--ch-col': meta.color } as any}
+                onClick={() => openChallenge(ch.id)}>
+
+                {/* Top accent line */}
+                <div className="ctf-card-accent" style={{ background: meta.color }} />
+
+                {/* Header row */}
+                <div className="ctf-card-top">
+                  <span className="ctf-card-cat" style={{ color: meta.color }}>{meta.icon} {ch.category}</span>
+                  <span className="ctf-card-pts" style={{ color: isOk ? 'var(--crt)' : isFail ? 'var(--red)' : meta.color }}>
+                    {isOk ? `+${sv.pts_earned} ✓` : isFail ? '✗ LOCKED' : `${ch.points} PTS`}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <div className="ctf-card-title">
+                  <GlitchText text={ch.title} triggerOnHover color={meta.color} />
+                </div>
+                <div className="ctf-card-id">#{ch.id}</div>
+
+                {/* Footer */}
+                <div className="ctf-card-foot">
+                  <div className="ctf-diff-pips">
+                    {[1,2,3].map(i => (
+                      <div key={i} className="ctf-diff-pip"
+                        style={{ background: i <= ch.difficulty ? meta.color : 'rgba(255,255,255,.08)' }} />
+                    ))}
+                    <span className="ctf-diff-lbl" style={{ color: meta.color }}>
+                      {['', 'EASY', 'MED', 'HARD'][ch.difficulty] || ''}
+                    </span>
+                  </div>
+                  <div className="ctf-card-badges">
+                    {isFirstBlood && <span className="ctf-fb">🩸 1ST</span>}
+                    {stats?.solveCount ? <span className="ctf-solves">👤 {stats.solveCount}</span> : null}
+                    {isOk && <span className="ctf-owned">PWNED</span>}
+                    {isFail && <span className="ctf-locked-lbl">LOCKED</span>}
+                    {!isOk && !isFail && <span className="ctf-enter" style={{ color: meta.color }}>INVESTIGATE →</span>}
+                  </div>
+                </div>
+
+                {/* Hover scan line */}
+                <div className="ctf-card-scan" />
               </div>
-
-              <div className="ctf-challenge-grid">
-                {tChallenges.map(ch => {
-                  const solvedData = gctf.solved[ch.id];
-                  const ok = !!(solvedData?.solved);
-                  const att = gctf.chalAttempts[ch.id];
-                  const failed = !!(solvedData?.failed || (!solvedData?.solved && att <= 0));
-                  const tried = att < ch.attemptsAllowed && !ok && !failed;
-                  const meta = CAT_META[ch.category] || { color: '#fff', icon: '□', label: ch.category };
-                  const isHov = hoveredCard === ch.id;
-                  const stats = chalStats[ch.id];
-                  const isFirstBlood = stats?.firstBlood === currentUserId && ok;
-                  const cardBorderColor = ok ? '#00ff41' : failed ? '#e8000d' : meta.color;
-
-                  return (
-                    <PointerGlow
-                      key={ch.id}
-                      color={cardBorderColor}
-                      size={260}
-                      opacity={0.06}
-                      className={`ctf-ch-card ${ok ? 'ch-solved' : failed ? 'ch-failed' : tried ? 'ch-tried' : ''} ${isHov ? 'ch-hov' : ''}`}
-                    >
-                      <div
-                        onClick={() => openChallenge(ch.id)}
-                        onMouseEnter={() => {
-                          setHoveredCard(ch.id);
-                          handleMouseEnter();
-                        }}
-                        onMouseLeave={() => setHoveredCard(null)}
-                        style={{ '--ch-color': meta.color } as any}
-                        className="ctf-ch-card-inner"
-                      >
-                        {/* Left accent bar */}
-                        <div className="ch-card-accent" style={{ background: ok ? '#00ff41' : failed ? '#e8000d' : meta.color }} />
-
-                        {/* Status glow on solved */}
-                        {ok && <div className="ch-solved-glow" />}
-
-                        {/* First blood badge */}
-                        {isFirstBlood && (
-                          <div className="ch-first-blood" title="First Blood — You solved this first!">🩸 1ST</div>
-                        )}
-
-                        {/* Top row */}
-                        <div className="ch-card-top">
-                          <span className="ch-cat-badge" style={{ color: meta.color, borderColor: `${meta.color}44`, background: `${meta.color}11` }}>
-                            {meta.icon} {ch.category}
-                          </span>
-                          <span className="ch-pts-badge">
-                            {ok
-                              ? <span style={{ color: '#00ff41' }}>✓ +{solvedData.pts_earned}</span>
-                              : failed
-                              ? <span style={{ color: '#e8000d' }}>✗ LOCKED</span>
-                              : <span style={{ color: meta.color }}>{ch.points} PTS</span>
-                            }
-                          </span>
-                        </div>
-
-                        {/* Title */}
-                        <div className="ch-card-title">
-                          <GlitchText text={ch.title} triggerOnHover={true} color={meta.color} />
-                        </div>
-                        <div className="ch-card-id">{ch.id}</div>
-
-                        {/* Bottom row */}
-                        <div className="ch-card-bottom">
-                          <span className="ch-difficulty">
-                            {Array.from({ length: 3 }).map((_, i) => (
-                              <span key={i} style={{ color: i < ch.difficulty ? meta.color : 'rgba(255,255,255,0.12)', marginRight: '2px' }}>★</span>
-                            ))}
-                          </span>
-                          {/* Solve count */}
-                          {stats && stats.solveCount > 0 && (
-                            <span className="ch-solve-count">
-                              {stats.firstBlood && <span className="ch-fb-icon" title={`First Blood: ${stats.firstBlood}`}>🩸</span>}
-                              {stats.solveCount} solve{stats.solveCount !== 1 ? 's' : ''}
-                            </span>
-                          )}
-                          {tried && att > 0 && (
-                            <span className="ch-attempts-left" style={{ color: '#f9a825' }}>
-                              {att} ATTEMPT{att !== 1 ? 'S' : ''} LEFT
-                            </span>
-                          )}
-                          {!ok && !failed && !tried && (
-                            <span className="ch-enter-label" style={{ color: meta.color }}>INVESTIGATE →</span>
-                          )}
-                          {ok && <span className="ch-solved-label">FLAG CAPTURED</span>}
-                          {failed && <span className="ch-failed-label">CASE CLOSED</span>}
-                        </div>
-
-                        {/* Hover scan effect */}
-                        {isHov && <div className="ch-hover-scan" />}
-                      </div>
-                    </PointerGlow>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     );
   }
 
-  // ── CHALLENGE DETAIL VIEW ────────────────────────────────────────────────────
+  // ── DETAIL VIEW ─────────────────────────────────────────────────────────────
   const id = gctf.active;
-  if (dataStatus === 'loading') return (
-    <div className="ctf-shell">
-      <Scanlines />
-      <div className="ctf-boot-msg">LOADING INCIDENT REPORT...</div>
-    </div>
-  );
-  if (dataStatus === 'error') return (
-    <div className="ctf-shell">
-      <Scanlines />
-      <div className="ctf-boot-msg ctf-boot-err">BACKEND ERROR // {apiError}</div>
-    </div>
-  );
+  if (dataStatus === 'loading') return <div className="ctf-wrap"><div className="ctf-boot">LOADING INCIDENT DATA...</div></div>;
+  if (dataStatus === 'error')   return <div className="ctf-wrap"><div className="ctf-boot ctf-boot--err">BACKEND ERROR // {apiError}</div></div>;
 
-  const ch = challenges.find(c => c.id === id);
-  if (!ch) return (
-    <div className="ctf-shell">
-      <Scanlines />
-      <div className="ctf-boot-msg ctf-boot-err">CHALLENGE NOT FOUND // {id}</div>
-    </div>
-  );
+  const ch = challenges.find((c: any) => c.id === id);
+  if (!ch) return <div className="ctf-wrap"><div className="ctf-boot ctf-boot--err">CHALLENGE NOT FOUND // {id}</div></div>;
 
-  const solved = gctf.solved[id];
-  const ok = !!(solved?.solved);
-  const att = gctf.chalAttempts[id];
-  const failed = !!(solved?.failed || (!solved?.solved && att <= 0));
-  const meta = CAT_META[ch.category] || { color: '#fff', icon: '□', label: ch.category };
-
-  // Load TryHackMe / HTB style chapters
+  const sv = gctf.solved[id];
+  const isOk = !!(sv?.solved);
+  const att = gctf.chalAttempts[id] ?? ch.attemptsAllowed;
+  const isFail = !!(sv?.failed || (!sv?.solved && att <= 0));
+  const meta = CAT_META[ch.category] || { color: 'var(--red)', icon: '□' };
   const chapters = getChaptersForChallenge(ch.id, ch.flag);
 
-  const isChapterSolved = (chap: any, idx: number) => {
-    if (ok) return true;
-    if (idx === chapters.length - 1) return ok;
-    return !!solvedChapters[chap.id];
-  };
+  const isChapOk  = (chap: any, idx: number) => isOk ? true : idx === chapters.length - 1 ? isOk : !!solvedChaps[chap.id];
+  const isChapOn  = (_: any, idx: number)     => isOk ? true : idx === 0 ? true : !!solvedChaps[chapters[idx - 1].id];
 
-  const isChapterUnlocked = (chap: any, idx: number) => {
-    if (ok) return true;
-    if (idx === 0) return true;
-    const prevChap = chapters[idx - 1];
-    return !!solvedChapters[prevChap.id];
-  };
-
-  const handleChapterSubmit = async (chapIndex: number) => {
-    const chapter = chapters[chapIndex];
-    const isLast = chapIndex === chapters.length - 1;
-    const answerInput = chapterAnswers[chapter.id] || '';
-
-    if (!answerInput.trim()) return;
-
+  const handleSubmit = async (chapIdx: number) => {
+    const chap = chapters[chapIdx];
+    const isLast = chapIdx === chapters.length - 1;
+    const ans = (chapAnswers[chap.id] || '').trim();
+    if (!ans) return;
     if (isLast) {
-      // Final flag submission to standard backend
-      await submitFlag(ch.id, answerInput, challenges, setUserXp);
+      await submitFlag(ch.id, ans, challenges, setUserXp);
     } else {
-      // Intermediate chapter validation locally
-      const sanitize = (s: string) => s.trim().toUpperCase().replace(/\s+/g, '_');
-      const isCorrect = sanitize(answerInput) === sanitize(chapter.answer);
-
-      if (isCorrect) {
+      const norm = (s: string) => s.trim().toLowerCase();
+      if (norm(ans) === norm(chap.answer)) {
         playSound.success();
-        const newSolved = { ...solvedChapters, [chapter.id]: true };
-        setSolvedChapters(newSolved);
-        localStorage.setItem(`ephemeral_solved_chaps_${ch.id}`, JSON.stringify(newSolved));
-        showToast(`✓ CHAPTER COMPLETED — UNLOCKED NEXT STAGE`);
-        
-        // Auto-progress to next chapter with timing
-        setTimeout(() => {
-          setActiveChapterIndex(chapIndex + 1);
-        }, 300);
+        const next = { ...solvedChaps, [chap.id]: true };
+        setSolvedChaps(next);
+        localStorage.setItem(`eph_chaps_${ch.id}`, JSON.stringify(next));
+        showToast('✓ STAGE CLEARED — NEXT UNLOCKED');
+        setTimeout(() => setActiveChapIdx(chapIdx + 1), 350);
       } else {
         playSound.error();
         setChapShake(true);
         setTimeout(() => setChapShake(false), 380);
-        showToast(`WRONG ANSWER — ANALYSIS REJECTED`);
+        showToast('✗ WRONG ANSWER');
       }
     }
   };
 
-  const artIcons: Record<string, string> = { table: '⊞', code: '▶', config: '≡', log: '◌', output: '◈' };
+  const curChap = chapters[activeChapIdx];
+  const curOk   = isChapOk(curChap, activeChapIdx);
+  const curOn   = isChapOn(curChap, activeChapIdx);
+  const isLast  = activeChapIdx === chapters.length - 1;
 
   return (
-    <div className={`ctf-shell ctf-detail ${shake ? 'shake' : ''}`}>
-      <Scanlines />
+    <div className={`ctf-wrap ctf-detail ${shake || chapShake ? 'ctf-shake' : ''}`}>
 
-      {/* ── TOP CHROME ── */}
-      <div className="ctf-detail-chrome" style={{ borderBottomColor: `${meta.color}33` }}>
-        <button 
-          className="ctf-back-pill" 
-          onClick={closeChallenge}
-          onMouseEnter={handleMouseEnter}
-        >
-          ← BOARD
-        </button>
-        <div className="ctf-detail-breadcrumb">
+      {/* Top chrome — matches site's challenge header style */}
+      <div className="ctf-chrome" style={{ borderBottomColor: `${meta.color}33` }}>
+        <button className="ch-back ctf-back" onClick={closeChallenge}>← BOARD</button>
+        <div className="ctf-chrome-path">
           <span style={{ color: meta.color }}>{meta.icon} {ch.category}</span>
-          <span className="ctf-bc-sep">/</span>
+          <span className="ctf-sep">/</span>
           <span>{ch.id}</span>
         </div>
-        <div className="ctf-detail-pts" style={{ color: meta.color, textShadow: `0 0 15px ${meta.color}66` }}>
-          {ch.points} <span className="ctf-pts-lbl">PTS</span>
-        </div>
-        <span className="ctf-diff-stars">
+        <div className="ctf-chrome-right">
           {Array.from({ length: 3 }).map((_, i) => (
-            <span key={i} style={{ color: i < ch.difficulty ? meta.color : 'rgba(255,255,255,0.12)' }}>★</span>
+            <span key={i} style={{ color: i < ch.difficulty ? meta.color : 'rgba(255,255,255,.12)', marginRight: 2 }}>★</span>
           ))}
-        </span>
+          <span className="ctf-chrome-pts" style={{ color: meta.color }}>{ch.points} PTS</span>
+          {isOk && <span className="ctf-chrome-owned">PWNED ✓</span>}
+        </div>
       </div>
 
-      {/* ── MAIN LAYOUT ── */}
-      <div className="ctf-detail-layout">
+      {/* Title block — matches .mommy style */}
+      <div className="ctf-incident-title-block" style={{ borderLeftColor: meta.color }}>
+        <div className="ctf-incident-eyebrow" style={{ color: meta.color }}>// INCIDENT REPORT // STAGED INVESTIGATION</div>
+        <h2 className="ctf-incident-name">
+          <GlitchText text={ch.title} triggerOnHover color={meta.color} />
+        </h2>
+      </div>
 
-        {/* LEFT COLUMN — progressive chapter path workspace */}
-        <div className="ctf-detail-left">
+      {/* 2-col body: task sidebar + workspace */}
+      <div className="ctf-body">
 
-          {/* Title block */}
-          <div className="ctf-incident-block" style={{ borderLeftColor: meta.color }}>
-            <div className="ctf-incident-label" style={{ color: meta.color }}>// INCIDENT REPORT // STAGED INVESTIGATION</div>
-            <h2 className="ctf-incident-title">
-              <GlitchText text={ch.title} triggerOnHover={true} color={meta.color} />
-            </h2>
+        {/* LEFT — task list */}
+        <div className="ctf-task-col">
+          <div className="ctf-task-col-hdr">
+            <span className="ctf-task-col-title">STAGES</span>
+            <span className="ctf-task-col-count">
+              {chapters.filter((_: any, i: number) => isChapOk(chapters[i], i)).length}/{chapters.length}
+            </span>
           </div>
 
-          <div className="ctf-chap-columns">
-            {/* Stage Selector Sidebar */}
-            <div className="ctf-chap-sidebar">
-              <div className="ctf-chap-sidebar-title">TACTICAL PATHWAY</div>
-              <div className="ctf-chap-list">
-                {chapters.map((chap, idx) => {
-                  const isSolved = isChapterSolved(chap, idx);
-                  const isUnlocked = isChapterUnlocked(chap, idx);
-                  const isActive = idx === activeChapterIndex;
-                  
-                  return (
-                    <button
-                      key={chap.id}
-                      className={`ctf-chap-nav-item ${isActive ? 'active' : ''} ${isSolved ? 'solved' : ''} ${!isUnlocked ? 'locked' : ''}`}
-                      onClick={() => {
-                        if (isUnlocked) {
-                          playSound.click();
-                          setActiveChapterIndex(idx);
-                        } else {
-                          playSound.error();
-                          setChapShake(true);
-                          setTimeout(() => setChapShake(false), 380);
-                          showToast('COMPROMISE PRECEDING NODES TO UNLOCK');
-                        }
-                      }}
-                      style={{ '--chap-color': meta.color } as any}
-                    >
-                      <div className="ctf-chap-nav-node">
-                        <span className="ctf-chap-nav-num">{String(idx + 1).padStart(2, '0')}</span>
-                        {isSolved ? (
-                          <span className="ctf-chap-nav-status" style={{ color: '#00ff41' }}>✓</span>
-                        ) : !isUnlocked ? (
-                          <span className="ctf-chap-nav-status" style={{ color: '#ff1744' }}>🔒</span>
-                        ) : (
-                          <span className="ctf-chap-nav-status" style={{ color: meta.color }}>⚡</span>
-                        )}
-                      </div>
-                      <div className="ctf-chap-nav-details">
-                        <span className="ctf-chap-nav-title">{chap.title.split(': ')[1] || chap.title}</span>
-                        <span className="ctf-chap-nav-meta">
-                          {isSolved ? 'ACCESS SECURED' : !isUnlocked ? 'ENCRYPTED' : 'READY TO DECRYPT'}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+          {chapters.map((chap: any, idx: number) => {
+            const ok  = isChapOk(chap, idx);
+            const on  = isChapOn(chap, idx);
+            const act = idx === activeChapIdx;
+            return (
+              <button key={chap.id}
+                className={`ctf-task-btn ${act ? 'on' : ''} ${ok ? 'done' : !on ? 'locked' : ''}`}
+                style={act ? { borderLeftColor: meta.color, color: 'var(--paper)' } : {}}
+                onClick={() => {
+                  if (on) { playSound.click(); setActiveChapIdx(idx); }
+                  else { playSound.error(); showToast('COMPLETE PRECEDING STAGES FIRST'); }
+                }}>
+                <span className="ctf-task-num"
+                  style={{ color: ok ? 'var(--crt)' : !on ? 'rgba(255,255,255,.15)' : meta.color }}>
+                  {ok ? '✓' : !on ? '🔒' : String(idx + 1).padStart(2, '0')}
+                </span>
+                <span className="ctf-task-info">
+                  <span className="ctf-task-name">{chap.title}</span>
+                  <span className="ctf-task-status"
+                    style={{ color: ok ? 'var(--crt)' : !on ? 'rgba(255,255,255,.15)' : 'var(--muted)' }}>
+                    {ok ? 'CLEARED' : !on ? 'ENCRYPTED' : 'ACTIVE'}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
 
-            {/* Active Chapter Workspace */}
-            <div className={`ctf-chap-workspace ${chapShake ? 'shake' : ''}`}>
-              {(() => {
-                const currentChapter = chapters[activeChapterIndex];
-                const isSolved = isChapterSolved(currentChapter, activeChapterIndex);
-                const isUnlocked = isChapterUnlocked(currentChapter, activeChapterIndex);
-
-                if (!isUnlocked) {
-                  return (
-                    <div className="ctf-chap-workspace-locked">
-                      <div className="ctf-lock-glitch-icon">🔒</div>
-                      <div className="ctf-lock-msg">ACCESS SYSTEM ENCRYPTED</div>
-                      <div className="ctf-lock-sub">Complete the preceding operational phases to acquire the decryption token.</div>
-                    </div>
-                  );
-                }
-
-                const isLast = activeChapterIndex === chapters.length - 1;
-                const currentInput = chapterAnswers[currentChapter.id] || '';
-
-                return (
-                  <div className="ctf-chap-content-pane">
-                    <div className="ctf-chap-header" style={{ borderBottomColor: `${meta.color}33` }}>
-                      <span className="ctf-chap-subtitle" style={{ color: meta.color }}>// PHASE {activeChapterIndex + 1} // {currentChapter.title.toUpperCase()}</span>
-                    </div>
-                    
-                    <div className="ctf-chap-narrative">
-                      {currentChapter.description}
-                    </div>
-
-                    {/* Target telemetry block */}
-                    <div className="ctf-chap-question-block" style={{ borderLeftColor: meta.color }}>
-                      <div className="ctf-chap-question-label" style={{ color: meta.color }}>▶ INPUT TARGET QUERY</div>
-                      <div className="ctf-chap-question-text">{currentChapter.question}</div>
-                    </div>
-
-                    {/* Answer submission zone */}
-                    {isSolved ? (
-                      <div className="ctf-flag-zone ctf-flag-solved" style={{ borderColor: '#00ff4166' }}>
-                        <div className="ctf-flag-zone-label" style={{ color: '#00ff41' }}>◉ STAGE ACCESS SECURED — CASE RESOLVED</div>
-                        <div className="ctf-flag-display">
-                          <span className="ctf-flag-prefix">{isLast ? 'EPHEMERAL{' : 'TOKEN{'}</span>
-                          <span className="ctf-flag-value" style={{ color: '#00ff41' }}>
-                            {isLast ? ch.flag : currentChapter.answer}
-                          </span>
-                          <span className="ctf-flag-prefix">{'}'}</span>
-                        </div>
-                        <div className="ctf-flag-reward">{isLast ? `+${solved?.pts_earned || ch.points} XP EARNED` : '✓ TELEMETRY ALIGNED SUCCESSFULLY'}</div>
-                      </div>
-                    ) : failed ? (
-                      <div className="ctf-flag-zone ctf-flag-failed" style={{ borderColor: 'rgba(232,0,13,0.35)' }}>
-                        <div className="ctf-flag-zone-label" style={{ color: '#e8000d' }}>✗ INCIDENT SEALED — OUT OF ATTEMPTS</div>
-                        <div className="ctf-flag-display" style={{ opacity: .55 }}>
-                          <span className="ctf-flag-prefix">{isLast ? 'EPHEMERAL{' : 'TOKEN{'}</span>
-                          <span className="ctf-flag-value">{currentChapter.answer}</span>
-                          <span className="ctf-flag-prefix">{'}'}</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="ctf-flag-zone" style={{ borderColor: `${meta.color}44` }}>
-                        <div className="ctf-flag-zone-label" style={{ color: meta.color }}>
-                          {isLast ? '// DEPLOY FINAL DECRYPTION KEY (SYSTEM FLAG)' : '// SUBMIT DISCOVERY ANSWER'}
-                        </div>
-                        <div className="ctf-flag-input-row">
-                          <span className="ctf-flag-prefix">{isLast ? 'EPHEMERAL{' : 'DECRYPT{'}</span>
-                          <input
-                            className="ctf-flag-input"
-                            type="text"
-                            placeholder={currentChapter.placeholder || 'type answer here…'}
-                            autoComplete="off"
-                            spellCheck={false}
-                            value={currentInput}
-                            onChange={e => setChapterAnswers({ ...chapterAnswers, [currentChapter.id]: e.target.value })}
-                            onKeyDown={e => e.key === 'Enter' && handleChapterSubmit(activeChapterIndex)}
-                            style={{ caretColor: meta.color }}
-                          />
-                          <span className="ctf-flag-prefix">{'}'}</span>
-                          <button
-                            className="ctf-submit-btn"
-                            style={{ background: meta.color, color: meta.color === '#f9a825' || meta.color === '#ffd54f' || meta.color === '#80cbc4' || meta.color === '#66bb6a' ? '#000' : '#fff' }}
-                            onClick={() => handleChapterSubmit(activeChapterIndex)}
-                          >
-                            SUBMIT
-                          </button>
-                        </div>
-
-                        {isLast && (
-                          <div className="ctf-attempts-row">
-                            <div className="ctf-att-pips">
-                              {Array.from({ length: ch.attemptsAllowed }).map((_, i) => (
-                                <div
-                                  key={i}
-                                  className="ctf-att-pip"
-                                  style={{ background: i < att ? meta.color : 'rgba(255,255,255,0.1)', boxShadow: i < att ? `0 0 6px ${meta.color}88` : 'none' }}
-                                />
-                              ))}
-                            </div>
-                            <span className="ctf-att-label">{att} ATTEMPT{att !== 1 ? 'S' : ''} REMAINING</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Intel/Hint toggle */}
-                    {!isSolved && !failed && (
-                      <div className="ctf-hint-section">
-                        <button
-                          className={`ctf-hint-toggle ${gctf.hintOn[ch.id] ? 'hint-open' : ''}`}
-                          onClick={() => toggleCTFHint(ch.id)}
-                        >
-                          <span className="ctf-hint-icon">⚡</span>
-                          REQUEST FIELD INTEL {gctf.hintOn[ch.id] ? '▲' : '▼'}
-                        </button>
-                        {gctf.hintOn[ch.id] && (
-                          <div className="ctf-hint-body">
-                            <span className="ctf-hint-prefix">// FIELD DIRECTIVE: </span>
-                            {currentChapter.hint}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Case Analysis & Writeup (revealed after final solve) */}
-                    {(ok || failed) && isLast && (
-                      <div className="ctf-explanation" style={{ marginTop: '1.2rem' }}>
-                        <div className="ctf-explanation-label" style={{ color: '#00ff41' }}>// CASE POST-MORTEM ANALYSIS</div>
-                        <div className="ctf-explanation-text">{ch.explanation}</div>
-                        {ok && (
-                          <button
-                            className="ctf-writeup-btn"
-                            style={{ marginTop: '0.8rem' }}
-                            onClick={() => handleButtonClick(() => setWriteupChal({ id: ch.id, title: ch.title }))}
-                            onMouseEnter={handleMouseEnter}
-                          >
-                            ✎ FILE OPERATOR WRITE-UP
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-            </div>
+          {/* Scenario brief */}
+          <div className="ctf-scenario-block">
+            <div className="bk">SCENARIO</div>
+            <p className="ctf-scenario-text">{ch.scenario}</p>
           </div>
         </div>
 
-        {/* RIGHT COLUMN — evidence */}
-        <div className="ctf-detail-right">
-          <div className="ctf-evidence-header">
-            <span className="ctf-section-icon" style={{ color: meta.color }}>⊞</span>
-            EVIDENCE ARTIFACTS
+        {/* CENTER — active workspace */}
+        <div className="ctf-workspace">
+          {!curOn ? (
+            <div className="ctf-locked-screen">
+              <div className="ctf-lock-icon">🔒</div>
+              <div className="ctf-lock-title">STAGE ENCRYPTED</div>
+              <div className="ctf-lock-body">Complete preceding stages to obtain the decryption token.</div>
+            </div>
+          ) : (
+            <>
+              <div className="ctf-ws-hdr" style={{ borderBottomColor: `${meta.color}30` }}>
+                <span className="ctf-ws-phase" style={{ color: meta.color }}>
+                  // PHASE {activeChapIdx + 1} · {curChap.title.toUpperCase()}
+                </span>
+              </div>
+
+              <p className="bp ctf-desc">{curChap.description}</p>
+
+              {/* Question block — matches .mommy style */}
+              <div className="mommy" style={{ borderLeftColor: meta.color }}>
+                <div className="mommy-k" style={{ color: meta.color }}>▶ INPUT TARGET QUERY</div>
+                <div className="mommy-q" style={{ fontSize: '.82rem' }}>{curChap.question}</div>
+              </div>
+
+              {/* Answer zone */}
+              {curOk ? (
+                <div className="ctf-answer-ok">
+                  <div className="ctf-answer-ok-top">
+                    <span className="ctf-ok-check">✓</span>
+                    <span className="ctf-ok-label">{isLast ? 'FLAG ACCEPTED' : 'STAGE CLEARED'}</span>
+                  </div>
+                  <div className="ctf-flag-reveal" style={{ color: isLast ? 'var(--crt)' : meta.color }}>
+                    {isLast ? `EPHEMERAL{${ch.flag}}` : curChap.answer}
+                  </div>
+                  {isLast && sv?.pts_earned && (
+                    <div className="ctf-xp-earned">+{sv.pts_earned} XP EARNED</div>
+                  )}
+                </div>
+              ) : isFail && isLast ? (
+                <div className="ctf-answer-fail">
+                  <div className="ctf-fail-msg">✗ OUT OF ATTEMPTS — CASE SEALED</div>
+                  <div className="ctf-flag-reveal" style={{ opacity: .4 }}>EPHEMERAL{`{${ch.flag}}`}</div>
+                </div>
+              ) : (
+                <div className="ctf-flag-zone" style={{ borderColor: `${meta.color}44` }}>
+                  <div className="ctf-flag-zone-lbl" style={{ color: meta.color }}>
+                    {isLast ? '// DEPLOY FINAL FLAG' : '// SUBMIT STAGE ANSWER'}
+                  </div>
+                  <div className="ctf-flag-row">
+                    <span className="ctf-flag-pfx">{isLast ? 'EPHEMERAL{' : 'ANSWER{'}</span>
+                    <input className="ctf-flag-inp"
+                      type="text"
+                      placeholder={curChap.placeholder || (isLast ? 'flag…' : 'answer…')}
+                      value={chapAnswers[curChap.id] || ''}
+                      onChange={e => setChapAnswers({ ...chapAnswers, [curChap.id]: e.target.value })}
+                      onKeyDown={e => e.key === 'Enter' && handleSubmit(activeChapIdx)}
+                      autoComplete="off" spellCheck={false}
+                      style={{ caretColor: meta.color }} />
+                    <span className="ctf-flag-pfx">{'}'}</span>
+                    <button className="btn-r ctf-submit-btn"
+                      style={{ background: meta.color === 'var(--red)' || meta.color === '#ff2a38' ? 'var(--red)' : meta.color,
+                               color: meta.color === 'var(--lime)' || meta.color === '#ccff00' ? '#000' : '#fff' }}
+                      onClick={() => handleSubmit(activeChapIdx)}>
+                      SUBMIT
+                    </button>
+                  </div>
+                  {isLast && (
+                    <div className="ctf-att-row">
+                      <div className="ctf-att-pips">
+                        {Array.from({ length: ch.attemptsAllowed }).map((_: any, i: number) => (
+                          <div key={i} className="ctf-att-pip"
+                            style={{ background: i < att ? meta.color : 'rgba(255,255,255,.08)' }} />
+                        ))}
+                      </div>
+                      <span className="ctf-att-lbl">{att} ATTEMPT{att !== 1 ? 'S' : ''} REMAINING</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Hint */}
+              {!curOk && !isFail && (
+                <div className="ctf-hint-wrap">
+                  <button className="ctf-hint-btn" onClick={() => toggleCTFHint(ch.id)}>
+                    ⚡ REQUEST FIELD INTEL {gctf.hintOn[ch.id] ? '▲' : '▼'}
+                  </button>
+                  {gctf.hintOn[ch.id] && (
+                    <div className="ctf-hint-body">
+                      <span className="ctf-hint-tag">// FIELD DIRECTIVE:</span> {curChap.hint}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Post-mortem */}
+              {(isOk || isFail) && isLast && ch.explanation && (
+                <div className="ctf-postmortem" style={{ borderTopColor: isOk ? 'var(--crt)' : 'var(--red)' }}>
+                  <div className="bk" style={{ color: isOk ? 'var(--crt)' : 'var(--red)' }}>// CASE ANALYSIS</div>
+                  <p className="bp" style={{ marginBottom: '.8rem' }}>{ch.explanation}</p>
+                  {isOk && (
+                    <button className="btn-o ctf-writeup-btn"
+                      onClick={() => { playSound.click(); setWriteupChal({ id: ch.id, title: ch.title }); }}>
+                      ✎ FILE OPERATOR WRITE-UP
+                    </button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* RIGHT — evidence artifacts */}
+        <div className="ctf-evidence-col">
+          <div className="ctf-evidence-hdr">
+            <span style={{ color: meta.color }}>⊞</span> EVIDENCE
             <span className="ctf-evidence-count">{ch.artifacts.length} FILE{ch.artifacts.length !== 1 ? 'S' : ''}</span>
           </div>
-          <div className="ctf-evidence-list">
-            {ch.artifacts.map((a: any, i: number) => {
-              const icon = artIcons[a.type] || '□';
-              const typeColors: Record<string, string> = { table: '#80cbc4', config: '#f9a825', log: '#4fc3f7', code: '#ce93d8', output: '#66bb6a' };
-              const tc = typeColors[a.type] || meta.color;
-              return (
-                <div 
-                  className="ctf-artifact-card" 
-                  key={i}
-                  onMouseEnter={handleMouseEnter}
-                >
-                  <div className="ctf-art-header" style={{ borderBottomColor: `${tc}33` }}>
-                    <span className="ctf-art-type-icon" style={{ color: tc }}>{icon}</span>
-                    <span className="ctf-art-label">{a.label}</span>
-                    <span className="ctf-art-type-pill" style={{ color: tc, borderColor: `${tc}44`, background: `${tc}11` }}>{a.type.toUpperCase()}</span>
-                  </div>
-                  <pre className="ctf-art-body">{a.content}</pre>
-                </div>
-              );
-            })}
+          {ch.artifacts.map((a: any, i: number) => {
+            const typeColor: Record<string, string> = { table: '#80cbc4', config: 'var(--lime)', log: '#4fc3f7', code: '#ce93d8', output: 'var(--crt)' };
+            const tc = typeColor[a.type] || meta.color;
+            const open = expandedArt === i;
+            return (
+              <div key={i} className="ctf-artifact" style={{ borderLeftColor: open ? tc : 'rgba(255,255,255,.04)' }}>
+                <button className="ctf-artifact-hdr" onClick={() => setExpandedArt(open ? null : i)}>
+                  <span className="ctf-artifact-type" style={{ color: tc }}>{a.type.toUpperCase()}</span>
+                  <span className="ctf-artifact-name">{a.label}</span>
+                  <span className="ctf-artifact-arr">{open ? '▲' : '▼'}</span>
+                </button>
+                {open && <pre className="ctf-artifact-body">{a.content}</pre>}
+              </div>
+            );
+          })}
+
+          <div className="ctf-objective" style={{ borderColor: `${meta.color}33` }}>
+            <div className="bk" style={{ color: meta.color }}>// OBJECTIVE</div>
+            <p className="ctf-objective-text">{ch.task}</p>
           </div>
         </div>
       </div>
 
-      {/* Write-up modal */}
       {writeupChal && (
-        <WriteupModal
-          challengeId={writeupChal.id}
-          challengeTitle={writeupChal.title}
-          onClose={() => setWriteupChal(null)}
-        />
+        <WriteupModal challengeId={writeupChal.id} challengeTitle={writeupChal.title} onClose={() => setWriteupChal(null)} />
       )}
     </div>
   );
