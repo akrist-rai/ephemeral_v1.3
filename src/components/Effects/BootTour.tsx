@@ -109,16 +109,22 @@ export const BootTour: React.FC<BootTourProps> = ({ onClose, onAwardXp }) => {
         left: 0,
         width: '100vw',
         height: '100vh',
-        background: 'rgba(0,2,4,0.85)',
+        background: 'rgba(0,2,4,0.88)',
         zIndex: 9999,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         fontFamily: 'var(--mono)',
         color: '#fff',
-        backdropFilter: 'blur(3px)'
+        backdropFilter: 'blur(4px)'
       }}
     >
+      {/* Holographic Grid Background */}
+      <div className="tour-grid-bg" />
+
+      {/* Visor Scanlines Overlay */}
+      <div className="tour-scanlines-overlay" />
+
       {/* Target spotlight overlay */}
       {activeHighlight && (
         <div 
@@ -128,7 +134,7 @@ export const BootTour: React.FC<BootTourProps> = ({ onClose, onAwardXp }) => {
             left: activeHighlight.left,
             width: activeHighlight.width,
             height: activeHighlight.height,
-            boxShadow: '0 0 0 9999px rgba(0, 2, 4, 0.72), 0 0 15px var(--lime)',
+            boxShadow: '0 0 0 9999px rgba(0, 2, 4, 0.75), 0 0 15px var(--lime)',
             border: '2px solid var(--lime)',
             borderRadius: '4px',
             pointerEvents: 'none',
@@ -143,7 +149,7 @@ export const BootTour: React.FC<BootTourProps> = ({ onClose, onAwardXp }) => {
         className="tour-modal-card"
         style={{
           width: '450px',
-          background: 'rgba(0, 4, 8, 0.95)',
+          background: 'rgba(0, 4, 8, 0.96)',
           border: '1px solid rgba(0, 255, 65, 0.25)',
           boxShadow: '0 0 25px rgba(0,255,65,0.1)',
           padding: '1.8rem',
@@ -152,11 +158,19 @@ export const BootTour: React.FC<BootTourProps> = ({ onClose, onAwardXp }) => {
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
-          gap: '1rem'
+          gap: '1rem',
+          overflow: 'hidden'
         }}
       >
+        {/* Decorative corner brackets and scanning line */}
+        <div className="tour-bracket-tl" />
+        <div className="tour-bracket-tr" />
+        <div className="tour-bracket-bl" />
+        <div className="tour-bracket-br" />
+        <div className="tour-scanline" />
+
         {/* Step Indicator */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 3 }}>
           <span style={{ fontSize: '0.52rem', color: 'rgba(0,255,65,0.4)', letterSpacing: '0.1em' }}>
             COGNITIVE HUD CALIBRATION // MODULE_{stepIdx + 1}_OF_{steps.length}
           </span>
@@ -177,7 +191,7 @@ export const BootTour: React.FC<BootTourProps> = ({ onClose, onAwardXp }) => {
         </div>
 
         {/* Glitch Title */}
-        <div style={{ marginTop: '0.4rem' }}>
+        <div style={{ marginTop: '0.4rem', zIndex: 3, position: 'relative' }}>
           <div style={{ color: 'var(--lime)', fontSize: '0.55rem', marginBottom: '0.15rem', letterSpacing: '0.05em' }}>
             {currentStep.subtitle}
           </div>
@@ -187,7 +201,7 @@ export const BootTour: React.FC<BootTourProps> = ({ onClose, onAwardXp }) => {
         </div>
 
         {/* Status indicator bar */}
-        <div style={{ display: 'flex', height: '2px', background: 'rgba(255,255,255,0.06)', margin: '0.3rem 0' }}>
+        <div style={{ display: 'flex', height: '2px', background: 'rgba(255,255,255,0.06)', margin: '0.3rem 0', zIndex: 3, position: 'relative' }}>
           <div 
             style={{ 
               width: `${((stepIdx + 1) / steps.length) * 100}%`, 
@@ -205,7 +219,9 @@ export const BootTour: React.FC<BootTourProps> = ({ onClose, onAwardXp }) => {
             fontSize: '0.68rem', 
             lineHeight: '1.5', 
             margin: '0.5rem 0',
-            textAlign: 'justify' 
+            textAlign: 'justify',
+            zIndex: 3,
+            position: 'relative'
           }}
         >
           {currentStep.description}
@@ -221,7 +237,9 @@ export const BootTour: React.FC<BootTourProps> = ({ onClose, onAwardXp }) => {
             color: 'rgba(255,255,255,0.4)',
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            zIndex: 3,
+            position: 'relative'
           }}
         >
           <span>CORE SYSTEM STATUS: CALIBRATING...</span>
@@ -231,7 +249,7 @@ export const BootTour: React.FC<BootTourProps> = ({ onClose, onAwardXp }) => {
         </div>
 
         {/* Bottom Actions */}
-        <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.4rem' }}>
+        <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.4rem', zIndex: 3, position: 'relative' }}>
           {stepIdx > 0 && (
             <button
               onClick={() => { playSound.click(); setStepIdx(p => p - 1); }}

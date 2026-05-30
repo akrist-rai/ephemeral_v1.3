@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { apiRequest } from '../../hooks/useApi';
 import { computeBadges, getXpLevel, type Badge, type ProfileData } from '../../lib/badges';
+import { BG_IMAGES } from '../../lib/imageMapping';
 
 interface ProfilePageProps {
   userId: string;
@@ -200,7 +201,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       {/* ── CINEMATIC BANNER ── */}
       <div className="prf-banner">
         <img
-          src="/one_piece/One Piece - Straw Hat Pirates, John Riddle.jpeg"
+          src={BG_IMAGES.profileBg}
           alt=""
           className="prf-banner-img"
           onError={e => { e.currentTarget.style.display = 'none'; }}

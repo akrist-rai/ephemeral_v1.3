@@ -3282,11 +3282,11 @@ nav{background:rgba(6,6,14,0.92)!important;backdrop-filter:blur(16px)!important;
    ══════════════════════════════════════════════════════════════ */
 .lander-root{min-height:100vh;width:100%;background:var(--void);color:var(--paper);font-family:var(--mono);display:flex;flex-direction:column;overflow-x:hidden;position:relative}
 .lander-grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(232,0,13,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(232,0,13,.04) 1px,transparent 1px);background-size:48px 48px}
-.lander-scanlines{position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.05) 2px,rgba(0,0,0,.05) 4px)}
+.lander-scanlines{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px)}
 .lander-particles{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .lander-particle{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--red);opacity:.25;left:calc(var(--pi) * 4.16666% + 2%);top:calc(var(--pi) * 7% + 5%);animation:particleDrift calc(8s + var(--pi) * 0.4s) ease-in-out infinite alternate}
 @keyframes particleDrift{0%{transform:translateY(0) translateX(0);opacity:.1}100%{transform:translateY(-60px) translateX(20px);opacity:.4}}
-.lander-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:60px;background:rgba(3,3,8,.8);backdrop-filter:blur(20px);border-bottom:1px solid rgba(232,0,13,.15)}
+.lander-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:60px;background:rgba(3,3,8,.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(232,0,13,.15)}
 .lander-nav-logo{display:flex;align-items:center;gap:.6rem;cursor:pointer;font-family:var(--disp);font-size:1.3rem;letter-spacing:.2em}
 .lander-logo-text em{color:var(--red);font-style:normal}
 .lander-logo-text::after{content:'_';color:var(--red);animation:blink 1s infinite}
@@ -3295,18 +3295,19 @@ nav{background:rgba(6,6,14,0.92)!important;backdrop-filter:blur(16px)!important;
 .lander-nav-links{display:flex;align-items:center;gap:.8rem}
 .lander-nav-tag{font-size:.48rem;color:var(--muted);letter-spacing:.12em}
 .lander-nav-dot{width:6px;height:6px;border-radius:50%;background:var(--crt);animation:pulse 2s infinite}
-.lander-hero{position:relative;z-index:1;min-height:100vh;padding:80px 2rem 2rem;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;max-width:1280px;margin:0 auto;width:100%}
+.lander-hero{position:relative;z-index:2;min-height:100vh;padding:80px 2rem 2rem;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;max-width:1280px;margin:0 auto;width:100%}
 .lander-hero-left{display:flex;flex-direction:column;gap:1.5rem}
 .lander-eyebrow{display:flex;align-items:center;gap:.8rem}
 .lander-eyebrow-pill{background:rgba(232,0,13,.15);border:1px solid rgba(232,0,13,.4);color:var(--red);font-size:.52rem;padding:.2rem .65rem;letter-spacing:.14em;animation:pulse 2s infinite}
 .lander-eyebrow-text{font-size:.52rem;color:var(--muted);letter-spacing:.1em}
-.lander-h1{font-family:var(--disp);font-size:clamp(3.5rem,9vw,7.5rem);line-height:.88;letter-spacing:.04em;position:relative}
+.lander-h1{font-family:var(--disp);font-size:clamp(3.5rem,9vw,7.5rem);line-height:.88;letter-spacing:.04em;position:relative;text-shadow:0 0 30px rgba(232,0,13,0.15)}
 .lander-h1-accent{color:var(--red);display:block}
 .lander-h1.glitch-active{animation:glitchAnim .15s ease}
 @keyframes glitchAnim{0%{text-shadow:2px 0 var(--red),-2px 0 var(--crt)}33%{text-shadow:-3px 0 var(--red),3px 0 var(--crt);transform:translateX(2px)}66%{text-shadow:3px 0 var(--red),-3px 0 var(--crt);transform:translateX(-2px)}100%{text-shadow:none;transform:none}}
 .lander-tagline{font-size:.78rem;color:rgba(245,242,235,.55);line-height:1.75;max-width:500px;font-family:var(--body);font-weight:300}
 .lander-stats-row{display:flex;gap:2rem;flex-wrap:wrap}
-.lander-stat{display:flex;flex-direction:column;gap:.1rem}
+.lander-stat{display:flex;flex-direction:column;gap:.1rem;padding:.4rem .8rem;background:rgba(255,255,255,.01);border-left:2px solid rgba(232,0,13,.15);transition:all .3s cubic-bezier(.16,1,.3,1)}
+.lander-stat:hover{background:rgba(232,0,13,.03);border-left-color:var(--red);transform:translateX(4px)}
 .lander-stat-val{font-family:var(--disp);font-size:2.2rem;letter-spacing:.06em;color:var(--red);line-height:1}
 .lander-stat-label{font-size:.46rem;color:var(--muted);letter-spacing:.14em}
 .lander-ctas{display:flex;gap:.8rem;flex-wrap:wrap}
@@ -3317,21 +3318,39 @@ nav{background:rgba(6,6,14,0.92)!important;backdrop-filter:blur(16px)!important;
 .lander-btn-icon{font-size:.9em}
 .lander-btn-secondary{background:transparent;color:var(--paper);border:1px solid rgba(245,242,235,.2);padding:.75rem 1.6rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:all .25s}
 .lander-btn-secondary:hover{border-color:rgba(245,242,235,.5);background:rgba(245,242,235,.04);transform:translateY(-2px)}
-.lander-auth-inline{display:flex;flex-direction:column;gap:.75rem;background:rgba(10,10,20,.7);border:1px solid rgba(232,0,13,.3);padding:1.2rem 1.4rem;backdrop-filter:blur(10px);animation:slideUp .35s cubic-bezier(.16,1,.3,1) forwards}
+
+/* Lander Inline Auth Panel - Premium Cyber Style */
+.lander-auth-inline{position:relative;display:flex;flex-direction:column;gap:.75rem;background:rgba(8,8,16,.85);border:1px solid rgba(232,0,13,.25);padding:1.4rem;backdrop-filter:blur(20px);animation:slideUp .35s cubic-bezier(.16,1,.3,1) forwards;box-shadow:0 20px 40px rgba(0,0,0,.5), inset 0 0 20px rgba(232,0,13,.02)}
 @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.lc-bracket-tl,.lc-bracket-tr,.lc-bracket-bl,.lc-bracket-br{position:absolute;width:12px;height:12px;border-color:var(--red);border-style:solid;pointer-events:none;opacity:.75;transition:all .3s ease}
+.lc-bracket-tl{top:-1px;left:-1px;border-width:2px 0 0 2px}
+.lc-bracket-tr{top:-1px;right:-1px;border-width:2px 2px 0 0}
+.lc-bracket-bl{bottom:-1px;left:-1px;border-width:0 0 2px 2px}
+.lc-bracket-br{bottom:-1px;right:-1px;border-width:0 2px 2px 0}
+.lander-auth-inline:hover .lc-bracket-tl{top:-3px;left:-3px}
+.lander-auth-inline:hover .lc-bracket-tr{top:-3px;right:-3px}
+.lander-auth-inline:hover .lc-bracket-bl{bottom:-3px;left:-3px}
+.lander-auth-inline:hover .lc-bracket-br{bottom:-3px;right:-3px}
+.lc-scanline{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(232,0,13,0.4),transparent);pointer-events:none;animation:sweep 4s linear infinite;opacity:.3}
+@keyframes sweep{0%{top:0%}50%{top:100%}100%{top:0%}}
+
 .lander-auth-label{font-size:.52rem;color:var(--red);letter-spacing:.14em}
 .lander-auth-input-row{display:flex;align-items:center;gap:.4rem}
 .lander-auth-pre{font-size:.72rem;color:var(--red);flex-shrink:0}
 .lander-auth-input{flex:1;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.2);color:var(--crt);font-family:var(--mono);font-size:.78rem;padding:.2rem .3rem;outline:none;letter-spacing:.04em;transition:border-color .2s}
 .lander-auth-input:focus{border-bottom-color:rgba(0,255,65,.5)}
 .lander-auth-input::placeholder{color:rgba(255,255,255,.2)}
-.lander-auth-rand{background:none;border:1px solid rgba(255,255,255,.15);color:var(--muted);width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.8rem;flex-shrink:0;transition:all .2s}
-.lander-auth-rand:hover{border-color:var(--red);color:var(--red)}
+
+/* Shuffle Random Handle Button */
+.lander-auth-rand{background:none;border:1px solid rgba(255,255,255,.15);color:var(--muted);width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .25s cubic-bezier(.16,1,.3,1);border-radius:3px}
+.lander-auth-rand:hover{border-color:#00ff41;color:#00ff41;background:rgba(0,255,65,.05);box-shadow:0 0 10px rgba(0, 255, 65, 0.15);transform:scale(1.05)}
+.lander-auth-rand.scrambling svg{animation:spin 0.8s linear infinite;color:#00ff41}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 .lander-auth-error{font-size:.58rem;color:var(--red);letter-spacing:.06em}
 .lander-auth-hint{font-size:.55rem;color:var(--muted);line-height:1.5}
 .lander-auth-submit{width:100%;justify-content:center;margin-top:.25rem}
 .lander-spinner{width:10px;height:10px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
 .lander-hero-right{position:relative;display:flex;flex-direction:column;gap:1rem}
 .lander-terminal{background:#010108;border:1px solid rgba(232,0,13,.25);box-shadow:0 20px 60px rgba(0,0,0,.6),inset 0 0 40px rgba(232,0,13,.02);overflow:hidden}
 .lander-terminal-bar{background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06);padding:.5rem .8rem;display:flex;align-items:center;gap:.4rem}
@@ -3345,24 +3364,37 @@ nav{background:rgba(6,6,14,0.92)!important;backdrop-filter:blur(16px)!important;
 .lt-line-active{color:var(--crt)}
 .lt-cursor{display:inline-block;animation:blink 1s infinite;margin-left:2px}
 .lander-float-cards{display:flex;gap:.8rem}
-.lander-float-card{flex:1;background:rgba(10,10,20,.85);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:.8rem 1rem;display:flex;align-items:center;gap:.8rem;animation:floatCard 4s ease-in-out infinite alternate}
-.lander-fc-1{border-color:rgba(255,184,48,.25);animation-delay:0s}
-.lander-fc-2{border-color:rgba(0,255,65,.2);animation-delay:-2s}
+
+/* Floating Telemetry Cards */
+.lander-float-card{flex:1;background:rgba(8,8,16,.85);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:.8rem 1rem;display:flex;align-items:center;gap:.8rem;animation:floatCard 4s ease-in-out infinite alternate;transition:all 0.3s ease}
+.lander-fc-1{border-left:3px solid #ffb830;border-color:rgba(255,184,48,.25);animation-delay:0s}
+.lander-fc-2{border-left:3px solid #00ff41;border-color:rgba(0,255,65,.2);animation-delay:-2s}
+.lander-float-card:hover{transform:scale(1.02);background:rgba(12,12,24,.9);box-shadow:0 10px 20px rgba(0,0,0,.4)}
 @keyframes floatCard{0%{transform:translateY(0)}100%{transform:translateY(-6px)}}
 .lfc-icon{font-size:1.4rem;color:#ffb830}
 .lfc-body{display:flex;flex-direction:column;gap:.1rem}
 .lfc-title{font-size:.44rem;color:var(--muted);letter-spacing:.1em}
 .lfc-val{font-family:var(--disp);font-size:1rem;color:#ffb830;letter-spacing:.08em;line-height:1}
-.lander-features{position:relative;z-index:1;padding:4rem 2rem;max-width:1280px;margin:0 auto;width:100%}
+.lander-features{position:relative;z-index:2;padding:4rem 2rem;max-width:1280px;margin:0 auto;width:100%}
 .lander-sect-label{font-size:.5rem;color:var(--red);letter-spacing:.2em;margin-bottom:.6rem}
 .lander-sect-title{font-family:var(--disp);font-size:clamp(2rem,4vw,3rem);letter-spacing:.1em;margin-bottom:2.5rem}
 .lander-features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
-.lander-feature-card{background:rgba(10,10,20,.6);border:1px solid rgba(255,255,255,.06);padding:1.5rem 1.2rem;display:flex;flex-direction:column;gap:.8rem;transition:all .3s cubic-bezier(.16,1,.3,1);animation:fadeInUp .5s ease both;animation-delay:calc(var(--fi) * 80ms + 200ms);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+
+/* Feature Cards - Premium Style */
+.lander-feature-card{position:relative;background:rgba(8,8,16,.65);border:1px solid rgba(255,255,255,.06);padding:1.5rem 1.2rem;display:flex;flex-direction:column;gap:.8rem;transition:all .4s cubic-bezier(.16,1,.3,1);animation:fadeInUp .5s ease both;animation-delay:calc(var(--fi) * 80ms + 200ms);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));backdrop-filter:blur(10px)}
 @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.lander-feature-card:hover{border-color:rgba(232,0,13,.35);background:rgba(15,5,5,.8);transform:translateY(-5px);box-shadow:0 10px 30px rgba(0,0,0,.4)}
-.lfc-icon-lg{font-size:2rem}
-.lander-feat-title{font-size:.7rem;letter-spacing:.14em;font-weight:700;color:var(--paper)}
-.lander-feat-desc{font-size:.65rem;color:var(--muted);line-height:1.65;font-family:var(--body);font-weight:300}
+.lander-feature-card:hover{border-color:rgba(232,0,13,.35);background:rgba(18,6,6,.85);transform:translateY(-6px);box-shadow:0 15px 35px rgba(232,0,13,.08)}
+.lfc-bracket-tl,.lfc-bracket-tr,.lfc-bracket-bl,.lfc-bracket-br{position:absolute;width:8px;height:8px;border-color:rgba(255,255,255,.15);border-style:solid;pointer-events:none;transition:all .3s cubic-bezier(.16,1,.3,1);opacity:.6}
+.lfc-bracket-tl{top:0;left:0;border-width:1.5px 0 0 1.5px}
+.lfc-bracket-tr{top:0;right:0;border-width:1.5px 1.5px 0 0}
+.lfc-bracket-bl{bottom:0;left:0;border-width:0 0 1.5px 1.5px}
+.lfc-bracket-br{bottom:0;right:0;border-width:0 1.5px 1.5px 0}
+.lander-feature-card:hover .lfc-bracket-tl{top:-2px;left:-2px;border-color:var(--red)}
+.lander-feature-card:hover .lfc-bracket-tr{top:-2px;right:-2px;border-color:var(--red)}
+.lander-feature-card:hover .lfc-bracket-bl{bottom:-2px;left:-2px;border-color:var(--red)}
+.lander-feature-card:hover .lfc-bracket-br{bottom:-2px;right:-2px;border-color:var(--red)}
+.lfc-scanline{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);pointer-events:none;animation:sweep 6s linear infinite;opacity:0;transition:opacity .3s ease}
+.lander-feature-card:hover .lfc-scanline{opacity:1;background:linear-gradient(90deg,transparent,rgba(232,0,13,.3),transparent)}
 .lander-bottom-cta{position:relative;z-index:1;padding:5rem 2rem;display:flex;align-items:center;justify-content:center;border-top:1px solid rgba(232,0,13,.1);overflow:hidden}
 .lander-bca-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:1.5rem;text-align:center}
 .lander-bca-tag{font-size:.48rem;color:var(--muted);letter-spacing:.14em}
@@ -3925,4 +3957,71 @@ nav{background:rgba(6,6,14,0.92)!important;backdrop-filter:blur(16px)!important;
   border-color: var(--gold, #ffb830) !important;
   box-shadow: 0 10px 28px rgba(0,0,0,0.45), 0 0 16px rgba(255,184,48,0.25) !important;
 }
+
+/* Onboarding Calibration HUD Styles */
+.tour-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-position: center;
+  pointer-events: none;
+  z-index: 1;
+  animation: tourGridScroll 30s linear infinite;
+  opacity: 0.8;
+}
+@keyframes tourGridScroll {
+  from { background-position: 0 0; }
+  to { background-position: 100px 100px; }
+}
+.tour-scanlines-overlay {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 65, 0.03) 2px, rgba(0, 255, 65, 0.03) 4px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Modal Card Cybernetic corner brackets */
+.tour-modal-card {
+  position: relative;
+  box-shadow: 0 0 35px rgba(0, 255, 65, 0.15) !important;
+}
+.tour-bracket-tl, .tour-bracket-tr, .tour-bracket-bl, .tour-bracket-br {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--lime);
+  border-style: solid;
+  pointer-events: none;
+  opacity: 0.85;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tour-bracket-tl { top: -1px; left: -1px; border-width: 2.5px 0 0 2.5px; }
+.tour-bracket-tr { top: -1px; right: -1px; border-width: 2.5px 2.5px 0 0; }
+.tour-bracket-bl { bottom: -1px; left: -1px; border-width: 0 0 2.5px 2.5px; }
+.tour-bracket-br { bottom: -1px; right: -1px; border-width: 0 2.5px 2.5px 0; }
+
+.tour-modal-card:hover .tour-bracket-tl { top: -3px; left: -3px; }
+.tour-modal-card:hover .tour-bracket-tr { top: -3px; right: -3px; }
+.tour-modal-card:hover .tour-bracket-bl { bottom: -3px; left: -3px; }
+.tour-modal-card:hover .tour-bracket-br { bottom: -3px; right: -3px; }
+
+.tour-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.35), transparent);
+  pointer-events: none;
+  animation: tourSweep 5s linear infinite;
+  opacity: 0.4;
+}
+@keyframes tourSweep {
+  0% { top: 0%; }
+  50% { top: 100%; }
+  100% { top: 0%; }
+}
+
 

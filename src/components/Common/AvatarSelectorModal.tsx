@@ -43,39 +43,7 @@ const AVATAR_FILES = [
 ];
 
 // One Piece gallery also selectable as covers
-const ONE_PIECE_COVER_FILES = [
-  'ONE PIECE.jpeg','one piece.jpeg','Straw Hat Pirates.jpeg',
-  'One Piece - Straw Hat Pirates, John Riddle.jpeg','One piece wano x Gta.jpeg',
-  'One piece "NAKAMAS".jpeg','One Piece Magazines.jpeg',
-  'Buggy, Sir Crocodile & Mihawk - One Piece.jpeg','Soul King Brook.jpeg',
-  'God Valley.jpeg','Corazon 💔.jpeg','ONE PIECE NOVEL LAW_ CH_ 1.jpeg',
-  '1997_ The start of an adventure ☠️🏝.jpeg',
-  'AdriGold 🍊 (@GoldDAdri_) on X.jpeg',
-  'Credit_ Twitter @avenoirn.jpeg',
-  'Anime Posters Online - Shop Unique Metal Prints, Pictures, Paintings _ Displate.jpeg',
-  'ANIME POSTERS - Sergey Zhikin.jpeg',
-  '𝑊𝑎𝑙𝑙𝑝𝑎𝑝𝑒𝑟 _ 𝐿𝑜𝑐𝑘𝑠𝑐𝑟𝑒𝑒𝑛 _ One piece tattoos, One piece wallpaper iphone, One piece pictures.jpeg',
-  '𝐔𝐬𝐨𝐩𝐩.jpeg',
-  'Hunter × Hunter Volume 11 Cover.jpeg',
-  'Mob psycho 100.jpeg','mob psycho 100.jpeg','move! move! just like mob!💥.jpeg',
-  'チェンソーマン ＃１.jpeg','Dandadan _ @lihaolow • tw ☆.jpeg',
-  'Mess🌿 (@Messcult) on X.jpeg','SUBWAY DIMENSIONS.jpeg',
-  'Shugen jikka Kiyomaru.jpeg','Guts.jpeg',
-  'Best _GOODNIGHT PUNPUN_ Fan Graphic Cover _ Poster💪.jpeg',
-  'Poster - Veil.jpeg','SONS OF THE DEVIL Covers 1-5 - toni infante.jpeg',
-  'Slam Dunk Manga New Edition Cover Art – All 20 Covers.jpeg',
-  'Korean Edition Manga [phantom Busters] 팬텀 버스터즈 (jmanga227).jpeg',
-  'Portada del primer número de One punch man_ Es veu al seu protagonista.jpeg',
-  'credit_@sotoko3924 (tw).jpeg','zzyzzyy on X.jpeg',
-  '3.jpeg','6.jpeg',
-  '_ (69).jpeg','_ (70).jpeg','_ (71).jpeg','_ (72).jpeg','_ (73).jpeg',
-  '_ (74).jpeg','_ (75).jpeg','_ (76).jpeg','_ (77).jpeg','_ (78).jpeg',
-  '_ (79).jpeg','_ (80).jpeg','_ (81).jpeg','_ (82).jpeg','_ (83).jpeg',
-  '_ (84).jpeg','_ (85).jpeg','_ (86).jpeg','_ (87).jpeg','_ (88).jpeg',
-  '_ (89).jpeg','_ (90).jpeg','_ (91).jpeg','_ (92).jpeg','_ (93).jpeg',
-  '_ (94).jpeg','_ (95).jpeg','_ (96).jpeg','_ (97).jpeg','_ (98).jpeg',
-  '_ (99).jpeg','_ (100).jpeg',
-];
+const ONE_PIECE_COVER_FILES = Array.from({ length: 85 }, (_, i) => `${i + 1}.jpeg`);
 
 const CATEGORIES = ['ALL', 'STRAW HATS', 'DANDADAN', 'BLEACH / NARUTO', 'OPM / SAITAMA', 'GALLERY'];
 
@@ -94,7 +62,11 @@ function matchCat(filename: string, cat: string, isOnepiece: boolean): boolean {
 }
 
 function prettyName(filename: string): string {
-  return filename.replace(/\.[^/.]+$/, '').replace(/_/g, ' ').slice(0, 30).trim();
+  const base = filename.replace(/\.[^/.]+$/, '').replace(/_/g, ' ').trim();
+  if (/^\d+$/.test(base)) {
+    return `Cover #${base}`;
+  }
+  return base.slice(0, 30);
 }
 
 export const AvatarSelectorModal: React.FC<AvatarSelectorModalProps> = ({

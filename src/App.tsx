@@ -125,7 +125,7 @@ export default function App() {
   }, [user, showToast]);
 
   // ── Avatar / cover customization ──
-  const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem('user_avatar') || '/one_piece/ONE PIECE.jpeg');
+  const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem('user_avatar') || '/one_piece/1.jpeg');
   const [arcCovers, setArcCovers] = useState<Record<number, string>>(() => {
     try { return JSON.parse(localStorage.getItem('arc_covers') || '{}'); } catch { return {}; }
   });

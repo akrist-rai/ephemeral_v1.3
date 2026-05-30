@@ -23,7 +23,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'Straw Hat Luffy',
     role: 'Captain',
     bounty: 3000000000,
-    image: '/one_piece/_ (69).jpeg',
+    image: '/one_piece/1.jpeg',
     category: 'straw_hat',
     specialty: 'Gear 5 Joyboy awakening, Conqueror Haki, infinite combat adaptibility.',
     stats: { haki: 98, combat: 99, intellect: 40, navigation: 30, engineering: 20 }
@@ -33,7 +33,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'Pirate Hunter',
     role: 'Swordsman / Vice Captain',
     bounty: 1111000000,
-    image: '/one_piece/_ (70).jpeg',
+    image: '/one_piece/2.jpeg',
     category: 'straw_hat',
     specialty: 'Three-sword style mastery, King of Hell state, extreme durability.',
     stats: { haki: 92, combat: 96, intellect: 50, navigation: 5, engineering: 20 }
@@ -43,7 +43,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'Cat Burglar',
     role: 'Navigator',
     bounty: 366000000,
-    image: '/one_piece/_ (71).jpeg',
+    image: '/one_piece/3.jpeg',
     category: 'straw_hat',
     specialty: 'Clima-Tact weather manipulation, Zeus companion, perfect navigation telemetry.',
     stats: { haki: 30, combat: 60, intellect: 95, navigation: 99, engineering: 65 }
@@ -53,7 +53,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'God Usopp',
     role: 'Sniper',
     bounty: 500000000,
-    image: '/one_piece/_ (72).jpeg',
+    image: '/one_piece/4.jpeg',
     category: 'straw_hat',
     specialty: 'Observation Haki, pop green projectile arsenal, legendary tactical deception.',
     stats: { haki: 75, combat: 68, intellect: 88, navigation: 45, engineering: 85 }
@@ -63,7 +63,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'Black Leg',
     role: 'Chef / Combatant',
     bounty: 1032000000,
-    image: '/one_piece/_ (73).jpeg',
+    image: '/one_piece/5.jpeg',
     category: 'straw_hat',
     specialty: 'Ifrit Jambe blue-flame kicks, exoskeleton genetic enhancements, extreme speed.',
     stats: { haki: 85, combat: 94, intellect: 85, navigation: 50, engineering: 40 }
@@ -73,7 +73,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'Cotton Candy Lover',
     role: 'Doctor',
     bounty: 1000,
-    image: '/one_piece/_ (74).jpeg',
+    image: '/one_piece/6.jpeg',
     category: 'straw_hat',
     specialty: 'Monster Point giant transformation, Rumble Ball bio-hacking, panacea medical wisdom.',
     stats: { haki: 15, combat: 78, intellect: 98, navigation: 40, engineering: 50 }
@@ -83,7 +83,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'Devil Child',
     role: 'Archaeologist',
     bounty: 930000000,
-    image: '/one_piece/_ (75).jpeg',
+    image: '/one_piece/7.jpeg',
     category: 'straw_hat',
     specialty: 'Demonic giant flower-bloom clones, Poneglyph deciphering, high intel gathering.',
     stats: { haki: 60, combat: 85, intellect: 99, navigation: 55, engineering: 30 }
@@ -93,7 +93,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'Iron Man Franky',
     role: 'Shipwright / Cyborg',
     bounty: 394000000,
-    image: '/one_piece/_ (76).jpeg',
+    image: '/one_piece/8.jpeg',
     category: 'straw_hat',
     specialty: 'Pluton blueprint memory, radical beam lasers, General Franky mech armor.',
     stats: { haki: 20, combat: 82, intellect: 80, navigation: 35, engineering: 98 }
@@ -103,7 +103,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'Soul King',
     role: 'Musician / Swordsman',
     bounty: 383000000,
-    image: '/one_piece/_ (77).jpeg',
+    image: '/one_piece/9.jpeg',
     category: 'straw_hat',
     specialty: 'Cold soul-blade swordplay, astral projection, morale-boosting pirate symphonies.',
     stats: { haki: 50, combat: 80, intellect: 75, navigation: 40, engineering: 30 }
@@ -113,7 +113,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'First Knight of the Sea',
     role: 'Helmsman',
     bounty: 1100000000,
-    image: '/one_piece/_ (78).jpeg',
+    image: '/one_piece/10.jpeg',
     category: 'straw_hat',
     specialty: 'Fish-Man Jujutsu ocean-current manipulation, supreme helmsman telemetry, armored defense.',
     stats: { haki: 88, combat: 92, intellect: 90, navigation: 85, engineering: 45 }
@@ -123,7 +123,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'Surgeon of Death',
     role: 'Alliance Captain',
     bounty: 3000000000,
-    image: '/one_piece/_ (79).jpeg',
+    image: '/one_piece/11.jpeg',
     category: 'worst_generation',
     specialty: 'Ope Ope no Mi spatial room fabrication, cellular injection, gamma-knife lasers.',
     stats: { haki: 90, combat: 95, intellect: 96, navigation: 75, engineering: 60 }
@@ -133,7 +133,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'Captain Kid',
     role: 'Alliance Captain',
     bounty: 3000000000,
-    image: '/one_piece/_ (80).jpeg',
+    image: '/one_piece/12.jpeg',
     category: 'worst_generation',
     specialty: 'Punk Rotten magnetic mech creation, electromagnetism railguns, Conqueror Haki.',
     stats: { haki: 85, combat: 93, intellect: 78, navigation: 60, engineering: 88 }
@@ -143,7 +143,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'The Chief',
     role: 'Four Emperors (Yonko)',
     bounty: 4048900000,
-    image: '/one_piece/_ (81).jpeg',
+    image: '/one_piece/13.jpeg',
     category: 'emperor',
     specialty: 'Divine Departure strike, Haki-killer aura, future-sight Observation Haki.',
     stats: { haki: 100, combat: 100, intellect: 95, navigation: 85, engineering: 30 }
@@ -153,7 +153,7 @@ export const WANTED_CREW: CrewMember[] = [
     alias: 'Hawkeye',
     role: 'World\'s Strongest Swordsman',
     bounty: 3590000000,
-    image: '/one_piece/_ (82).jpeg',
+    image: '/one_piece/14.jpeg',
     category: 'warlord',
     specialty: 'Black Blade Yoru slash waves, perfect visual observation, absolute swordplay defense.',
     stats: { haki: 95, combat: 99, intellect: 88, navigation: 50, engineering: 20 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { CyberCanvas } from './CyberCanvas';
 
 interface AuthGateProps {
   onAuth: (userId: string, displayName: string) => void;
@@ -44,6 +45,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuth }) => {
   const [termLines, setTermLines] = useState<string[]>([]);
   const [phase, setPhase] = useState<'landing' | 'auth'>('landing');
   const [glitchActive, setGlitchActive] = useState(false);
+  const [isScrambling, setIsScrambling] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Terminal boot sequence
@@ -91,23 +93,51 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuth }) => {
     }
   };
 
+  const triggerScramble = (targetHandle: string) => {
+    if (isScrambling) return;
+    setIsScrambling(true);
+    let count = 0;
+    const maxScrambles = 10;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_';
+    
+    const interval = setInterval(() => {
+      let scrambled = '';
+      for (let i = 0; i < targetHandle.length; i++) {
+        if (i < (count / maxScrambles) * targetHandle.length) {
+          scrambled += targetHandle[i];
+        } else {
+          scrambled += chars[Math.floor(Math.random() * chars.length)];
+        }
+      }
+      setHandle(scrambled);
+      count++;
+      
+      if (count > maxScrambles) {
+        clearInterval(interval);
+        setHandle(targetHandle);
+        setIsScrambling(false);
+      }
+    }, 30);
+  };
+
   const enterAuth = () => {
     setPhase('auth');
-    setTimeout(() => inputRef.current?.focus(), 100);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      triggerScramble(randHandle());
+    }, 100);
+  };
+
+  const handleRandomize = () => {
+    triggerScramble(randHandle());
   };
 
   return (
     <div className="lander-root">
-      {/* Animated background grid */}
-      <div className="lander-grid-bg" />
+      {/* Interactive Background Matrix */}
+      <CyberCanvas />
       {/* Scanlines */}
       <div className="lander-scanlines" />
-      {/* Animated particle dots */}
-      <div className="lander-particles">
-        {Array.from({ length: 24 }).map((_, i) => (
-          <div key={i} className="lander-particle" style={{ '--pi': i } as any} />
-        ))}
-      </div>
 
       {/* ── NAVBAR ── */}
       <nav className="lander-nav">
@@ -168,6 +198,13 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuth }) => {
           {/* Auth panel — slides in when phase==='auth' */}
           {phase === 'auth' && (
             <div className="lander-auth-inline">
+              {/* Immersive Corner Brackets */}
+              <div className="lc-bracket-tl" />
+              <div className="lc-bracket-tr" />
+              <div className="lc-bracket-bl" />
+              <div className="lc-bracket-br" />
+              <div className="lc-scanline" />
+
               <div className="lander-auth-label">// ESTABLISH OPERATOR IDENTITY</div>
               <div className="lander-auth-input-row">
                 <span className="lander-auth-pre">ID://</span>
@@ -183,7 +220,16 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuth }) => {
                   autoComplete="off"
                   placeholder="OPERATOR_HANDLE"
                 />
-                <button className="lander-auth-rand" onClick={() => setHandle(randHandle())} title="Randomize">⟳</button>
+                <button 
+                  className={`lander-auth-rand ${isScrambling ? 'scrambling' : ''}`} 
+                  onClick={handleRandomize} 
+                  title="Randomize"
+                  disabled={isScrambling}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                  </svg>
+                </button>
               </div>
               {error && <div className="lander-auth-error">✗ {error}</div>}
               <div className="lander-auth-hint">
@@ -244,6 +290,11 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuth }) => {
         <div className="lander-features-grid">
           {FEATURES.map((f, i) => (
             <div key={i} className="lander-feature-card" style={{ '--fi': i } as any}>
+              <div className="lfc-bracket-tl" />
+              <div className="lfc-bracket-tr" />
+              <div className="lfc-bracket-bl" />
+              <div className="lfc-bracket-br" />
+              <div className="lfc-scanline" />
               <div className="lfc-icon-lg">{f.icon}</div>
               <div className="lander-feat-title">{f.title}</div>
               <div className="lander-feat-desc">{f.desc}</div>
