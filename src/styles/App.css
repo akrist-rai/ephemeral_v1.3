@@ -4025,3 +4025,927 @@ nav{background:rgba(6,6,14,0.92)!important;backdrop-filter:blur(16px)!important;
 }
 
 
+/* ==========================================================================
+   CTF CHALLENGE OPERATOR WORKSTATION REDESIGN (HIGH FIDELITY SPLIT GRID)
+   ========================================================================== */
+
+/* Main Dashboard Grid */
+.ctf-dashboard {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 1.25rem;
+  padding: 1.25rem 1.8rem;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .ctf-dashboard {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1rem;
+  }
+}
+
+/* LEFT PANE: SYSTEM BRIEFING & OPERATIONS */
+.ctf-dash-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* RIGHT PANE: WORKBENCH LAB */
+.ctf-dash-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Universal Workspace Cards */
+.ctf-workspace-card {
+  background: rgba(8, 8, 18, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ctf-workspace-card:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Left side header & briefing cards */
+.ctf-dash-hdr-card {
+  background: linear-gradient(135deg, rgba(8, 8, 18, 0.95) 0%, rgba(20, 10, 15, 0.8) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 4px solid var(--accent-col, var(--red));
+  border-radius: 4px;
+  padding: 1.2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.ctf-dash-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.48rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  margin-bottom: 0.5rem;
+}
+
+.ctf-dash-title {
+  font-family: var(--disp);
+  font-size: 1.6rem;
+  line-height: 1.15;
+  color: var(--paper);
+  margin: 0 0 0.8rem 0;
+  letter-spacing: 0.04em;
+}
+
+.ctf-dash-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ctf-dash-badge {
+  font-family: var(--mono);
+  font-size: 0.46rem;
+  padding: 0.15rem 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ctf-dash-difficulty {
+  font-family: var(--mono);
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+
+/* Sections & Labels */
+.ctf-dash-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ctf-section-label {
+  font-family: var(--mono);
+  font-size: 0.48rem;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.ctf-scenario-card {
+  background: rgba(3, 3, 8, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  padding: 0.85rem 1rem;
+}
+
+.ctf-scenario-desc {
+  font-family: var(--body);
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+  font-weight: 300;
+}
+
+.ctf-stages-badge {
+  font-size: 0.44rem;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Stage Protocol List Nodes */
+.ctf-stages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ctf-stage-node {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.65rem 0.9rem;
+  background: rgba(8, 8, 18, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  text-align: left;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.ctf-stage-node:hover:not(.locked) {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.ctf-stage-node.active {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--accent-col, var(--red));
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.01);
+}
+
+.ctf-stage-node.cleared {
+  border-color: rgba(0, 255, 85, 0.15);
+  background: rgba(0, 255, 85, 0.01);
+}
+
+.ctf-stage-node.locked {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ctf-stage-status-indicator {
+  font-family: var(--disp);
+  font-size: 1.15rem;
+  font-weight: 700;
+  width: 1.8rem;
+  height: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  flex-shrink: 0;
+  color: var(--accent-col);
+}
+
+.ctf-stage-node.cleared .ctf-stage-status-indicator {
+  color: var(--crt);
+  border-color: rgba(0, 255, 85, 0.2);
+}
+
+.ctf-stage-node.locked .ctf-stage-status-indicator {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+.ctf-stage-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.ctf-stage-name {
+  font-family: var(--body);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ctf-stage-node.active .ctf-stage-name {
+  color: #fff;
+}
+
+.ctf-stage-node.locked .ctf-stage-name {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.ctf-stage-status-text {
+  font-family: var(--mono);
+  font-size: 0.42rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.ctf-stage-node.active .ctf-stage-status-text {
+  color: var(--accent-col);
+  font-weight: 700;
+}
+
+.ctf-stage-node.cleared .ctf-stage-status-text {
+  color: var(--crt);
+}
+
+.ctf-stage-active-pulse {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  animation: pulse 2s infinite;
+}
+
+/* Card top header chrome (like high-performance dashboard UI) */
+.ctf-card-chrome {
+  background: rgba(3, 3, 8, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.45rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ctf-chrome-tag {
+  font-family: var(--mono);
+  font-size: 0.48rem;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+
+.ctf-chrome-metric {
+  font-family: var(--mono);
+  font-size: 0.42rem;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.08em;
+}
+
+/* 1. VIRTUAL FILE EXPLORER STYLE */
+.ctf-file-explorer {
+  display: flex;
+  flex-direction: column;
+}
+
+.ctf-file-tabs {
+  display: flex;
+  background: rgba(3, 3, 8, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.ctf-file-tabs::-webkit-scrollbar {
+  height: 3px;
+}
+
+.ctf-file-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  background: transparent;
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 2px solid transparent;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.ctf-file-tab:hover {
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ctf-file-tab.active {
+  background: rgba(8, 8, 18, 0.8);
+  color: #fff;
+  font-weight: 700;
+}
+
+.ctf-tab-icon {
+  font-size: 0.6rem;
+}
+
+.ctf-file-viewport {
+  display: flex;
+  flex-direction: column;
+  background: #020205;
+}
+
+.ctf-file-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 1rem;
+  background: rgba(255, 255, 255, 0.01);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.ctf-file-path {
+  font-family: var(--mono);
+  font-size: 0.46rem;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.06em;
+}
+
+.ctf-file-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.ctf-file-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--mono);
+  font-size: 0.45rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ctf-file-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.ctf-file-btn.ctf-file-btn--send {
+  color: var(--lime);
+  border-color: rgba(204, 255, 0, 0.2);
+}
+
+.ctf-file-btn.ctf-file-btn--send:hover {
+  background: rgba(204, 255, 0, 0.06);
+  border-color: var(--lime);
+}
+
+.ctf-file-body {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  line-height: 1.5;
+  color: #c9d1d9;
+  background: #020205;
+  overflow-y: auto;
+  max-height: 250px;
+  scrollbar-width: thin;
+}
+
+/* 2. OBJECTIVE & QUESTION DECK STYLING */
+.ctf-objective-body {
+  padding: 0.85rem 1rem;
+  background: rgba(3, 3, 8, 0.2);
+}
+
+.ctf-objective-text {
+  font-family: var(--body);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  font-weight: 400;
+}
+
+.ctf-question-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: rgba(3, 3, 8, 0.4);
+}
+
+.ctf-stage-title-inline {
+  font-family: var(--disp);
+  font-size: 0.95rem;
+  color: #fff;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+.ctf-stage-desc {
+  font-family: var(--body);
+  font-size: 0.7rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  font-weight: 300;
+}
+
+.ctf-question-prompt {
+  background: rgba(0, 0, 0, 0.4);
+  border-left: 3px solid var(--red);
+  padding: 0.7rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.4rem;
+}
+
+.ctf-prompt-prefix {
+  font-family: var(--mono);
+  font-size: 0.45rem;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+
+.ctf-prompt-text {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  line-height: 1.45;
+  color: var(--paper);
+}
+
+/* 4. OPERATOR WORKSPACE (THE SANDBOX REDESIGN) */
+.ctf-sandbox-workspace {
+  background: #04040a;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.ctf-sandbox-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem 1rem;
+  background: rgba(255, 255, 255, 0.01);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  flex-wrap: wrap;
+}
+
+.ctf-sandbox-left {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ctf-control-label {
+  font-family: var(--mono);
+  font-size: 0.45rem;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.08em;
+}
+
+.ctf-control-select {
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 0.48rem;
+  padding: 0.15rem 0.4rem;
+  outline: none;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.ctf-sandbox-btn--preload {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--lime);
+  font-family: var(--mono);
+  font-size: 0.48rem;
+  padding: 0.15rem 0.45rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-radius: 2px;
+}
+
+.ctf-sandbox-btn--preload:hover {
+  background: rgba(204, 255, 0, 0.05);
+  border-color: var(--lime);
+}
+
+.ctf-ide-container {
+  display: flex;
+  background: #000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ctf-ide-lines {
+  padding: 0.6rem 0.35rem;
+  color: rgba(255, 255, 255, 0.15);
+  text-align: right;
+  background: rgba(255, 255, 255, 0.01);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  font-family: var(--mono);
+  font-size: 0.5rem;
+  line-height: 1.45;
+  user-select: none;
+}
+
+.ctf-ide-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #e2e8f0;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  padding: 0.6rem 0.8rem;
+  outline: none;
+  min-height: 120px;
+  line-height: 1.45;
+  resize: vertical;
+  tab-size: 2;
+  scrollbar-width: thin;
+}
+
+.ctf-sandbox-run-btn {
+  width: 100%;
+  border: none;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-transform: uppercase;
+}
+
+.ctf-sandbox-run-btn:hover {
+  filter: brightness(1.15);
+  letter-spacing: 0.14em;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+}
+
+.ctf-sandbox-run-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.ctf-loading-dots::after {
+  content: '...';
+  display: inline-block;
+  animation: loadingDotSweep 1.5s infinite;
+  width: 12px;
+  text-align: left;
+}
+
+@keyframes loadingDotSweep {
+  0% { content: ''; }
+  33% { content: '.'; }
+  66% { content: '..'; }
+  100% { content: '...'; }
+}
+
+.ctf-status-ring {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--crt);
+  display: inline-block;
+}
+
+.ctf-status-ring.pulse {
+  animation: livePulse 1.8s infinite;
+}
+
+/* Phosphor Green CRT Telemetry terminal logs */
+.ctf-terminal-box {
+  background: #000;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 0.6rem 0.85rem 0.85rem;
+}
+
+.ctf-terminal-hdr {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.45rem;
+  font-family: var(--mono);
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.08em;
+}
+
+.ctf-terminal-logs {
+  background: #000;
+  border: 1px solid rgba(0, 255, 65, 0.15);
+  box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.04);
+  border-radius: 2px;
+  padding: 0.6rem;
+  max-height: 120px;
+  overflow-y: auto;
+  font-family: var(--mono);
+  font-size: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  line-height: 1.4;
+  scrollbar-width: thin;
+}
+
+.ctf-terminal-line {
+  word-break: break-all;
+  text-shadow: 0 0 2px rgba(0, 255, 65, 0.2);
+}
+
+/* 5. SECURE SUBMISSION PROMPT CARD */
+.ctf-submit-card {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  background: rgba(3, 3, 8, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.ctf-submit-card--ok {
+  background: rgba(0, 255, 85, 0.04);
+  border: 1px solid rgba(0, 255, 85, 0.2) !important;
+  border-left: 4px solid var(--crt) !important;
+}
+
+.ctf-submit-card--fail {
+  background: rgba(255, 42, 56, 0.03);
+  border: 1px solid rgba(255, 42, 56, 0.2) !important;
+  border-left: 4px solid var(--red) !important;
+}
+
+.ctf-submit-ok-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ctf-success-check {
+  width: 20px;
+  height: 20px;
+  background: var(--crt);
+  color: #000;
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+}
+
+.ctf-success-label {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  color: var(--crt);
+  font-weight: 700;
+}
+
+.ctf-decrypted-value {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  background: #000;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  color: var(--paper);
+  word-break: break-all;
+  letter-spacing: 0.04em;
+  box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.02);
+}
+
+.ctf-att-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.15rem;
+}
+
+.ctf-att-pips {
+  display: flex;
+  gap: 3px;
+}
+
+.ctf-att-pip {
+  width: 10px;
+  height: 3px;
+  border-radius: 1px;
+}
+
+.ctf-att-lbl {
+  font-family: var(--mono);
+  font-size: 0.45rem;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.06em;
+}
+
+.ctf-pts-badge {
+  font-size: 0.48rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--mono);
+  letter-spacing: 0.08em;
+}
+
+.ctf-fail-label {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  color: var(--red);
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+
+.ctf-fail-desc {
+  font-family: var(--body);
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  font-weight: 300;
+}
+
+/* Submission input controls */
+.ctf-submit-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ctf-submit-prefix {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 700;
+  user-select: none;
+}
+
+.ctf-submit-input {
+  flex: 1;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--paper);
+  padding: 0.55rem 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  outline: none;
+  transition: all 0.2s ease;
+  border-radius: 2px;
+}
+
+.ctf-submit-input:focus {
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.02);
+}
+
+.ctf-submit-action-btn {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.55rem 1.25rem;
+  border: none;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+.ctf-submit-action-btn:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+}
+
+.ctf-attempts-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.15rem;
+}
+
+.ctf-attempt-nodes {
+  display: flex;
+  gap: 4px;
+}
+
+.ctf-attempt-node {
+  width: 14px;
+  height: 4px;
+  border-radius: 1px;
+}
+
+.ctf-attempt-node.spent {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ctf-attempts-text {
+  font-family: var(--mono);
+  font-size: 0.45rem;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.06em;
+}
+
+/* 6. TACTICAL FIELD DIRECTIVE INTEL */
+.ctf-intel-card {
+  border: 1px dashed rgba(204, 255, 0, 0.15);
+}
+
+.ctf-intel-trigger {
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  padding: 0.65rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.ctf-intel-trigger:hover {
+  background: rgba(204, 255, 0, 0.02);
+}
+
+.ctf-intel-body {
+  border-left: 2px solid var(--lime);
+  padding: 0.65rem 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(3, 3, 8, 0.3);
+}
+
+/* 7. CASE ANALYSIS ANALYSIS DIRECTIVES */
+.ctf-postmortem-card {
+  border-top: 3px solid;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  background: rgba(8, 8, 18, 0.65);
+}
+
+.ctf-postmortem-title {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+}
+
+.ctf-postmortem-desc {
+  font-family: var(--body);
+  font-size: 0.65rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.68);
+  margin: 0;
+  font-weight: 300;
+}
+
+.ctf-writeup-trigger-btn {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.75);
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.4rem;
+  border-radius: 2px;
+}
+
+.ctf-writeup-trigger-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+
+
