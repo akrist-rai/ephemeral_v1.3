@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import type { Arc } from '../../types';
 import { getArcCover } from '../../lib/imageMapping';
+import { playSound } from '../../lib/sound';
+import { TextScramble } from '../Effects/TextScramble';
+import { PointerGlow } from '../Effects/PointerGlow';
 
 interface ManifestProps {
   arcs: Arc[];
@@ -13,13 +16,28 @@ export const Manifest: React.FC<ManifestProps> = ({ arcs, onShowSeries }) => {
 
   const selectedArc = arcs.find(a => a.id === active) || null;
 
+  const handleRowClick = (arcId: number) => {
+    playSound.click();
+    setActive(active === arcId ? null : arcId);
+  };
+
+  const handleRowHover = (arcId: number) => {
+    playSound.hover();
+    setActive(arcId);
+  };
+
+  const handleButtonClick = (action: () => void) => {
+    playSound.click();
+    action();
+  };
+
   return (
     <div className="mf-sect">
       <div className="sect-hdr">
         <div className="sect-ttl">SERIES MANIFEST</div>
         <div className="sect-id">// DOMAIN_INDEX</div>
         <div className="sect-count">{String(arcs.length).padStart(2, '0')} ACTIVE DOMAINS</div>
-        <div className="sect-more" onClick={onShowSeries}>BROWSE ALL →</div>
+        <div className="sect-more" onClick={() => handleButtonClick(onShowSeries)}>BROWSE ALL →</div>
       </div>
       <div className="sect-div" />
 
@@ -34,8 +52,8 @@ export const Manifest: React.FC<ManifestProps> = ({ arcs, onShowSeries }) => {
                 key={arc.id}
                 className={`mf-row ${isActive ? 'mf-row-active' : ''}`}
                 style={{ '--mf-acc': arc.accColor } as any}
-                onClick={() => setActive(isActive ? null : arc.id)}
-                onMouseEnter={() => setActive(arc.id)}
+                onClick={() => handleRowClick(arc.id)}
+                onMouseEnter={() => handleRowHover(arc.id)}
               >
                 {/* Thumbnail */}
                 <div className="mf-row-thumb">
@@ -83,13 +101,16 @@ export const Manifest: React.FC<ManifestProps> = ({ arcs, onShowSeries }) => {
 
                 <div className="mf-feature-body">
                   <div className="mf-feat-vol" style={{ color: arc.accColor }}>VOL.{String(arc.id).padStart(2, '0')}</div>
-                  <div className="mf-feat-title">{arc.title}</div>
+                  <div className="mf-feat-title">
+                    <TextScramble text={arc.title} triggerOnHover speed={30} />
+                  </div>
                   <div className="mf-feat-sub" style={{ color: `${arc.accColor}bb` }}>{arc.arcName}</div>
                   <div className="mf-feat-domain">{arc.domain}</div>
                   <button
                     className="mf-feat-btn"
                     style={{ borderColor: arc.accColor, color: arc.accColor, boxShadow: `0 0 20px ${arc.accColor}33` }}
-                    onClick={onShowSeries}
+                    onClick={() => handleButtonClick(onShowSeries)}
+                    onMouseEnter={() => playSound.hover()}
                   >
                     ENTER SERIES →
                   </button>

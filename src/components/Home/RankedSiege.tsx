@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { playSound } from '../../lib/sound';
+import { TextScramble } from '../Effects/TextScramble';
+import { PointerGlow } from '../Effects/PointerGlow';
 
 interface RankedSiegeProps {
   navigate: (path: string) => void;
@@ -53,8 +56,17 @@ export const RankedSiege: React.FC<RankedSiegeProps> = ({ navigate }) => {
 
   const pad = (n: number) => String(n).padStart(2, '0');
 
+  const handleButtonClick = (action: () => void) => {
+    playSound.click();
+    action();
+  };
+
+  const handleMouseEnter = () => {
+    playSound.hover();
+  };
+
   return (
-    <div className="siege-wrap">
+    <PointerGlow color="#e8000d" size={400} opacity={0.06} className="siege-wrap">
       {/* Header bar */}
       <div className="siege-header">
         <div className="siege-header-left">
@@ -87,7 +99,9 @@ export const RankedSiege: React.FC<RankedSiegeProps> = ({ navigate }) => {
         {/* Left: challenge info */}
         <div className="siege-challenge-panel">
           <div className="siege-chall-eyebrow">// ACTIVE INCIDENT</div>
-          <h3 className="siege-chall-title">{SIEGE_CHALLENGE.title}</h3>
+          <h3 className="siege-chall-title">
+            <TextScramble text={SIEGE_CHALLENGE.title} triggerOnHover speed={25} />
+          </h3>
           <div className="siege-chall-tags">
             {SIEGE_CHALLENGE.tags.map(t => (
               <span key={t} className="siege-tag" style={{ borderColor: 'rgba(232,0,13,0.4)', color: '#e8000d' }}>{t}</span>
@@ -117,7 +131,8 @@ export const RankedSiege: React.FC<RankedSiegeProps> = ({ navigate }) => {
           <div style={{ display: 'flex', gap: '0.6rem', marginTop: '1.2rem' }}>
             <button
               className="siege-enter-btn"
-              onClick={() => navigate(`/episode/${SIEGE_CHALLENGE.arcId}/${SIEGE_CHALLENGE.episodeId}/ctf/${SIEGE_CHALLENGE.id}`)}
+              onClick={() => handleButtonClick(() => navigate(`/episode/${SIEGE_CHALLENGE.arcId}/${SIEGE_CHALLENGE.episodeId}/ctf/${SIEGE_CHALLENGE.id}`))}
+              onMouseEnter={handleMouseEnter}
             >
               ⚔ ENTER SIEGE →
             </button>
@@ -136,13 +151,19 @@ export const RankedSiege: React.FC<RankedSiegeProps> = ({ navigate }) => {
           </div>
           <div className="siege-lb-rows">
             {LEADERBOARD_PREVIEW.map(entry => (
-              <div key={entry.rank} className={`siege-lb-row ${entry.rank === 1 ? 'siege-lb-row-gold' : ''}`}>
+              <div 
+                key={entry.rank} 
+                className={`siege-lb-row ${entry.rank === 1 ? 'siege-lb-row-gold' : ''}`}
+                onMouseEnter={handleMouseEnter}
+              >
                 <div className="siege-lb-rank" style={{ color: entry.rank === 1 ? '#ffb830' : entry.rank === 2 ? '#9e9e9e' : '#795548' }}>
                   #{entry.rank}
                 </div>
                 <div className="siege-lb-operator">
                   {entry.blood && <span style={{ marginRight: '0.3rem' }}>🩸</span>}
-                  <span style={{ fontFamily: 'var(--mono)', fontSize: '0.52rem', color: '#fff', letterSpacing: '0.06em' }}>{entry.handle}</span>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: '0.52rem', color: '#fff', letterSpacing: '0.06em' }}>
+                    <TextScramble text={entry.handle} triggerOnHover speed={40} />
+                  </span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.1rem' }}>
                   <span style={{ fontFamily: 'var(--mono)', fontSize: '0.4rem', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em' }}>{entry.time}</span>
@@ -161,6 +182,6 @@ export const RankedSiege: React.FC<RankedSiegeProps> = ({ navigate }) => {
           </div>
         </div>
       </div>
-    </div>
+    </PointerGlow>
   );
 };

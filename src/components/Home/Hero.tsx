@@ -1,6 +1,9 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import type { Arc, Episode } from '../../types';
 import { getArcCover } from '../../lib/imageMapping';
+import { playSound } from '../../lib/sound';
+import { TextScramble } from '../Effects/TextScramble';
+import { PointerGlow } from '../Effects/PointerGlow';
 
 interface HeroProps {
   onPlay: () => void;
@@ -62,6 +65,15 @@ export const Hero: React.FC<HeroProps> = ({
       size: 1 + (i % 3),
       delay: (i * 0.4) % 5,
     })), []);
+
+  const handleButtonClick = (action: () => void) => {
+    playSound.click();
+    action();
+  };
+
+  const handleMouseEnter = () => {
+    playSound.hover();
+  };
 
   return (
     <div className="pg-hero">
@@ -139,7 +151,13 @@ export const Hero: React.FC<HeroProps> = ({
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '.6rem' }}>
           {onChangeCover && (
-            <button className="pg-cover-btn" onClick={onChangeCover}>⬡ COVER ART</button>
+            <button 
+              className="pg-cover-btn" 
+              onClick={() => handleButtonClick(onChangeCover)}
+              onMouseEnter={handleMouseEnter}
+            >
+              ⬡ COVER ART
+            </button>
           )}
         </div>
       </div>
@@ -157,9 +175,13 @@ export const Hero: React.FC<HeroProps> = ({
             </span>
           </div>
 
-          <h1 className="pg-hero-title">{title}</h1>
+          <h1 className="pg-hero-title">
+            <TextScramble text={title} speed={25} />
+          </h1>
 
-          <div className="pg-hero-ep-name" style={{ color: acc }}>// {epTitle}</div>
+          <div className="pg-hero-ep-name" style={{ color: acc }}>
+            // <TextScramble text={epTitle} triggerOnHover speed={35} />
+          </div>
 
           <p className="pg-hero-desc">
             {epDesc ? epDesc.slice(0, 200) + (epDesc.length > 200 ? '…' : '') : 'Awaiting transmission...'}
@@ -179,11 +201,16 @@ export const Hero: React.FC<HeroProps> = ({
             <button
               className="pg-btn-play"
               style={{ background: acc, color: acc === '#f9a825' || acc === '#b9ff00' ? '#000' : '#fff', boxShadow: `0 0 32px ${acc}55` }}
-              onClick={onPlay}
+              onClick={() => handleButtonClick(onPlay)}
+              onMouseEnter={handleMouseEnter}
             >
               ▶ PLAY EPISODE {epN}
             </button>
-            <button className="pg-btn-browse" onClick={onMoreInfo}>
+            <button 
+              className="pg-btn-browse" 
+              onClick={() => handleButtonClick(onMoreInfo)}
+              onMouseEnter={handleMouseEnter}
+            >
               BROWSE SERIES
             </button>
           </div>
@@ -219,8 +246,15 @@ export const Hero: React.FC<HeroProps> = ({
                     key={arc.id}
                     className={`pg-arc-panel-row ${isActive ? 'active' : ''} ${isHov ? 'hov' : ''}`}
                     style={{ '--row-acc': arc.accColor } as any}
-                    onClick={() => onArcSelect?.(arc.id)}
-                    onMouseEnter={() => setHoveredArc(arc.id)}
+                    onClick={() => {
+                      if (onArcSelect) {
+                        handleButtonClick(() => onArcSelect(arc.id));
+                      }
+                    }}
+                    onMouseEnter={() => {
+                      setHoveredArc(arc.id);
+                      handleMouseEnter();
+                    }}
                     onMouseLeave={() => setHoveredArc(null)}
                   >
                     <img
@@ -255,8 +289,15 @@ export const Hero: React.FC<HeroProps> = ({
                 key={arc.id}
                 className={`pg-arc-chip ${isActive ? 'active' : ''} ${isHov ? 'hov' : ''}`}
                 style={{ '--chip-acc': arc.accColor } as any}
-                onClick={() => onArcSelect?.(arc.id)}
-                onMouseEnter={() => setHoveredArc(arc.id)}
+                onClick={() => {
+                  if (onArcSelect) {
+                    handleButtonClick(() => onArcSelect(arc.id));
+                  }
+                }}
+                onMouseEnter={() => {
+                  setHoveredArc(arc.id);
+                  handleMouseEnter();
+                }}
                 onMouseLeave={() => setHoveredArc(null)}
               >
                 <img

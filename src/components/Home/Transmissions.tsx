@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { Arc, Episode } from '../../types';
 import { getEpisodeImage, getArcCover } from '../../lib/imageMapping';
+import { playSound } from '../../lib/sound';
+import { TextScramble } from '../Effects/TextScramble';
 
 interface TransmissionsProps {
   episodes: (Episode & { arc?: Arc })[];
@@ -20,6 +22,18 @@ export const Transmissions: React.FC<TransmissionsProps> = ({ episodes, arcs, on
 
   const activeCount = episodes.filter(e => e.active).length;
 
+  const handleCardClick = (ep: Episode) => {
+    playSound.click();
+    onNavigate(`/episode/${ep.arcId}/${ep.id}`);
+  };
+
+  const handleCardHover = (epId: string | null) => {
+    if (epId) {
+      playSound.hover();
+    }
+    setHovered(epId);
+  };
+
   return (
     <div className="tx-sect">
       <div className="sect-hdr">
@@ -31,7 +45,7 @@ export const Transmissions: React.FC<TransmissionsProps> = ({ episodes, arcs, on
             : `${episodes.length} AVAILABLE`
           }
         </div>
-        <div className="sect-more" onClick={() => onNavigate('/series')}>ALL EPISODES →</div>
+        <div className="sect-more" onClick={() => { playSound.click(); onNavigate('/series'); }}>ALL EPISODES →</div>
       </div>
       <div className="sect-div" />
 
@@ -47,9 +61,9 @@ export const Transmissions: React.FC<TransmissionsProps> = ({ episodes, arcs, on
             <div
               key={ep.id}
               className={`tx-card ${isHov ? 'tx-hov' : ''}`}
-              onClick={() => onNavigate(`/episode/${ep.arcId}/${ep.id}`)}
-              onMouseEnter={() => setHovered(ep.id)}
-              onMouseLeave={() => setHovered(null)}
+              onClick={() => handleCardClick(ep)}
+              onMouseEnter={() => handleCardHover(ep.id)}
+              onMouseLeave={() => handleCardHover(null)}
               style={{ '--tx-acc': acc } as any}
             >
               {/* Image */}
@@ -77,7 +91,9 @@ export const Transmissions: React.FC<TransmissionsProps> = ({ episodes, arcs, on
               {/* Card body */}
               <div className="tx-body">
                 <div className="tx-arc-id" style={{ color: acc }}>{ep.id}</div>
-                <div className="tx-title">{ep.title}</div>
+                <div className="tx-title">
+                  <TextScramble text={ep.title} triggerOnHover speed={25} />
+                </div>
                 <div className="tx-meta">
                   <span className="tx-arc-name" style={{ color: `${acc}aa` }}>{arc?.arcName || ''}</span>
                   <span className="tx-ep-num">EP {ep.n}</span>

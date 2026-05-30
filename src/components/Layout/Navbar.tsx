@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { playSound } from '../../lib/sound';
+import { TextScramble } from '../Effects/TextScramble';
 
 interface NavbarProps {
   onHome: () => void;
@@ -35,38 +37,88 @@ export const Navbar: React.FC<NavbarProps> = ({
   const name = displayName || userId;
   const rank = getRankLabel(userXp);
 
+  const handleLinkClick = (action: () => void) => {
+    playSound.click();
+    action();
+  };
+
+  const handleMouseEnter = () => {
+    playSound.hover();
+  };
+
   const go = (href: string, action: () => void) => (e: React.MouseEvent) => {
     e.preventDefault();
     setMobileOpen(false);
-    action();
+    handleLinkClick(action);
   };
 
   return (
     <nav className="navbar">
       {/* ── Logo ── */}
-      <div className="nb-logo" onClick={onHome}>
+      <div 
+        className="nb-logo" 
+        onClick={() => handleLinkClick(onHome)}
+        onMouseEnter={handleMouseEnter}
+      >
         <svg className="nb-compass" width="20" height="20" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10" />
           <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
         </svg>
-        <span className="nb-logo-text"><em>E</em>PHEMERAL</span>
+        <span className="nb-logo-text">
+          <em>E</em>
+          <TextScramble text="PHEMERAL" triggerOnHover speed={40} />
+        </span>
       </div>
 
       {/* ── Center Nav ── */}
       <div className="nb-links">
-        <a href="/" onClick={go('/', onHome)} className={`nb-link ${activeTab === 'home' ? 'on' : ''}`}>HOME</a>
+        <a 
+          href="/" 
+          onClick={go('/', onHome)} 
+          onMouseEnter={handleMouseEnter}
+          className={`nb-link ${activeTab === 'home' ? 'on' : ''}`}
+        >
+          HOME
+        </a>
         {onSeries && (
-          <a href="/series" onClick={go('/series', onSeries)} className={`nb-link ${activeTab === 'series' ? 'on' : ''}`}>SERIES</a>
+          <a 
+            href="/series" 
+            onClick={go('/series', onSeries)} 
+            onMouseEnter={handleMouseEnter}
+            className={`nb-link ${activeTab === 'series' ? 'on' : ''}`}
+          >
+            SERIES
+          </a>
         )}
-        <a href="/leaderboard" onClick={go('/leaderboard', () => navigate('/leaderboard'))} className={`nb-link ${activeTab === 'leaderboard' ? 'on' : ''}`}>BOUNTY BOARD</a>
-        <a href="/profile" onClick={go('/profile', () => navigate('/profile'))} className={`nb-link ${activeTab === 'profile' ? 'on' : ''}`}>PROFILE</a>
+        <a 
+          href="/leaderboard" 
+          onClick={go('/leaderboard', () => navigate('/leaderboard'))} 
+          onMouseEnter={handleMouseEnter}
+          className={`nb-link ${activeTab === 'leaderboard' ? 'on' : ''}`}
+        >
+          BOUNTY BOARD
+        </a>
+        <a 
+          href="/profile" 
+          onClick={go('/profile', () => navigate('/profile'))} 
+          onMouseEnter={handleMouseEnter}
+          className={`nb-link ${activeTab === 'profile' ? 'on' : ''}`}
+        >
+          PROFILE
+        </a>
       </div>
 
       {/* ── Right Side ── */}
       <div className="nb-right">
         {/* Search */}
-        <button className="nb-icon-btn" onClick={onOpenSearch} title="Search [/]" aria-label="Search">
+        <button 
+          className="nb-icon-btn" 
+          onClick={() => handleLinkClick(onOpenSearch || (() => {}))} 
+          onMouseEnter={handleMouseEnter}
+          title="Search [/]" 
+          aria-label="Search"
+        >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
@@ -74,7 +126,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Back button if on sub-page */}
         {onBack && (
-          <button className="nb-back-btn" onClick={onBack}>← BACK</button>
+          <button 
+            className="nb-back-btn" 
+            onClick={() => handleLinkClick(onBack)}
+            onMouseEnter={handleMouseEnter}
+          >
+            ← BACK
+          </button>
         )}
 
         {/* Live indicator */}
@@ -99,7 +157,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Profile widget */}
-        <div className="nb-profile" onClick={() => navigate('/profile')} title="View Profile">
+        <div 
+          className="nb-profile" 
+          onClick={() => handleLinkClick(() => navigate('/profile'))} 
+          onMouseEnter={handleMouseEnter}
+          title="View Profile"
+        >
           <div className="nb-avatar-wrap">
             {userAvatar
               ? <img src={userAvatar} alt="avatar" className="nb-avatar-img" onError={e => { e.currentTarget.style.display = 'none'; }} />
@@ -111,7 +174,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="nb-profile-name">{nodeId || name}</div>
             <div className="nb-rank-badge" style={{ color: rank.color }}>
               <span className="nb-rank-dot" style={{ background: rank.color }} />
-              {rank.label}
+              <TextScramble text={rank.label} triggerOnHover speed={40} />
             </div>
           </div>
         </div>
