@@ -3,6 +3,7 @@ import type { Arc, Episode } from '../../types';
 import { getArcCover } from '../../lib/imageMapping';
 import { playSound } from '../../lib/sound';
 import { TextScramble } from '../Effects/TextScramble';
+import { GlitchText } from '../Effects/GlitchText';
 
 interface HeroProps {
   onPlay: () => void;
@@ -217,11 +218,11 @@ export const Hero: React.FC<HeroProps> = ({
           </div>
 
           <h1 className="pg-hero-title">
-            <TextScramble text={title} speed={25} />
+            <GlitchText text={title} triggerOnHover={true} color={acc} />
           </h1>
 
           <div className="pg-hero-ep-name" style={{ color: acc }}>
-            // <TextScramble text={epTitle} speed={35} />
+            // <GlitchText text={epTitle} triggerOnHover={false} color={acc} />
           </div>
 
           <p className="pg-hero-desc">

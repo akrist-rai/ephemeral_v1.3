@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { playSound } from '../../lib/sound';
 import { TextScramble } from '../Effects/TextScramble';
+import { GlitchText } from '../Effects/GlitchText';
 
 interface NavbarProps {
   onHome: () => void;
@@ -66,8 +67,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
         </svg>
         <span className="nb-logo-text">
-          <em>E</em>
-          <TextScramble text="PHEMERAL" triggerOnHover speed={40} />
+          <GlitchText text="EPHEMERAL_" triggerOnHover={true} color="var(--crt)" />
         </span>
       </div>
 
@@ -174,7 +174,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="nb-profile-name">{nodeId || name}</div>
             <div className="nb-rank-badge" style={{ color: rank.color }}>
               <span className="nb-rank-dot" style={{ background: rank.color }} />
-              <TextScramble text={rank.label} triggerOnHover speed={40} />
+              <GlitchText text={rank.label} triggerOnHover={false} color={rank.color} />
             </div>
           </div>
         </div>

@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { WriteupModal } from '../Common/WriteupModal';
+import { playSound } from '../../lib/sound';
+import { TextScramble } from '../Effects/TextScramble';
+import { PointerGlow } from '../Effects/PointerGlow';
+import { GlitchText } from '../Effects/GlitchText';
 
 interface CTFComponentProps {
   gctf: any;
@@ -66,7 +70,6 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   const [flagInput, setFlagInput] = useState('');
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [filterCat, setFilterCat] = useState<string>('ALL');
-  const [typed, setTyped] = useState(false);
   const boardRef = useRef<HTMLDivElement>(null);
 
   const totalPts = Object.values(gctf.solved).reduce((a: any, s: any) => a + (s.pts_earned || 0), 0) as number;
@@ -76,13 +79,26 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
 
   const cats = ['ALL', ...Array.from(new Set(challenges.map(c => c.category)))];
 
+  const handleButtonClick = (action: () => void) => {
+    playSound.click();
+    action();
+  };
+
+  const handleMouseEnter = () => {
+    playSound.hover();
+  };
+
   const openChallenge = (id: string) => {
+    playSound.click();
     navigate(`${episodeBasePath}/ctf/${encodeURIComponent(id)}`);
     setFlagInput('');
     setTimeout(() => { if (flagInputRef.current) flagInputRef.current.focus(); }, 80);
   };
 
-  const closeChallenge = () => navigate(`${episodeBasePath}/ctf`);
+  const closeChallenge = () => {
+    playSound.click();
+    navigate(`${episodeBasePath}/ctf`);
+  };
 
   // ── BOARD VIEW ──────────────────────────────────────────────────────────────
   if (gctf.phase === 'board') {
@@ -111,7 +127,9 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
         <div className="ctf-board-header">
           <div className="ctf-board-header-left">
             <div className="ctf-board-eyebrow">// ACN_EPHEMERAL · INCIDENT_RESPONSE</div>
-            <h2 className="ctf-board-title">ML INCIDENT RESPONSE</h2>
+            <h2 className="ctf-board-title">
+              <GlitchText text="ML INCIDENT RESPONSE" triggerOnHover={true} color="var(--red)" />
+            </h2>
             <div className="ctf-board-subtitle">Investigate broken systems. Derive the flag from evidence alone.</div>
           </div>
 
@@ -163,15 +181,17 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
         <div className="ctf-cat-filter">
           {cats.map(cat => {
             const meta = CAT_META[cat];
+            const isActive = filterCat === cat;
             return (
               <button
                 key={cat}
-                className={`ctf-cat-btn ${filterCat === cat ? 'active' : ''}`}
-                onClick={() => setFilterCat(cat)}
-                style={filterCat === cat ? { borderColor: meta?.color || '#fff', color: meta?.color || '#fff', boxShadow: `0 0 10px ${meta?.color || '#fff'}33` } : {}}
+                className={`ctf-cat-btn ${isActive ? 'active' : ''}`}
+                onClick={() => handleButtonClick(() => setFilterCat(cat))}
+                onMouseEnter={handleMouseEnter}
+                style={isActive ? { borderColor: meta?.color || '#fff', color: meta?.color || '#fff', boxShadow: `0 0 10px ${meta?.color || '#fff'}33` } : {}}
               >
                 {meta ? <span className="ctf-cat-icon">{meta.icon}</span> : null}
-                {cat}
+                <TextScramble text={cat} triggerOnHover speed={40} />
               </button>
             );
           })}
@@ -203,75 +223,88 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
                   const isHov = hoveredCard === ch.id;
                   const stats = chalStats[ch.id];
                   const isFirstBlood = stats?.firstBlood === currentUserId && ok;
+                  const cardBorderColor = ok ? '#00ff41' : failed ? '#e8000d' : meta.color;
 
                   return (
-                    <div
+                    <PointerGlow
                       key={ch.id}
+                      color={cardBorderColor}
+                      size={260}
+                      opacity={0.06}
                       className={`ctf-ch-card ${ok ? 'ch-solved' : failed ? 'ch-failed' : tried ? 'ch-tried' : ''} ${isHov ? 'ch-hov' : ''}`}
-                      onClick={() => openChallenge(ch.id)}
-                      onMouseEnter={() => setHoveredCard(ch.id)}
-                      onMouseLeave={() => setHoveredCard(null)}
-                      style={{ '--ch-color': meta.color } as any}
                     >
-                      {/* Left accent bar */}
-                      <div className="ch-card-accent" style={{ background: ok ? '#00ff41' : failed ? '#e8000d' : meta.color }} />
+                      <div
+                        onClick={() => openChallenge(ch.id)}
+                        onMouseEnter={() => {
+                          setHoveredCard(ch.id);
+                          handleMouseEnter();
+                        }}
+                        onMouseLeave={() => setHoveredCard(null)}
+                        style={{ '--ch-color': meta.color } as any}
+                        className="ctf-ch-card-inner"
+                      >
+                        {/* Left accent bar */}
+                        <div className="ch-card-accent" style={{ background: ok ? '#00ff41' : failed ? '#e8000d' : meta.color }} />
 
-                      {/* Status glow on solved */}
-                      {ok && <div className="ch-solved-glow" />}
+                        {/* Status glow on solved */}
+                        {ok && <div className="ch-solved-glow" />}
 
-                      {/* First blood badge */}
-                      {isFirstBlood && (
-                        <div className="ch-first-blood" title="First Blood — You solved this first!">🩸 1ST</div>
-                      )}
+                        {/* First blood badge */}
+                        {isFirstBlood && (
+                          <div className="ch-first-blood" title="First Blood — You solved this first!">🩸 1ST</div>
+                        )}
 
-                      {/* Top row */}
-                      <div className="ch-card-top">
-                        <span className="ch-cat-badge" style={{ color: meta.color, borderColor: `${meta.color}44`, background: `${meta.color}11` }}>
-                          {meta.icon} {ch.category}
-                        </span>
-                        <span className="ch-pts-badge">
-                          {ok
-                            ? <span style={{ color: '#00ff41' }}>✓ +{solvedData.pts_earned}</span>
-                            : failed
-                            ? <span style={{ color: '#e8000d' }}>✗ LOCKED</span>
-                            : <span style={{ color: meta.color }}>{ch.points} PTS</span>
-                          }
-                        </span>
-                      </div>
-
-                      {/* Title */}
-                      <div className="ch-card-title">{ch.title}</div>
-                      <div className="ch-card-id">{ch.id}</div>
-
-                      {/* Bottom row */}
-                      <div className="ch-card-bottom">
-                        <span className="ch-difficulty">
-                          {Array.from({ length: 3 }).map((_, i) => (
-                            <span key={i} style={{ color: i < ch.difficulty ? meta.color : 'rgba(255,255,255,0.12)', marginRight: '2px' }}>★</span>
-                          ))}
-                        </span>
-                        {/* Solve count */}
-                        {stats && stats.solveCount > 0 && (
-                          <span className="ch-solve-count">
-                            {stats.firstBlood && <span className="ch-fb-icon" title={`First Blood: ${stats.firstBlood}`}>🩸</span>}
-                            {stats.solveCount} solve{stats.solveCount !== 1 ? 's' : ''}
+                        {/* Top row */}
+                        <div className="ch-card-top">
+                          <span className="ch-cat-badge" style={{ color: meta.color, borderColor: `${meta.color}44`, background: `${meta.color}11` }}>
+                            {meta.icon} {ch.category}
                           </span>
-                        )}
-                        {tried && att > 0 && (
-                          <span className="ch-attempts-left" style={{ color: '#f9a825' }}>
-                            {att} ATTEMPT{att !== 1 ? 'S' : ''} LEFT
+                          <span className="ch-pts-badge">
+                            {ok
+                              ? <span style={{ color: '#00ff41' }}>✓ +{solvedData.pts_earned}</span>
+                              : failed
+                              ? <span style={{ color: '#e8000d' }}>✗ LOCKED</span>
+                              : <span style={{ color: meta.color }}>{ch.points} PTS</span>
+                            }
                           </span>
-                        )}
-                        {!ok && !failed && !tried && (
-                          <span className="ch-enter-label" style={{ color: meta.color }}>INVESTIGATE →</span>
-                        )}
-                        {ok && <span className="ch-solved-label">FLAG CAPTURED</span>}
-                        {failed && <span className="ch-failed-label">CASE CLOSED</span>}
-                      </div>
+                        </div>
 
-                      {/* Hover scan effect */}
-                      {isHov && <div className="ch-hover-scan" />}
-                    </div>
+                        {/* Title */}
+                        <div className="ch-card-title">
+                          <GlitchText text={ch.title} triggerOnHover={true} color={meta.color} />
+                        </div>
+                        <div className="ch-card-id">{ch.id}</div>
+
+                        {/* Bottom row */}
+                        <div className="ch-card-bottom">
+                          <span className="ch-difficulty">
+                            {Array.from({ length: 3 }).map((_, i) => (
+                              <span key={i} style={{ color: i < ch.difficulty ? meta.color : 'rgba(255,255,255,0.12)', marginRight: '2px' }}>★</span>
+                            ))}
+                          </span>
+                          {/* Solve count */}
+                          {stats && stats.solveCount > 0 && (
+                            <span className="ch-solve-count">
+                              {stats.firstBlood && <span className="ch-fb-icon" title={`First Blood: ${stats.firstBlood}`}>🩸</span>}
+                              {stats.solveCount} solve{stats.solveCount !== 1 ? 's' : ''}
+                            </span>
+                          )}
+                          {tried && att > 0 && (
+                            <span className="ch-attempts-left" style={{ color: '#f9a825' }}>
+                              {att} ATTEMPT{att !== 1 ? 'S' : ''} LEFT
+                            </span>
+                          )}
+                          {!ok && !failed && !tried && (
+                            <span className="ch-enter-label" style={{ color: meta.color }}>INVESTIGATE →</span>
+                          )}
+                          {ok && <span className="ch-solved-label">FLAG CAPTURED</span>}
+                          {failed && <span className="ch-failed-label">CASE CLOSED</span>}
+                        </div>
+
+                        {/* Hover scan effect */}
+                        {isHov && <div className="ch-hover-scan" />}
+                      </div>
+                    </PointerGlow>
                   );
                 })}
               </div>
@@ -319,7 +352,11 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
 
       {/* ── TOP CHROME ── */}
       <div className="ctf-detail-chrome" style={{ borderBottomColor: `${meta.color}33` }}>
-        <button className="ctf-back-pill" onClick={closeChallenge}>
+        <button 
+          className="ctf-back-pill" 
+          onClick={closeChallenge}
+          onMouseEnter={handleMouseEnter}
+        >
           ← BOARD
         </button>
         <div className="ctf-detail-breadcrumb">
@@ -346,7 +383,9 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
           {/* Title block */}
           <div className="ctf-incident-block" style={{ borderLeftColor: meta.color }}>
             <div className="ctf-incident-label" style={{ color: meta.color }}>// INCIDENT REPORT</div>
-            <h2 className="ctf-incident-title">{ch.title}</h2>
+            <h2 className="ctf-incident-title">
+              <GlitchText text={ch.title} triggerOnHover={true} color={meta.color} />
+            </h2>
           </div>
 
           {/* Scenario */}
@@ -410,6 +449,7 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
                   className="ctf-submit-btn"
                   style={{ background: meta.color, color: meta.color === '#f9a825' || meta.color === '#ffd54f' || meta.color === '#80cbc4' || meta.color === '#66bb6a' ? '#000' : '#fff' }}
                   onClick={() => submitFlag(id, flagInput, challenges, setUserXp)}
+                  onMouseEnter={handleMouseEnter}
                 >
                   SUBMIT
                 </button>
@@ -436,6 +476,7 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
               className={`ctf-hint-toggle ${gctf.hintOn[id] ? 'hint-open' : ''}`}
               id="ctf-hint-btn"
               onClick={() => toggleCTFHint(id)}
+              onMouseEnter={handleMouseEnter}
             >
               <span className="ctf-hint-icon">⚡</span>
               REQUEST INTEL {gctf.hintOn[id] ? '▲' : '▼'}
@@ -460,7 +501,8 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
           {ok && (
             <button
               className="ctf-writeup-btn"
-              onClick={() => setWriteupChal({ id: ch.id, title: ch.title })}
+              onClick={() => handleButtonClick(() => setWriteupChal({ id: ch.id, title: ch.title }))}
+              onMouseEnter={handleMouseEnter}
             >
               ✎ WRITE-UP
             </button>
@@ -480,7 +522,11 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
               const typeColors: Record<string, string> = { table: '#80cbc4', config: '#f9a825', log: '#4fc3f7', code: '#ce93d8', output: '#66bb6a' };
               const tc = typeColors[a.type] || meta.color;
               return (
-                <div className="ctf-artifact-card" key={i}>
+                <div 
+                  className="ctf-artifact-card" 
+                  key={i}
+                  onMouseEnter={handleMouseEnter}
+                >
                   <div className="ctf-art-header" style={{ borderBottomColor: `${tc}33` }}>
                     <span className="ctf-art-type-icon" style={{ color: tc }}>{icon}</span>
                     <span className="ctf-art-label">{a.label}</span>

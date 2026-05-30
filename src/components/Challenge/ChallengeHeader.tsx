@@ -1,5 +1,7 @@
 import React from 'react';
 import type { Arc, Episode, Challenge } from '../../types';
+import { playSound } from '../../lib/sound';
+import { TextScramble } from '../Effects/TextScramble';
 
 interface ChallengeHeaderProps {
   episode: Episode | null;
@@ -18,14 +20,25 @@ export const ChallengeHeader: React.FC<ChallengeHeaderProps> = ({ episode, arc, 
 
   return (
     <>
-      <button className="ch-back" onClick={onBack}>← BACK TO SERIES</button>
+      <button 
+        className="ch-back" 
+        onClick={() => {
+          playSound.click();
+          onBack();
+        }}
+        onMouseEnter={() => playSound.hover()}
+      >
+        ← BACK TO SERIES
+      </button>
       <div>
         <span className="ch-domain-tag" style={{ background: `${acc}20`, color: acc }}>{domain}</span>
         <span className="ch-ep-ref">// EPISODE {episode.n} · {episode.type.toUpperCase()}</span>
       </div>
       <div className="ch-title" style={{ marginTop: '.5rem' }}>
-        {episode.title.split(' ').slice(0, -1).join(' ')}<br/>
-        <em style={{ color: acc }}>{episode.title.split(' ').slice(-1)[0]}</em>
+        <TextScramble text={episode.title.split(' ').slice(0, -1).join(' ')} speed={25} /><br/>
+        <em style={{ color: acc }}>
+          <TextScramble text={episode.title.split(' ').slice(-1)[0]} speed={35} />
+        </em>
       </div>
       <div className="ch-sub">{episode.description}</div>
       <div className="ch-pills">

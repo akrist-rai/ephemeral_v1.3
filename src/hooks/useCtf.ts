@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { apiRequest } from './useApi';
+import { playSound } from '../lib/sound';
 
 export function useCtf(USER_ID: string, showToast: (msg: string) => void, onCorrect?: (pointsEarned: number) => void) {
   const [gctf, setGctf] = useState<any>({ solved: {}, active: null, chalAttempts: {}, hintOn: {}, phase: 'board' });
@@ -13,6 +14,7 @@ export function useCtf(USER_ID: string, showToast: (msg: string) => void, onCorr
     if (gctf.solved[challengeId]?.solved) return;
 
     try {
+      playSound.click();
       const data = await apiRequest('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -21,6 +23,7 @@ export function useCtf(USER_ID: string, showToast: (msg: string) => void, onCorr
 
       if (data.success || data.status) {
         if (data.status === 'CORRECT') {
+          playSound.success();
           setGctf((prev: any) => ({
             ...prev,
             solved: { ...prev.solved, [challengeId]: { solved: true, attempts_used: data.attemptsUsed, pts_earned: data.pointsEarned } }
@@ -29,6 +32,7 @@ export function useCtf(USER_ID: string, showToast: (msg: string) => void, onCorr
           if (onCorrect) onCorrect(data.pointsEarned);
           showToast(`✓ FLAG ACCEPTED — +${data.pointsEarned} pts`);
         } else if (data.status === 'WRONG') {
+          playSound.error();
           setShake(true);
           setTimeout(() => setShake(false), 380);
 
@@ -46,6 +50,7 @@ export function useCtf(USER_ID: string, showToast: (msg: string) => void, onCorr
         } else if (data.status === 'ALREADY_SOLVED') {
           showToast('CHALLENGE ALREADY SOLVED');
         } else if (data.status === 'NO_ATTEMPTS_LEFT') {
+          playSound.error();
           showToast(`NO ATTEMPTS LEFT — FLAG: EPHEMERAL{${data.actualFlag}}`);
         }
 
@@ -54,15 +59,18 @@ export function useCtf(USER_ID: string, showToast: (msg: string) => void, onCorr
           if (data.status === 'WRONG') flagInputRef.current.select();
         }
       } else {
+        playSound.error();
         showToast('ERROR: ' + data.error);
       }
     } catch (err) {
+      playSound.error();
       console.error('Submission failed:', err);
       showToast('CONNECTION ERROR');
     }
   }, [USER_ID, gctf.solved, showToast]);
 
   const toggleCTFHint = (id: string) => {
+    playSound.click();
     setGctf((prev: any) => ({ ...prev, hintOn: { ...prev.hintOn, [id]: !prev.hintOn[id] } }));
   };
 

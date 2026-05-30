@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { playSound } from '../../lib/sound';
 import { TextScramble } from '../Effects/TextScramble';
 import { PointerGlow } from '../Effects/PointerGlow';
+import { GlitchText } from '../Effects/GlitchText';
 
 interface RankedSiegeProps {
   navigate: (path: string) => void;
@@ -100,7 +101,7 @@ export const RankedSiege: React.FC<RankedSiegeProps> = ({ navigate }) => {
         <div className="siege-challenge-panel">
           <div className="siege-chall-eyebrow">// ACTIVE INCIDENT</div>
           <h3 className="siege-chall-title">
-            <TextScramble text={SIEGE_CHALLENGE.title} triggerOnHover speed={25} />
+            <GlitchText text={SIEGE_CHALLENGE.title} triggerOnHover={true} color="var(--red)" />
           </h3>
           <div className="siege-chall-tags">
             {SIEGE_CHALLENGE.tags.map(t => (
