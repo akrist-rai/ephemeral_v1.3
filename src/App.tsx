@@ -5,6 +5,7 @@ import { Hero } from './components/Home/Hero';
 import { Manifest } from './components/Home/Manifest';
 import { Transmissions } from './components/Home/Transmissions';
 import { ActivityFeed } from './components/Home/ActivityFeed';
+import { RankedSiege } from './components/Home/RankedSiege';
 import { SeriesHero } from './components/Series/SeriesHero';
 import { EpisodeList } from './components/Series/EpisodeList';
 import { ChallengeHeader } from './components/Challenge/ChallengeHeader';
@@ -304,6 +305,7 @@ export default function App() {
             onArcSelect={(arcId) => { setCurArc(arcId); navigate('/series'); }}
           />
           <ActivityFeed challenges={challenges} currentUserId={user.id} />
+          <RankedSiege navigate={navigate} />
           <Manifest arcs={arcs} onShowSeries={() => navigate('/series')} />
           <Transmissions episodes={recentEpisodes} arcs={arcs} onNavigate={navigate} />
         </div>

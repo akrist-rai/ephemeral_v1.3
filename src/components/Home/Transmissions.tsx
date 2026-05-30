@@ -18,20 +18,25 @@ export const Transmissions: React.FC<TransmissionsProps> = ({ episodes, arcs, on
   const [hovered, setHovered] = useState<string | null>(null);
   if (episodes.length === 0) return null;
 
+  const activeCount = episodes.filter(e => e.active).length;
+
   return (
     <div className="tx-sect">
       <div className="sect-hdr">
         <div className="sect-ttl">TRANSMISSIONS</div>
         <div className="sect-id">// EPISODES</div>
-        <div className="sect-count">
-          {episodes.filter(e => e.active).length > 0 ? '◉ ACTIVE NOW' : `${episodes.length} AVAILABLE`}
+        <div className="tx-active-badge">
+          {activeCount > 0
+            ? <><span className="tx-ab-dot" />ACTIVE NOW</>
+            : `${episodes.length} AVAILABLE`
+          }
         </div>
         <div className="sect-more" onClick={() => onNavigate('/series')}>ALL EPISODES →</div>
       </div>
       <div className="sect-div" />
 
       <div className="tx-grid">
-        {episodes.map((ep) => {
+        {episodes.map((ep, idx) => {
           const arc = ep.arc || arcs.find(a => a.id === ep.arcId);
           const acc = arc?.accColor || '#e8000d';
           const tm = TYPE_META[ep.type] || TYPE_META.ctf;
@@ -56,6 +61,9 @@ export const Transmissions: React.FC<TransmissionsProps> = ({ episodes, arcs, on
                 }
                 <div className="tx-img-overlay" style={{ background: `linear-gradient(0deg, ${arc?.bgColor || '#06060e'}ee 0%, rgba(6,6,14,.1) 100%)` }} />
                 <div className="tx-img-scan" />
+
+                {/* Card index */}
+                <div className="tx-card-idx">{String(idx + 1).padStart(2, '0')}</div>
 
                 {/* Type tag */}
                 <div className="tx-type-tag" style={{ background: tm.bg, color: tm.color }}>
@@ -82,6 +90,9 @@ export const Transmissions: React.FC<TransmissionsProps> = ({ episodes, arcs, on
 
               {/* Active indicator bar */}
               {ep.active && <div className="tx-active-bar" style={{ background: acc }} />}
+
+              {/* Bottom accent line */}
+              <div className="tx-bottom-bar" style={{ background: `linear-gradient(90deg, ${acc}44, transparent)` }} />
             </div>
           );
         })}
