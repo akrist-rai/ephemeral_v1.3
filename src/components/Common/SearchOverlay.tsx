@@ -4,7 +4,7 @@ interface SearchOverlayProps {
   challenges: any[];
   gctf: any;
   navigate: (path: string) => void;
-  episodeBasePath: string;
+  getChallengePath: (ch: any) => string;
   onClose: () => void;
 }
 
@@ -25,7 +25,7 @@ const CAT_META: Record<string, { color: string; icon: string }> = {
 const TIER_LABEL: Record<number, string> = { 1: 'ENTRY', 2: 'CORE', 3: 'RUHENHEIM' };
 const DIFF_LABEL = ['', '★', '★★', '★★★'];
 
-export const SearchOverlay: React.FC<SearchOverlayProps> = ({ challenges, gctf, navigate, episodeBasePath, onClose }) => {
+export const SearchOverlay: React.FC<SearchOverlayProps> = ({ challenges, gctf, navigate, getChallengePath, onClose }) => {
   const [query, setQuery] = useState('');
   const [filterCat, setFilterCat] = useState('ALL');
   const [filterTier, setFilterTier] = useState(0);
@@ -66,13 +66,13 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ challenges, gctf, 
       if (e.key === 'ArrowDown') { setSelected(s => Math.min(s + 1, results.length - 1)); e.preventDefault(); }
       if (e.key === 'ArrowUp')   { setSelected(s => Math.max(s - 1, 0)); e.preventDefault(); }
       if (e.key === 'Enter' && results[selected]) {
-        navigate(`${episodeBasePath}/ctf/${encodeURIComponent(results[selected].id)}`);
+        navigate(getChallengePath(results[selected]));
         onClose();
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [results, selected, navigate, episodeBasePath, onClose]);
+  }, [results, selected, navigate, getChallengePath, onClose]);
 
   useEffect(() => setSelected(0), [results]);
 
@@ -140,7 +140,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ challenges, gctf, 
               <div
                 key={ch.id}
                 className={`srch-result-item ${i === selected ? 'selected' : ''} ${ok ? 'srch-solved' : failed ? 'srch-failed' : ''}`}
-                onClick={() => { navigate(`${episodeBasePath}/ctf/${encodeURIComponent(ch.id)}`); onClose(); }}
+                onClick={() => { navigate(getChallengePath(ch)); onClose(); }}
                 onMouseEnter={() => setSelected(i)}
               >
                 <div className="srch-result-left">

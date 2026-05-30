@@ -305,6 +305,16 @@ export default function App() {
     ? `/episode/${featuredArc.id}/${featuredEpisode.id}`
     : '/episode/1/S1E1_A1';
 
+  const getChallengePath = useCallback((ch: any) => {
+    for (const [arcId, eps] of Object.entries(arcEpisodes)) {
+      const ep = eps.find(e => e.id === ch.episodeId);
+      if (ep) {
+        return `/episode/${arcId}/${ep.id}/ctf/${encodeURIComponent(ch.id)}`;
+      }
+    }
+    return `/episode/1/S1E1_A1/ctf/${encodeURIComponent(ch.id)}`;
+  }, [arcEpisodes]);
+
   // ── Auth gate ──────────────────────────────────────────────────────────────
   if (!user) return <AuthGate onAuth={handleAuth} />;
 
@@ -411,7 +421,7 @@ export default function App() {
         <div className="scr on">
           <Navbar {...navProps} onBack={() => navigate('/series')} nodeId={currentEpisode?.id || 'EPISODE'} />
           <div className="ch-wrap">
-            <ChallengeHeader episode={currentEpisode} arc={currentArc} challenges={challenges} onBack={() => navigate('/series')} />
+            <ChallengeHeader episode={currentEpisode} arc={currentArc} challenges={ctfChallenges} onBack={() => navigate('/series')} />
             <div className="tabs-l">
               <button className={`tl ${route.tab === 'brief' ? 'on' : ''}`} onClick={() => navigate(episodeBasePath)}>BRIEF</button>
               <button className={`tl ${route.tab === 'res' ? 'on' : ''}`} onClick={() => navigate(`${episodeBasePath}/resources`)}>RESOURCES</button>
@@ -479,7 +489,7 @@ export default function App() {
           challenges={challenges}
           gctf={gctf}
           navigate={navigate}
-          episodeBasePath={episodeBasePath}
+          getChallengePath={getChallengePath}
           onClose={() => setSearchOpen(false)}
         />
       )}

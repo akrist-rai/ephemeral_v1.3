@@ -10,6 +10,17 @@ const sql = neon(process.env.DATABASE_URL!);
 const db = drizzle(sql, { schema });
 
 async function seed() {
+  console.log('[SEED] Purging old records from ACN_NETWORK...');
+  try {
+    await db.delete(schema.progress);
+    await db.delete(schema.challenges);
+    await db.delete(schema.episodes);
+    await db.delete(schema.arcs);
+    console.log('[SEED] Purge complete.');
+  } catch (err) {
+    console.warn('[SEED] Warning during purge (might be due to empty tables):', err);
+  }
+
   console.log('[SEED] Injecting Architecture & Arcs into ACN_NETWORK...');
   
   // 1. Arcs
