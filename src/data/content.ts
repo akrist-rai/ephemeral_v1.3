@@ -186,7 +186,24 @@ export const CHALLENGE_ARC_MAP: Record<string, number> = {
   // Arc 7 — Mathematics (UNIT-01)
 
   // Cross-arc / shared
+    // Cross-arc / shared
   'BIAS_001': 3,
+
+  // Arc 4 — Networks (The Knot)
+  'NET_PORT_001': 4,
+  'NET_DNS_001':  4,
+
+  // Arc 5 — Data Structures (Prophecy)
+  'DS_HASH_001':  5,
+  'DS_BLOOM_001': 5,
+
+  // Arc 6 — Comp. Prog (ONE PUNCH)
+  'CP_KNAP_001':  6,
+  'CP_DIJK_001':  6,
+
+  // Arc 7 — Mathematics (UNIT-01)
+  'MATH_RSA_001': 7,
+  'MATH_ECC_001': 7,
 };
 
 export const CHALLENGES = [
@@ -332,7 +349,180 @@ export const CHALLENGES = [
   { id: 'CRYPTO_001', tier: 1, category: 'CRYPTO', points: 150, difficulty: 2, title: 'The Caesar Cipher', scenario: 'Marine intelligence intercepts a pirate crew using a Caesar cipher. A known plaintext fragment maps GOMU to TBZH.', task: 'What shift value was used? Submit the integer 0-25.', artifacts: [{ type: 'log', label: 'INTERCEPT', content: 'CIPHERTEXT: JBHF EBBF\nG->T, O->B, M->Z, U->H\ndiff = 13 for all chars' }], flag: '13', attemptsAllowed: 3, hint: 'ROT-13 is its own inverse.', explanation: 'ROT-13 shifts each character 13 positions. G(6)+13=T(19). All four chars confirm shift=13.' },
   { id: 'GRAPH_001', tier: 2, category: 'ALGORITHMS', points: 200, difficulty: 2, title: 'The Straw Hat Network', scenario: 'The Straw Hat crew spans 9 islands. Find the minimum cost Den Den Mushi network connecting all islands.', task: 'What is the total MST cost? Submit the exact integer.', artifacts: [{ type: 'table', label: 'EDGE COSTS', content: 'Luffy-Nami:2 Chopper-Sanji:1 Franky-Brook:2 Nami-Usopp:3 Brook-Jinbe:3 Luffy-Zoro:4 Robin-Franky:4 Nami-Robin:5 Zoro-Sanji:5' }], flag: '24', attemptsAllowed: 3, hint: 'Apply Kruskal: sort edges by weight, add if no cycle.', explanation: 'MST edges: 1+2+2+3+3+4+4+5 = 24. Sorted selection avoids all cycles.' },
   { id: 'BIAS_001', tier: 2, category: 'FAIRNESS', points: 250, difficulty: 3, title: 'The Unequal Tribunal', scenario: 'The World Government sentencing model shows 30% conviction rate for Blue Sea vs 70% for Grand Line defendants.', task: 'Calculate the demographic parity gap as an integer percentage.', artifacts: [{ type: 'table', label: 'OUTCOMES', content: 'Blue Sea: 360/1200 = 30%\nGrand Line: 560/800 = 70%\nGap = |70-30| = ???' }], flag: '40', attemptsAllowed: 3, hint: 'Demographic parity gap = |P(y=1|GroupA) - P(y=1|GroupB)|.', explanation: 'Gap = |70% - 30%| = 40pp. The model is 2.33x more likely to convict Grand Line pirates. Classic demographic disparity.' }
-];
+,
+  {
+    id: 'NET_PORT_001',
+    tier: 1,
+    category: 'NETWORKS',
+    points: 150,
+    difficulty: 1,
+    title: 'Silent Whisper: TCP Port Scan',
+    scenario: 'A rogue operator in the sub-network has launched a port scan to discover active services on our secondary gate. They are using a stealth scan technique that does not complete the 3-way handshake to avoid detection by standard logging.',
+    task: 'Identify the 3-letter acronym of the stealth TCP port scanning technique that sends a SYN packet and listens for a SYN-ACK, but immediately closes the connection with a RST packet.',
+    artifacts: [
+      {
+        type: 'config',
+        label: 'GATEWAY_SECURITY.RULE',
+        content: 'PORT_SCANNING_POLICY: REJECT_HANDSHAKE\nSTEALTH_SCAN_CHECK: ENABLED\nFLAG_COMBO_SUSPICIOUS: SYN,RST'
+      },
+      {
+        type: 'log',
+        label: 'PACKET INTERCEPT',
+        content: '10.0.1.42:38291 -> 10.0.1.1:80 [SYN]\n10.0.1.1:80 -> 10.0.1.42:38291 [SYN, ACK]\n10.0.1.42:38291 -> 10.0.1.1:80 [RST]'
+      }
+    ],
+    flag: 'SYN',
+    attemptsAllowed: 3,
+    hint: 'It is often called a half-open scan because the full three-way handshake is never completed.',
+    explanation: 'A SYN scan (stealth or half-open scan) sends a SYN packet to probe ports. If a SYN-ACK is received, the port is open; the scanner immediately sends a RST packet to tear down the connection instead of completing the handshake with an ACK, leaving it unlogged by many legacy servers.'
+  },
+  {
+    id: 'NET_DNS_001',
+    tier: 2,
+    category: 'NETWORKS',
+    points: 250,
+    difficulty: 3,
+    title: 'The Phantom Resolver',
+    scenario: 'The DNS queries for the domain "ephemeral.sh" are returning a malicious IP address "10.42.99.1" instead of our actual load balancer IP. The packet capture shows an attacker responding to DNS queries faster than the official upstream DNS server.',
+    task: 'Identify the name of the network attack where an attacker sniffs DNS requests and sends forged DNS responses before the legitimate DNS server can reply. Submit the two-word term.',
+    artifacts: [
+      {
+        type: 'log',
+        label: 'RESOLVER CAPTURE',
+        content: '09:21:04.128 [QUERY] ephemeral.sh (Type A)\n09:21:04.130 [REPLY] ephemeral.sh -> 10.42.99.1 (FORGED)\n09:21:04.142 [REPLY] ephemeral.sh -> 192.168.1.100 (LEGITIMATE, LATE)'
+      }
+    ],
+    flag: 'DNS Spoofing',
+    attemptsAllowed: 5,
+    hint: 'This attack targets the UDP-based nature of standard DNS queries where first response wins.',
+    explanation: 'DNS spoofing occurs when an attacker intercepting queries sends a fake DNS reply before the real DNS resolver can respond, tricking the client into connecting to the malicious server.'
+  },
+  {
+    id: 'DS_HASH_001',
+    tier: 2,
+    category: 'DATA_STRUCT',
+    points: 200,
+    difficulty: 2,
+    title: 'The Echo Chamber: Hash Collision',
+    scenario: 'Our security database stores API tokens using a fast hash function to check authorization. However, two distinct token strings "op_clear_7" and "token_sys_9" produce the exact same 16-bit hash, allowing them to bypass check constraints.',
+    task: 'Find the name of the condition in which two different inputs to a hash function produce the same hash value output.',
+    artifacts: [
+      {
+        type: 'table',
+        label: 'HASH FUNCTION LOG',
+        content: 'Input: "op_clear_7"  -> Hash: 0xF8B2\nInput: "token_sys_9" -> Hash: 0xF8B2\nSTATUS: MATCHING OUTPUT FOR UNMATCHING INPUT'
+      }
+    ],
+    flag: 'collision',
+    attemptsAllowed: 4,
+    hint: 'This occurs due to mapping an infinite input space to a finite output space.',
+    explanation: 'A hash collision happens when two distinct inputs yield the same hash value, compromising cryptographic and index integrity.'
+  },
+  {
+    id: 'DS_BLOOM_001',
+    tier: 3,
+    category: 'DATA_STRUCT',
+    points: 300,
+    difficulty: 3,
+    title: 'The Whispering Filter',
+    scenario: 'To avoid expensive disk reads, a high-performance firewall checks if an IP address has been blacklisted using a space-efficient probabilistic data structure. The firewall reports 0% false negatives, but allows occasional false positives.',
+    task: 'What is the name of this probabilistic data structure that supports membership queries and is constructed using an array of m bits initialized to 0 and k independent hash functions?',
+    artifacts: [
+      {
+        type: 'config',
+        label: 'FILTER_METRICS.JSON',
+        content: '{\n  "bit_array_length": 65536,\n  "hash_functions_count": 4,\n  "false_positive_rate": 0.012,\n  "false_negative_rate": 0.000\n}'
+      }
+    ],
+    flag: 'Bloom Filter',
+    attemptsAllowed: 3,
+    hint: 'Named after Burton Howard Bloom, who proposed the idea in 1970.',
+    explanation: 'A Bloom filter uses a bit array and multiple hash functions. Adding an element hashes it to set multiple bits. Querying checks if all those bits are set. False positives can occur, but false negatives are impossible.'
+  },
+  {
+    id: 'CP_KNAP_001',
+    tier: 2,
+    category: 'ALGORITHMS',
+    points: 250,
+    difficulty: 3,
+    title: 'The Overloaded Payload',
+    scenario: 'A salvage drone must retrieve valuable hardware elements from a destroyed vessel. The drone has a strict weight capacity limit of 15 kg. It must select the optimal subset of elements to maximize total credit value.',
+    task: 'Determine the maximum possible credit value the drone can secure under the weight limit. Submit the integer value.',
+    artifacts: [
+      {
+        type: 'table',
+        label: 'HARDWARE MANIFEST',
+        content: 'Item Name      │ Weight (kg) │ Value (credits)\n───────────────┼─────────────┼────────────────\nQuantum Coil   │      3      │       90\nNeural Mesh    │      4      │      100\nHyper-Drive    │      8      │      210\nPlutonium Fuel │      5      │      120\nPlasma Shield  │      6      │      140'
+      }
+    ],
+    flag: '400',
+    attemptsAllowed: 4,
+    hint: 'Use 0/1 Knapsack Dynamic Programming. The optimal subset contains Hyper-Drive, Quantum Coil, and Neural Mesh.',
+    explanation: 'Choosing the Hyper-Drive (8kg, 210c), Quantum Coil (3kg, 90c), and Neural Mesh (4kg, 100c) yields exactly 15kg weight and a max value of 400 credits. All other subsets are either overweight or yield less value.'
+  },
+  {
+    id: 'CP_DIJK_001',
+    tier: 2,
+    category: 'ALGORITHMS',
+    points: 200,
+    difficulty: 2,
+    title: 'Sector-9 Shortest Path',
+    scenario: 'An automated courier must route telemetry packets through a grid of nodes in Sector-9. Each link has a specific delay latency (in milliseconds). We need to find the absolute shortest total latency route from Node A to Node F.',
+    task: 'Calculate the minimum delay cost from Node A to Node F. Submit the integer.',
+    artifacts: [
+      {
+        type: 'table',
+        label: 'NETWORK DELAY MATRIX',
+        content: 'A -> B (2ms)\nA -> C (4ms)\nB -> C (1ms)\nB -> D (7ms)\nC -> D (3ms)\nC -> E (5ms)\nD -> E (1ms)\nD -> F (5ms)\nE -> F (2ms)'
+      }
+    ],
+    flag: '9',
+    attemptsAllowed: 3,
+    hint: 'Apply Dijkstra\'s algorithm to find the shortest path from A. The shortest route is A -> B -> C -> D -> E -> F.',
+    explanation: 'Shortest path: A->B (2), B->C (+1 = 3), C->D (+3 = 6), D->E (+1 = 7), E->F (+2 = 9). Total latency: 9ms.'
+  },
+  {
+    id: 'MATH_RSA_001',
+    tier: 3,
+    category: 'MATH',
+    points: 350,
+    difficulty: 4,
+    title: 'UNIT-01: Primality',
+    scenario: 'An ancient cryptosystem operates on small RSA keys. We intercepted the public key n = p * q = 3233 and the exponent e = 17. To derive the decryption key d, we must factor n into its two prime components.',
+    task: 'Find the value of the smaller prime factor p of 3233. Submit the integer.',
+    artifacts: [
+      {
+        type: 'config',
+        label: 'PUBLIC KEY ENVELOPE',
+        content: 'MODULUS (N): 3233\nEXPONENT (E): 17'
+      }
+    ],
+    flag: '53',
+    attemptsAllowed: 3,
+    hint: 'p and q are primes close to each other. Calculate the square root of 3233 (approx 56.8) and check primes below it.',
+    explanation: 'We factor 3233. Checking primes: 3233 / 53 = 61. Both 53 and 61 are prime. The smaller prime factor is 53.'
+  },
+  {
+    id: 'MATH_ECC_001',
+    tier: 3,
+    category: 'MATH',
+    points: 400,
+    difficulty: 5,
+    title: 'Elliptic Curve: Trapdoor',
+    scenario: 'A secure communications hub uses Elliptic Curve Cryptography over a prime field. The curve is defined as y^2 = x^3 + ax + b (mod p). We know the base point G and public key Q, but finding the secret key d such that Q = dG is mathematically infeasible.',
+    task: 'What is the fundamental mathematical problem on which Elliptic Curve Cryptography relies for its security? Submit its 5-letter acronym.',
+    artifacts: [
+      {
+        type: 'config',
+        label: 'CURVE CONFIG',
+        content: 'Prime Field: p = 2^256 - 2^32 - 977 (secp256k1)\nGenerator G: (x, y)\nKey Relation: Q = d * G'
+      }
+    ],
+    flag: 'ECDLP',
+    attemptsAllowed: 4,
+    hint: 'It stands for Elliptic Curve Discrete Logarithm Problem.',
+    explanation: 'ECC security relies on the hardness of the Elliptic Curve Discrete Logarithm Problem (ECDLP), which states that given points G and dG, it is computationally intractable to find d.'
+  }];
 
 export interface Resource {
   icon: string;
