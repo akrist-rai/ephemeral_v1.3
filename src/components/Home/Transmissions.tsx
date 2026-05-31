@@ -90,12 +90,12 @@ export const Transmissions: React.FC<TransmissionsProps> = ({ episodes, arcs, on
 
               {/* Card body */}
               <div className="tx-body">
-                <div className="tx-arc-id" style={{ color: acc }}>{ep.id}</div>
+                <div className="tx-domain" style={{ color: acc }}>{arc?.domain || arc?.arcName}</div>
                 <div className="tx-title">
                   <TextScramble text={ep.title} triggerOnHover speed={25} />
                 </div>
                 <div className="tx-meta">
-                  <span className="tx-arc-name" style={{ color: `${acc}aa` }}>{arc?.arcName || ''}</span>
+                  <span className="tx-arc-name" style={{ color: `${acc}99` }}>{arc?.arcName || ''}</span>
                   <span className="tx-ep-num">EP {ep.n}</span>
                 </div>
               </div>

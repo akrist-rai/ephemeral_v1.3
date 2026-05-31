@@ -86,7 +86,12 @@ export const EpisodeList: React.FC<EpisodeListProps> = ({ episodes, arc, onShowC
 
             {/* Info */}
             <div className="el-info">
-              <div className="el-id" style={{ color: ep.done ? '#00ff41' : acc }}>{ep.id}</div>
+              <div className="el-id-row">
+                <span className="el-id" style={{ color: ep.done ? '#00ff41' : acc }}>{ep.id}</span>
+                {arc?.domain && (
+                  <span className="el-domain">{arc.domain}</span>
+                )}
+              </div>
               <div className="el-title">{ep.title}</div>
               <div className="el-desc">{ep.description?.slice(0, 100)}{ep.description?.length > 100 ? '…' : ''}</div>
               <div className="el-meta">

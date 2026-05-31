@@ -384,7 +384,8 @@ export default function App() {
                 onClick={() => setCurArc(arc.id)}
                 style={{ '--arc-acc': arc.accColor } as any}
               >
-                V{arc.id} — {arc.arcName || arc.title}
+                <span className="arc-btn-name">V{arc.id} — {arc.arcName || arc.title}</span>
+                <span className="arc-btn-domain">{arc.domain}</span>
               </button>
             ))}
           </div>
