@@ -1,35 +1,16 @@
 import React, { useCallback } from 'react';
-import type { Arc, Episode, Challenge, GctfState } from '../../types';
 import { DSA_PROBLEMS, getDsaProblemsForEpisode } from '../../data/dsaContent';
-import { DSAProblemList } from './DSAProblemList';
-import { DSAProblemDetail } from './DSAProblemDetail';
+import { DSAProblemList } from '../DSA/DSAProblemList';
+import { DSAProblemDetail } from '../DSA/DSAProblemDetail';
 import { playSound } from '../../lib/sound';
+import type { DomainPageProps } from './types';
 
-interface DSAEpisodePageProps {
-  arc: Arc | null;
-  episode: Episode | null;
-  challenges: Challenge[];
-  gctf: GctfState;
-  submitFlag: (
-    id: string,
-    flag: string,
-    chs: Challenge[],
-    setXp: React.Dispatch<React.SetStateAction<number>>,
-  ) => Promise<void>;
-  setUserXp: React.Dispatch<React.SetStateAction<number>>;
-  navigate: (path: string) => void;
-  currentUserId: string;
-  episodeBasePath: string;
-  selectedProblemId?: string;
-}
-
-export const DSAEpisodePage: React.FC<DSAEpisodePageProps> = ({
+export const AlgorithmsPage: React.FC<DomainPageProps> = ({
   arc, episode, challenges, gctf, submitFlag, setUserXp,
   navigate, episodeBasePath, selectedProblemId,
 }) => {
   const accColor = arc?.accColor ?? '#e8000d';
 
-  // Pull the DSA problem data for the challenges in this episode
   const challengeIds = challenges.map(c => c.id);
   const problems = getDsaProblemsForEpisode(episode?.id ?? '', challengeIds);
 
@@ -42,9 +23,7 @@ export const DSAEpisodePage: React.FC<DSAEpisodePageProps> = ({
     navigate(`${episodeBasePath}/ctf/${encodeURIComponent(problemId)}`);
   }, [navigate, episodeBasePath]);
 
-  const handleMarkSolved = useCallback(() => {
-    playSound.success();
-  }, []);
+  const handleMarkSolved = useCallback(() => { playSound.success(); }, []);
 
   if (!episode || !arc) {
     return (
@@ -57,7 +36,6 @@ export const DSAEpisodePage: React.FC<DSAEpisodePageProps> = ({
     );
   }
 
-  // Fallback for arcs without DSA content yet
   if (problems.length === 0) {
     return (
       <div className="ds-page">
@@ -70,7 +48,7 @@ export const DSAEpisodePage: React.FC<DSAEpisodePageProps> = ({
         <div className="ds-welcome">
           <div className="ds-welcome-icon">◌</div>
           <div className="ds-welcome-title">CONTENT COMING SOON</div>
-          <div className="ds-welcome-sub">DSA PROBLEMS FOR THIS EPISODE ARE BEING PREPARED</div>
+          <div className="ds-welcome-sub">PROBLEMS FOR THIS EPISODE ARE BEING PREPARED</div>
         </div>
       </div>
     );
@@ -78,12 +56,8 @@ export const DSAEpisodePage: React.FC<DSAEpisodePageProps> = ({
 
   return (
     <div className="ds-page">
-      {/* Header */}
       <div className="ds-header">
-        <span
-          className="ds-header-domain"
-          style={{ borderColor: `${accColor}55`, color: accColor }}
-        >
+        <span className="ds-header-domain" style={{ borderColor: `${accColor}55`, color: accColor }}>
           {arc.domain}
         </span>
         <h1 className="ds-header-title">{episode.title}</h1>
@@ -94,7 +68,6 @@ export const DSAEpisodePage: React.FC<DSAEpisodePageProps> = ({
         </div>
       </div>
 
-      {/* Two-column layout */}
       <div className="ds-layout">
         <DSAProblemList
           problems={problems}

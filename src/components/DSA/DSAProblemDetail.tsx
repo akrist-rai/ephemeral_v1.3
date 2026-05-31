@@ -1,9 +1,10 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import type { Challenge, GctfState } from '../../types';
 import type { DSAProblem, DSATestCase } from '../../data/dsaContent';
 import { usePyodide } from '../../hooks/usePyodide';
 import { playSound } from '../../lib/sound';
+import { DSAVisualizer } from './DSAVisualizer';
 
 interface TestResult {
   label: string;
@@ -20,12 +21,12 @@ interface DSAProblemDetailProps {
   allChallenges: Challenge[];
   setUserXp: React.Dispatch<React.SetStateAction<number>>;
   onMarkSolved: () => void;
+  accColor: string;
 }
 
 /** Safe JS sandbox — runs user code against a single test case. */
 function runJsTestCase(userCode: string, testCase: DSATestCase): { result: unknown; error?: string } {
   try {
-    // Build a runner that injects user-defined functions and calls with args
     const runner = new Function(
       'args',
       `${userCode}\n\nconst _fn = typeof Solution !== 'undefined'
@@ -47,21 +48,34 @@ function deepEqual(a: unknown, b: unknown): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
+// Suppress unused warning — deepEqual may be used by future JS runner expansions
+void deepEqual;
+void runJsTestCase;
+
 export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
-  problem, challenge, gctf, submitFlag, allChallenges, setUserXp, onMarkSolved,
+  problem, challenge, gctf, submitFlag, allChallenges, setUserXp, onMarkSolved, accColor,
 }) => {
   const [lang, setLang] = useState<'python' | 'javascript'>('python');
   const [code, setCode] = useState(problem.starterCode.python);
-  const [studyOpen, setStudyOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<'problem' | 'code'>('problem');
   const [testResults, setTestResults] = useState<TestResult[] | null>(null);
   const [running, setRunning] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { ready: pyReady, loading: pyLoading, run: runPy } = usePyodide();
 
-  const solved = !!gctf.solved[challenge.id]?.solved;
-  const acc = '#e8000d'; // Arc 1 accent colour (ALGORITHMS)
+  // Suppress unused warning
+  void pyReady;
 
-  // Reset code when language changes
+  const solved = !!gctf.solved[challenge.id]?.solved;
+
+  // Reset state when problem changes
+  useEffect(() => {
+    setActiveTab('problem');
+    setTestResults(null);
+    setCode(problem.starterCode.python);
+    setLang('python');
+  }, [problem.id]);
+
   const handleLangChange = (newLang: 'python' | 'javascript') => {
     setLang(newLang);
     setCode(newLang === 'python' ? problem.starterCode.python : problem.starterCode.javascript);
@@ -77,22 +91,15 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
 
     try {
       if (lang === 'python') {
-        // Inject user code + runner, capture output
         const fullCode = `${code}\n${problem.runnerPy}`;
         const res = await runPy(fullCode);
 
         if (res.error) {
-          setTestResults([{
-            label: 'Runtime Error',
-            passed: false,
-            got: res.error,
-            expected: '',
-          }]);
+          setTestResults([{ label: 'Runtime Error', passed: false, got: res.error, expected: '' }]);
           playSound.error();
           return;
         }
 
-        // Parse "[ True, False, True ]" output
         let parsed: boolean[];
         try {
           parsed = JSON.parse(res.output.replace(/True/g, 'true').replace(/False/g, 'false'));
@@ -112,7 +119,6 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
         if (results.every(r => r.passed)) playSound.success(); else playSound.error();
 
       } else {
-        // JavaScript execution
         try {
           const runner = new Function(
             `${code}\n${problem.runnerJs}\nreturn (function(){${problem.runnerJs}})();`
@@ -162,110 +168,42 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
   return (
     <div className="ds-main">
 
-      {/* ── Study Guide ── */}
-      <div className="ds-study-card">
-        <button
-          type="button"
-          className="ds-study-toggle"
-          onClick={() => { setStudyOpen(o => !o); playSound.click(); }}
-        >
-          <span className="ds-study-toggle-dots">
-            <span className="ds-panel-dot ds-panel-dot--r" />
-            <span className="ds-panel-dot ds-panel-dot--y" />
-            <span className="ds-panel-dot ds-panel-dot--g" />
-          </span>
-          <span className="ds-study-toggle-label">// STUDY GUIDE</span>
-          <span className="ds-study-concept">{problem.studyGuide.concept}</span>
-          <span className={`ds-study-chevron ${studyOpen ? 'open' : ''}`}>▾</span>
-        </button>
-
-        {studyOpen && (
-          <div className="ds-study-body">
-            {/* TL;DR */}
-            <div className="ds-study-section">
-              <div className="ds-section-label" data-n="01">SUMMARY</div>
-              <div className="ds-tldr">
-                <span className="ds-tldr-label">TL;DR</span>
-                {problem.studyGuide.tldr}
-              </div>
-            </div>
-
-            {/* Explanation */}
-            <div className="ds-study-section">
-              <div className="ds-section-label" data-n="02">EXPLANATION</div>
-              <div className="ds-explanation">{problem.studyGuide.explanation}</div>
-            </div>
-
-            {/* Approaches table */}
-            <div className="ds-study-section">
-              <div className="ds-section-label" data-n="03">APPROACHES</div>
-              <div className="ds-approaches">
-                <div className="ds-approach-row">
-                  <span>APPROACH</span><span>TIME</span><span>SPACE</span><span>NOTES</span><span>WORKS?</span>
-                </div>
-                {problem.studyGuide.approaches.map((ap, i) => (
-                  <div key={i} className="ds-approach-row">
-                    <span className="ds-approach-name">{ap.name}</span>
-                    <span className="ds-approach-complexity">{ap.time}</span>
-                    <span className="ds-approach-complexity">{ap.space}</span>
-                    <span className="ds-approach-desc">{ap.description}</span>
-                    <span className={`ds-approach-works ${ap.works ? 'ds-approach-works--yes' : 'ds-approach-works--no'}`}>
-                      {ap.works ? '✓ YES' : '✗ NO'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ASCII visual */}
-            <div className="ds-study-section">
-              <div className="ds-section-label" data-n="04">TRACE</div>
-              <div className="ds-visual-wrap">
-                <div className="ds-visual-chrome">
-                  <span className="ds-visual-chrome-dot" />
-                  <span className="ds-visual-chrome-title">execution trace</span>
-                </div>
-                <pre className="ds-visual">{problem.studyGuide.visualExample}</pre>
-              </div>
-            </div>
-
-            {/* Key insight + pattern */}
-            <div className="ds-study-section">
-              <div className="ds-section-label" data-n="05">KEY INSIGHT</div>
-              <div className="ds-insight">
-                <span className="ds-insight-label">CORE PATTERN</span>
-                <p className="ds-insight-text">{problem.studyGuide.keyInsight}</p>
-              </div>
-              <p className="ds-pattern ds-pattern--gap">
-                <em>Pattern recognition: </em>{problem.studyGuide.patternHint}
-              </p>
-            </div>
-
-            {/* Pitfalls */}
-            <div className="ds-study-section">
-              <div className="ds-pitfalls-label">COMMON PITFALLS</div>
-              <div className="ds-pitfalls">
-                {problem.studyGuide.pitfalls.map((p, i) => (
-                  <div key={i} className="ds-pitfall">{p}</div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+      {/* ── 1. Problem Header Bar ── */}
+      <div className="ds-prob-header-bar">
+        <span className="ds-prob-num">#{problem.leetcodeNum}</span>
+        <span className="ds-prob-display-title">{challenge.title}</span>
+        <span className={`ds-diff ${diffClass}`}>{problem.difficulty}</span>
+        {problem.tags.map(t => (
+          <span key={t} className="ds-constraint">{t}</span>
+        ))}
       </div>
 
-      {/* ── Problem Statement ── */}
-      <div className="ds-problem-card">
-        <div className="ds-problem-header">
-          <span className="ds-problem-num">#{problem.leetcodeNum}</span>
-          <span className="ds-problem-title">{problem.title}</span>
-          <span className={`ds-diff ${diffClass}`}>{problem.difficulty}</span>
-          {problem.tags.map(t => (
-            <span key={t} className="ds-constraint">{t}</span>
-          ))}
-        </div>
+      {/* ── 2. Visualization Stage ── */}
+      <div className="ds-viz-section">
+        <DSAVisualizer problem={problem} accColor={accColor} />
+      </div>
 
-        <div className="ds-problem-body">
+      {/* ── 3. Content Tabs ── */}
+      <div className="ds-tabs-bar">
+        <button
+          type="button"
+          className={`ds-tab ${activeTab === 'problem' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('problem'); playSound.click(); }}
+        >
+          PROBLEM
+        </button>
+        <button
+          type="button"
+          className={`ds-tab ${activeTab === 'code' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('code'); playSound.click(); }}
+        >
+          CODE
+        </button>
+      </div>
+
+      {/* ── 4a. Problem Tab ── */}
+      {activeTab === 'problem' && (
+        <div className="ds-problem-body-v2">
           <div>
             <div className="ds-problem-label">PROBLEM</div>
             <p className="ds-statement">{problem.statement}</p>
@@ -304,106 +242,108 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* ── Code Editor ── */}
-      <div className="ds-editor-card">
-        <div className="ds-editor-header">
-          <div className="ds-editor-tabs">
-            <span className="ds-editor-label">// EDITOR</span>
-            {(['python', 'javascript'] as const).map(l => (
-              <button
-                key={l}
-                type="button"
-                className={`ds-editor-tab ${lang === l ? 'active' : ''}`}
-                onClick={() => handleLangChange(l)}
-              >
-                <span className="ds-editor-tab-dot" />
-                {l === 'python' ? 'solution.py' : 'solution.js'}
-              </button>
-            ))}
+      {/* ── 4b. Code Tab ── */}
+      {activeTab === 'code' && (
+        <div className="ds-editor-card">
+          <div className="ds-editor-header">
+            <div className="ds-editor-tabs">
+              <span className="ds-editor-label">// EDITOR</span>
+              {(['python', 'javascript'] as const).map(l => (
+                <button
+                  key={l}
+                  type="button"
+                  className={`ds-editor-tab ${lang === l ? 'active' : ''}`}
+                  onClick={() => handleLangChange(l)}
+                >
+                  <span className="ds-editor-tab-dot" />
+                  {l === 'python' ? 'solution.py' : 'solution.js'}
+                </button>
+              ))}
+            </div>
+            <div className="ds-lang-toggle">
+              {(['python', 'javascript'] as const).map(l => (
+                <button
+                  key={l}
+                  type="button"
+                  className={`ds-lang-btn ${lang === l ? 'active' : ''}`}
+                  onClick={() => handleLangChange(l)}
+                >
+                  {l === 'python' ? 'Python' : 'JS'}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="ds-lang-toggle">
-            {(['python', 'javascript'] as const).map(l => (
-              <button
-                key={l}
-                type="button"
-                className={`ds-lang-btn ${lang === l ? 'active' : ''}`}
-                onClick={() => handleLangChange(l)}
-              >
-                {l === 'python' ? 'Python' : 'JS'}
-              </button>
-            ))}
+
+          <div className="ds-monaco-wrap">
+            <Editor
+              height="320px"
+              language={lang === 'python' ? 'python' : 'javascript'}
+              value={code}
+              onChange={v => setCode(v ?? '')}
+              theme="vs-dark"
+              options={{
+                fontSize: 13,
+                minimap: { enabled: false },
+                lineNumbers: 'on',
+                scrollBeyondLastLine: false,
+                wordWrap: 'on',
+                tabSize: 4,
+                renderLineHighlight: 'all',
+                padding: { top: 10, bottom: 10 },
+                fontFamily: '"Share Tech Mono", "Fira Code", monospace',
+              }}
+            />
           </div>
-        </div>
 
-        <div className="ds-monaco-wrap">
-          <Editor
-            height="320px"
-            language={lang === 'python' ? 'python' : 'javascript'}
-            value={code}
-            onChange={v => setCode(v ?? '')}
-            theme="vs-dark"
-            options={{
-              fontSize: 13,
-              minimap: { enabled: false },
-              lineNumbers: 'on',
-              scrollBeyondLastLine: false,
-              wordWrap: 'on',
-              tabSize: 4,
-              renderLineHighlight: 'all',
-              padding: { top: 10, bottom: 10 },
-              fontFamily: '"Share Tech Mono", "Fira Code", monospace',
-            }}
-          />
-        </div>
+          <div className="ds-run-bar">
+            {pyLoading && lang === 'python' && (
+              <div className="ds-py-loading">
+                <div className="ds-py-spinner" />
+                INITIALIZING PYTHON RUNTIME...
+              </div>
+            )}
+            <button
+              type="button"
+              className="ds-run-btn"
+              onClick={handleRun}
+              disabled={running || (lang === 'python' && pyLoading)}
+            >
+              {running ? '⟳ RUNNING...' : '▶ RUN TESTS'}
+            </button>
+            {testResults && !running && (
+              <span className="ds-run-status">
+                {testResults.filter(r => r.passed).length}/{testResults.length} passed
+              </span>
+            )}
+          </div>
 
-        <div className="ds-run-bar">
-          {pyLoading && lang === 'python' && (
-            <div className="ds-py-loading">
-              <div className="ds-py-spinner" />
-              INITIALIZING PYTHON RUNTIME...
+          {testResults && (
+            <div className="ds-test-results">
+              {testResults.map((r, i) => (
+                <div key={i} className="ds-test-row">
+                  <span className={`ds-test-icon ${r.passed ? 'ds-test-icon--pass' : 'ds-test-icon--fail'}`}>
+                    {r.passed ? '✓' : '✗'}
+                  </span>
+                  <span className="ds-test-label">{r.label}</span>
+                  {!r.passed && r.expected && (
+                    <span className="ds-test-got">got: {r.got}  expected: {r.expected}</span>
+                  )}
+                  {r.passed && (
+                    <span className="ds-test-got ds-test-got--pass">PASSED</span>
+                  )}
+                  {!r.passed && !r.expected && (
+                    <span className="ds-test-got">{r.got}</span>
+                  )}
+                </div>
+              ))}
             </div>
           )}
-          <button
-            type="button"
-            className="ds-run-btn"
-            onClick={handleRun}
-            disabled={running || (lang === 'python' && pyLoading)}
-          >
-            {running ? '⟳ RUNNING...' : '▶ RUN TESTS'}
-          </button>
-          {testResults && !running && (
-            <span className="ds-run-status">
-              {testResults.filter(r => r.passed).length}/{testResults.length} passed
-            </span>
-          )}
         </div>
+      )}
 
-        {testResults && (
-          <div className="ds-test-results">
-            {testResults.map((r, i) => (
-              <div key={i} className="ds-test-row">
-                <span className={`ds-test-icon ${r.passed ? 'ds-test-icon--pass' : 'ds-test-icon--fail'}`}>
-                  {r.passed ? '✓' : '✗'}
-                </span>
-                <span className="ds-test-label">{r.label}</span>
-                {!r.passed && r.expected && (
-                  <span className="ds-test-got">got: {r.got}  expected: {r.expected}</span>
-                )}
-                {r.passed && (
-                  <span className="ds-test-got ds-test-got--pass">PASSED</span>
-                )}
-                {!r.passed && !r.expected && (
-                  <span className="ds-test-got">{r.got}</span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ── Actions ── */}
+      {/* ── 5. Actions ── */}
       <div className="ds-action-card">
         {solved ? (
           <div className="ds-solved-banner">

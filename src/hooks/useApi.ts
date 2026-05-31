@@ -19,7 +19,8 @@ export async function apiRequest(path: string, options: RequestInit = {}) {
   try {
     json = await res.json();
   } catch {
-    throw new Error(`Server returned ${res.status} with a non-JSON body`);
+    // Non-JSON body (e.g. nginx 502/503 HTML error page)
+    throw new Error(`API unavailable (${res.status})`);
   }
 
   if (json && typeof json === 'object') {

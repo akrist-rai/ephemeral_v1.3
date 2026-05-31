@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import './styles/App.css';
+import { ARCS as STATIC_ARCS, EPISODES as STATIC_EPISODES, CHALLENGES as STATIC_CHALLENGES } from './data/content';
 import { Navbar } from './components/Layout/Navbar';
 import { Hero } from './components/Home/Hero';
 import { Manifest } from './components/Home/Manifest';
@@ -7,23 +8,41 @@ import { Transmissions } from './components/Home/Transmissions';
 import { ActivityFeed } from './components/Home/ActivityFeed';
 import { SeriesHero } from './components/Series/SeriesHero';
 import { EpisodeList } from './components/Series/EpisodeList';
-import { ChallengeHeader } from './components/Challenge/ChallengeHeader';
-import { Brief } from './components/Challenge/Brief';
-import { Resources } from './components/Challenge/Resources';
-import { CTFComponent } from './components/Challenge/CTFComponent';
 import { Toast } from './components/Common/Toast';
 import { AuthGate } from './components/Common/AuthGate';
 import { Leaderboard } from './components/Common/Leaderboard';
 import { AvatarSelectorModal } from './components/Common/AvatarSelectorModal';
 import { ProfilePage } from './components/Common/ProfilePage';
 import { SearchOverlay } from './components/Common/SearchOverlay';
-import { DSAEpisodePage } from './components/DSA/DSAEpisodePage';
+import { AlgorithmsPage }      from './components/domains/AlgorithmsPage';
+import { DataStructuresPage }  from './components/domains/DataStructuresPage';
+import { CompProgPage }        from './components/domains/CompProgPage';
+import { ProgrammingBasicsPage } from './components/domains/ProgrammingBasicsPage';
+import { CybersecurityPage }   from './components/domains/CybersecurityPage';
+import { MachineLearningPage } from './components/domains/MachineLearningPage';
+import { NetworksPage }        from './components/domains/NetworksPage';
+import { MathematicsPage }     from './components/domains/MathematicsPage';
+import { ProbabilityPage }     from './components/domains/ProbabilityPage';
+import type { DomainPageProps } from './components/domains/types';
 import { apiRequest } from './hooks/useApi';
 import { useCtf } from './hooks/useCtf';
 import { BootTour } from './components/Effects/BootTour';
 
 import type { Arc, Episode, Challenge } from './types';
 import { getArcCover } from './lib/imageMapping';
+
+// ── Domain registry — one entry per domain, maps to its own page component ──
+const DOMAIN_REGISTRY: Record<string, React.ComponentType<DomainPageProps>> = {
+  'ALGORITHMS':         AlgorithmsPage,
+  'DATA STRUCTURES':    DataStructuresPage,
+  'COMP. PROG':         CompProgPage,
+  'PROGRAMMING BASICS': ProgrammingBasicsPage,
+  'CYBERSECURITY':      CybersecurityPage,
+  'MACHINE LEARNING':   MachineLearningPage,
+  'NETWORKS':           NetworksPage,
+  'MATHEMATICS':        MathematicsPage,
+  'PROBABILITY':        ProbabilityPage,
+};
 
 // ── Route parsing ──────────────────────────────────────────────────────────
 function parseRoute() {
@@ -207,9 +226,21 @@ export default function App() {
         });
         setGctf((prev: any) => ({ ...prev, solved, chalAttempts }));
         setDataStatus('ready');
-      } catch (err: any) {
-        setApiError(err.message);
-        setDataStatus('error');
+      } catch {
+        // API unavailable — fall back to static content so the UI stays functional.
+        // Don't surface an error; the app works normally with static data.
+        const staticArcs = STATIC_ARCS as Arc[];
+        setArcs(staticArcs);
+        setChallenges(STATIC_CHALLENGES as Challenge[]);
+        if (curArc === null && staticArcs.length > 0) setCurArc(staticArcs[0].id);
+        const staticEps: Record<number, Episode[]> = {};
+        staticArcs.forEach(arc => {
+          staticEps[arc.id] = STATIC_EPISODES
+            .filter(e => e.arcId === arc.id)
+            .map(e => ({ locked: false, active: false, done: false, ...e } as Episode));
+        });
+        setArcEpisodes(staticEps);
+        setDataStatus('ready');
       }
     };
     fetchData();
@@ -379,10 +410,11 @@ export default function App() {
             <span className="arc-label">ARC:</span>
             {arcs.map(arc => (
               <button
+                type="button"
                 key={arc.id}
                 className={`arc-btn ${curArc === arc.id ? 'on' : ''}`}
                 onClick={() => setCurArc(arc.id)}
-                style={{ '--arc-acc': arc.accColor } as any}
+                style={{ '--arc-acc': arc.accColor } as React.CSSProperties}
               >
                 <span className="arc-btn-name">V{arc.id} — {arc.arcName || arc.title}</span>
                 <span className="arc-btn-domain">{arc.domain}</span>
@@ -421,59 +453,38 @@ export default function App() {
         </div>
       )}
 
-      {route.screen === 's-ep' && (
-        <div className="scr on">
-          <Navbar {...navProps} onBack={() => navigate('/series')} nodeId={currentEpisode?.id || 'EPISODE'} />
-
-          {/* Domain dispatch — DSA arcs get a full-page experience with no tabs */}
-          {(['ALGORITHMS', 'DATA STRUCTURES', 'COMP. PROG', 'PROGRAMMING BASICS'] as const).includes(
-            currentArc?.domain as any
-          ) ? (
-            <DSAEpisodePage
-              arc={currentArc}
-              episode={currentEpisode}
-              challenges={ctfChallenges}
-              gctf={gctf}
-              submitFlag={submitFlag}
-              setUserXp={setUserXp}
-              navigate={navigate}
-              currentUserId={user.id}
-              episodeBasePath={episodeBasePath}
-              selectedProblemId={route.challengeId ?? undefined}
-            />
-          ) : (
-            /* All other arcs keep the Brief / Resources / CTF tab structure */
-            <div className="ch-wrap">
-              <ChallengeHeader episode={currentEpisode} arc={currentArc} challenges={ctfChallenges} onBack={() => navigate('/series')} />
-              <div className="tabs-l">
-                <button type="button" className={`tl ${route.tab === 'brief' ? 'on' : ''}`} onClick={() => navigate(episodeBasePath)}>BRIEF</button>
-                <button type="button" className={`tl ${route.tab === 'res' ? 'on' : ''}`} onClick={() => navigate(`${episodeBasePath}/resources`)}>RESOURCES</button>
-                <button type="button" className={`tl ${route.tab === 'ctf' ? 'on' : ''}`} onClick={() => navigate(`${episodeBasePath}/ctf`)}>CTF ARENA</button>
-              </div>
-              {route.tab === 'brief' && <Brief episode={currentEpisode} arc={currentArc} onStartResources={() => navigate(`${episodeBasePath}/resources`)} />}
-              {route.tab === 'res' && <Resources episode={currentEpisode} onEnterArena={() => navigate(`${episodeBasePath}/ctf`)} />}
-              {route.tab === 'ctf' && (
-                <CTFComponent
-                  gctf={gctf}
-                  setUserXp={setUserXp}
-                  showToast={showToast}
-                  challenges={ctfChallenges}
-                  navigate={navigate}
-                  dataStatus={dataStatus}
-                  apiError={apiError}
-                  submitFlag={submitFlag}
-                  toggleCTFHint={toggleCTFHint}
-                  shake={shake}
-                  flagInputRef={flagInputRef}
-                  episodeBasePath={episodeBasePath}
-                  chalStats={chalStats}
-                  currentUserId={user.id}
-                />
-              )}
-            </div>
-          )}
-        </div>
-      )}
+      {route.screen === 's-ep' && (() => {
+        const DomainPage = currentArc?.domain
+          ? DOMAIN_REGISTRY[currentArc.domain] ?? null
+          : null;
+        return (
+          <div className="scr on">
+            <Navbar {...navProps} onBack={() => navigate('/series')} nodeId={currentEpisode?.id || 'EPISODE'} />
+            {DomainPage && (
+              <DomainPage
+                arc={currentArc}
+                episode={currentEpisode}
+                challenges={ctfChallenges}
+                gctf={gctf}
+                submitFlag={submitFlag}
+                setUserXp={setUserXp}
+                navigate={navigate}
+                currentUserId={user.id}
+                episodeBasePath={episodeBasePath}
+                selectedProblemId={route.challengeId ?? undefined}
+                tab={route.tab}
+                showToast={showToast}
+                dataStatus={dataStatus}
+                apiError={apiError}
+                toggleCTFHint={toggleCTFHint}
+                shake={shake}
+                flagInputRef={flagInputRef}
+                chalStats={chalStats}
+              />
+            )}
+          </div>
+        );
+      })()}
 
       {/* Status bar */}
       <div className="sbar">
@@ -488,8 +499,8 @@ export default function App() {
         <span className="sbar-sep">|</span>
         <span className="sbar-search-hint">Press <kbd>/</kbd> to search</span>
         <div className="sbar-r">
-          <span>OPERATOR: <span className="sbar-v" style={{ color: '#00ff41' }}>{user.name}</span></span>
-          <button className="sbar-logout" onClick={() => {
+          <span>OPERATOR: <span className="sbar-v sbar-v--op">{user.name}</span></span>
+          <button type="button" className="sbar-logout" onClick={() => {
             localStorage.removeItem('ephemeral_user_id');
             localStorage.removeItem('ephemeral_display_name');
             setUser(null);
