@@ -5,8 +5,6 @@ import { DSAProblemList } from './DSAProblemList';
 import { DSAProblemDetail } from './DSAProblemDetail';
 import { playSound } from '../../lib/sound';
 
-const DSA_DOMAINS = new Set(['ALGORITHMS', 'DATA STRUCTURES', 'COMP. PROG']);
-
 interface DSAEpisodePageProps {
   arc: Arc | null;
   episode: Episode | null;

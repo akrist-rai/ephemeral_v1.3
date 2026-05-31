@@ -425,7 +425,7 @@ export default function App() {
           <Navbar {...navProps} onBack={() => navigate('/series')} nodeId={currentEpisode?.id || 'EPISODE'} />
 
           {/* Domain dispatch — DSA arcs get a full-page experience with no tabs */}
-          {(['ALGORITHMS', 'DATA STRUCTURES', 'COMP. PROG'] as const).includes(
+          {(['ALGORITHMS', 'DATA STRUCTURES', 'COMP. PROG', 'PROGRAMMING BASICS'] as const).includes(
             currentArc?.domain as any
           ) ? (
             <DSAEpisodePage

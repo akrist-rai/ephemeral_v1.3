@@ -157,10 +157,11 @@ export const EPISODES = [
   { id: 'S1E4_A8', arcId: 8, n: 4, title: 'Divergence Meter - Hypothesis Testing', description: 'The divergence meter reads 1.048596%. Is this statistically significant? Implement t-tests, chi-square, ANOVA, and bootstrap resampling. Apply Bonferroni correction for multiple comparisons across 100+ worldlines.', type: 'research', min: 35, xp: 150, done: false, art: 'p<0.05', bg: '#0d0400' },
   
   // ═══ Arc 9: The Initiation — PROGRAMMING BASICS ═══
-  { id: 'S1E1_A9', arcId: 9, n: 1, title: "Python Basics — Type Coercion Safety", description: "In active training, your primary task is ensuring input streams map safely to appropriate runtime classes. Leverage Python type conversion explicitly.", type: "ctf", min: 10, xp: 50, done: false, art: "🐍\nINT\nSTR", bg: "#000502" },
-  { id: 'S1E2_A9', arcId: 9, n: 2, title: "C Anatomy — Pointer Dereferences", description: "Direct memory access requires complete precision. Master the address-of and dereference operations to safely mutate variables.", type: "ctf", min: 15, xp: 60, done: false, art: "⚙️\n*P\n&X", bg: "#000502" },
-  { id: 'S1E3_A9', arcId: 9, n: 3, title: "Go Threads — Concurrency Primitives", description: "The Go scheduler executes processes in parallel. Master goroutine dispatching and channel operations to prevent deadlocks.", type: "ctf", min: 15, xp: 65, done: false, art: "🐹\nGO\nCHAN", bg: "#000502" },
-  { id: 'S1E4_A9', arcId: 9, n: 4, title: "JS Event Loop — Strict Equality Gates", description: "JavaScript's loose comparison introduces vulnerability through type coercion. Establish absolute equality checks using strict operations.", type: "ctf", min: 12, xp: 55, done: false, art: "⚡\n===\n==", bg: "#000502" }
+  // Designed for absolute beginners — zero prior programming knowledge assumed.
+  { id: 'S1E1_A9', arcId: 9, n: 1, title: "First Steps — Variables, Loops & Output", description: "Every program is a list of instructions for a computer. In this episode you will write your first real programs. You will learn what a variable is (a named storage box for a value), how a loop repeats instructions automatically, and how a conditional makes decisions. By the end you will solve three classic beginner problems using nothing but these three tools.", type: "ctf", min: 20, xp: 80, done: false, active: true, art: "◉ VARS\n══════\nLOOPS", bg: "#000a02" },
+  { id: 'S1E2_A9', arcId: 9, n: 2, title: "Text & Characters — Working with Strings", description: "Text is everywhere in programming. A string is simply a sequence of characters — letters, digits, spaces — stored one after another. This episode teaches you how to read individual characters by their position (index), how to loop over every character in a word, and how to count, compare, and rearrange text. Every language feature you need is built-in.", type: "ctf", min: 20, xp: 80, done: false, art: "◉ STR\n══════\nINDEX", bg: "#000a02" },
+  { id: 'S1E3_A9', arcId: 9, n: 3, title: "Functions & Logic — Building Reusable Tools", description: "A function is a named block of code you can call whenever you need it — like saving a recipe so you can cook the same dish any time. This episode teaches you how to write functions that take inputs and return outputs, how to use conditionals to choose between different paths, and how a function can even call itself (recursion) to solve problems defined in terms of smaller versions of themselves.", type: "ctf", min: 25, xp: 100, done: false, art: "◉ FUNC\n══════\nRETURN", bg: "#000a02" },
+  { id: 'S1E4_A9', arcId: 9, n: 4, title: "Lists & Searching — Working with Collections", description: "A list (also called an array) stores many values in a single variable, each with its own position number. This episode teaches you how to create lists, access items by index, loop over every element, and search for things inside a collection. These skills underpin almost every real-world program ever written.", type: "ctf", min: 25, xp: 100, done: false, art: "◉ LIST\n══════\nSEARCH", bg: "#000a02" }
 ];
 
 export const CHALLENGES = [
@@ -524,94 +525,65 @@ export const CHALLENGES = [
     hint: 'It stands for Elliptic Curve Discrete Logarithm Problem.',
     explanation: 'ECC security relies on the hardness of the Elliptic Curve Discrete Logarithm Problem (ECDLP), which states that given points G and dG, it is computationally intractable to find d.'
   },
-  {
-    id: 'PY_001',
-    episodeId: 'S1E1_A9',
-    tier: 1,
-    category: 'SCRIPTING',
-    points: 100,
-    difficulty: 1,
-    title: 'Python: Safe Type Adding',
-    scenario: 'A dynamic addition operation in our Python script crashes when trying to add a string representation of an integer to an actual integer. It throws a TypeError.',
-    task: 'Determine the correct conversion syntax inside Python to cast a string variable `a` into an integer and add it to `b`. Submit the single line of code.',
-    artifacts: [
-      {
-        type: 'config',
-        label: 'DYNAMIC_ADD.PY',
-        content: 'a = "10"\nb = 20\n# Solve type mismatch:\nresult = int(a) + b'
-      }
-    ],
-    flag: 'int(a) + b',
-    attemptsAllowed: 3,
-    hint: 'Use the built-in int() function to cast the string first.',
-    explanation: 'Python does not support implicit string-to-integer coercion. Casting "a" explicitly via int(a) allows the mathematical addition to compile.'
-  },
-  {
-    id: 'C_001',
-    episodeId: 'S1E2_A9',
-    tier: 1,
-    category: 'REVERSE',
-    points: 100,
-    difficulty: 1,
-    title: 'C: Dereference Mutation',
-    scenario: 'A passcode validation checker in C fails because a memory location pointed to by pointer `p` is not updated with the correct value.',
-    task: 'Submit the standard C statement that dereferences a pointer `p` to assign it the integer value `1337`. Remember the ending semicolon.',
-    artifacts: [
-      {
-        type: 'config',
-        label: 'MUTATION.C',
-        content: 'int x = 10;\nint *p = &x;\n// Dereference p to set x to 1337:\n*p = 1337;'
-      }
-    ],
-    flag: '*p = 1337;',
-    attemptsAllowed: 3,
-    hint: 'Use the asterisk (*) operator to dereference a pointer.',
-    explanation: 'To modify the target of a pointer, dereference it with *p, then perform the standard assignment.'
-  },
-  {
-    id: 'GO_001',
-    episodeId: 'S1E3_A9',
-    tier: 1,
-    category: 'SCRIPTING',
-    points: 100,
-    difficulty: 1,
-    title: 'Go: Goroutine Dispatcher',
-    scenario: 'A thread dispatcher in Go blocks synchronously instead of running a function concurrently.',
-    task: 'Submit the keyword and function call that executes `calculate()` in a new concurrent goroutine.',
-    artifacts: [
-      {
-        type: 'config',
-        label: 'CONCURRENCY.GO',
-        content: '// Run calculate in parallel:\ngo calculate()'
-      }
-    ],
-    flag: 'go calculate()',
-    attemptsAllowed: 3,
-    hint: 'Prefix the function call with the "go" keyword.',
-    explanation: 'Prepend "go" before any function call in Golang to dispatch it onto a concurrent thread managed by the scheduler.'
-  },
-  {
-    id: 'JS_001',
-    episodeId: 'S1E4_A9',
-    tier: 1,
-    category: 'WEB',
-    points: 100,
-    difficulty: 1,
-    title: 'JS: Loose Coercion Bypass',
-    scenario: 'A database verification comparison in Node.js uses double-equals (==), allowing loose type coercion which leads to security bypasses.',
-    task: 'Submit the strict comparison check for variables `num` and `str` that prevents loose type coercion and ensures both value and type are matching.',
-    artifacts: [
-      {
-        type: 'config',
-        label: 'STRICT_COMPARE.JS',
-        content: 'let num = 5;\nlet str = "5";\n// Perform strict check:\nnum === str'
-      }
-    ],
-    flag: 'num === str',
-    attemptsAllowed: 3,
-    hint: 'Use the triple-equals comparison operator.',
-    explanation: 'Triple-equals (===) enforces strict equality comparison, evaluating to false if the data types of the operands differ.'
-  }];
+  // ── Arc 9: Basic Programming — rendered by DSAEpisodePage, NOT CTFComponent ──
+  // flag: 'DSA_HONOR_SOLVED' — students mark problems solved via the code runner button.
+  // Episode 1 — Variables, Loops & Output
+  { id: 'BP_412_FIZZBUZZ',        episodeId: 'S1E1_A9', tier: 1, category: 'PROGRAMMING BASICS', points: 50,  difficulty: 1, title: 'FizzBuzz',                   scenario: 'Print numbers 1 to n. For multiples of 3 print "Fizz", multiples of 5 print "Buzz", multiples of both print "FizzBuzz".', task: 'Return a list of strings for every number from 1 to n.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Check divisible by 15 first, then 3, then 5, then just the number as a string.', explanation: 'A for loop counts 1..n. The modulo operator % gives the remainder: 15 % 3 == 0. Check 15 before 3/5 to avoid false positives.' },
+  { id: 'BP_1480_RUNNING_SUM',    episodeId: 'S1E1_A9', tier: 1, category: 'PROGRAMMING BASICS', points: 50,  difficulty: 1, title: 'Running Sum of 1D Array',    scenario: 'Each element of the running sum is the total of all elements up to that index.', task: 'Return the running sum of nums — where runningSum[i] = sum(nums[0..i]).', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Loop through the array. Keep a total variable and add each element to it.', explanation: 'One pass: keep a running total and overwrite (or append) each position with total so far.' },
+  { id: 'BP_1929_CONCAT_ARRAY',   episodeId: 'S1E1_A9', tier: 1, category: 'PROGRAMMING BASICS', points: 50,  difficulty: 1, title: 'Concatenation of Array',    scenario: 'Build ans of length 2n where ans[i] == nums[i] and ans[i+n] == nums[i].', task: 'Return ans — nums followed by itself.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'In Python: nums + nums. Or build a new list with a loop.', explanation: 'Just concatenate the list with itself: return nums + nums.' },
+  // Episode 2 — Text & Characters
+  { id: 'BP_344_REVERSE_STRING',  episodeId: 'S1E2_A9', tier: 1, category: 'PROGRAMMING BASICS', points: 50,  difficulty: 1, title: 'Reverse String',             scenario: 'Reverse a character array in-place — you must not allocate extra space.', task: 'Modify the array s so its characters are in reverse order.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Use two pointers: one at the start, one at the end. Swap and move them toward the centre.', explanation: 'Two-pointer swap: left=0, right=len-1. While left<right: swap s[left] and s[right], then left++, right--.' },
+  { id: 'BP_242_VALID_ANAGRAM',   episodeId: 'S1E2_A9', tier: 1, category: 'PROGRAMMING BASICS', points: 50,  difficulty: 1, title: 'Valid Anagram',              scenario: 'Two strings are anagrams if one is a rearrangement of the other.', task: 'Return true if t is an anagram of s, false otherwise.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Count each character in s. Then subtract counts for t. If anything is non-zero, not an anagram.', explanation: 'Use a dictionary/Counter to count letters in s, then check t has the same counts.' },
+  { id: 'BP_771_JEWELS_STONES',   episodeId: 'S1E2_A9', tier: 1, category: 'PROGRAMMING BASICS', points: 50,  difficulty: 1, title: 'Jewels and Stones',          scenario: 'jewels is a string of unique characters that are types of jewels. stones is a string of the stones you have. Each character in stones is a type of stone you have.', task: 'Return how many of your stones are also jewels.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'For each character in stones, check if it is also in jewels.', explanation: 'Convert jewels to a set for O(1) lookup, then count how many stones[i] are in that set.' },
+  // Episode 3 — Functions & Logic
+  { id: 'BP_9_PALINDROME',        episodeId: 'S1E3_A9', tier: 1, category: 'PROGRAMMING BASICS', points: 75,  difficulty: 1, title: 'Palindrome Number',          scenario: 'A palindrome reads the same forwards and backwards. 121 is a palindrome; -121 is not.', task: 'Return true if x is a palindrome integer, false otherwise.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Convert x to a string and compare it with its reverse: str(x) == str(x)[::-1].', explanation: 'Negative numbers are not palindromes. Convert to string, compare with reverse slice. O(log n) math solution also exists.' },
+  { id: 'BP_58_LENGTH_LAST_WORD', episodeId: 'S1E3_A9', tier: 1, category: 'PROGRAMMING BASICS', points: 75,  difficulty: 1, title: 'Length of Last Word',        scenario: 'Given a string of words separated by spaces, find the length of the last word (words consist of only uppercase and lowercase English letters).', task: 'Return the length of the last word in s.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Strip trailing spaces first, then split and take the last element.', explanation: 's.strip().split() removes extra whitespace and splits on any whitespace. Return len(parts[-1]).' },
+  { id: 'BP_509_FIBONACCI',       episodeId: 'S1E3_A9', tier: 1, category: 'PROGRAMMING BASICS', points: 75,  difficulty: 1, title: 'Fibonacci Number',           scenario: 'F(0)=0, F(1)=1, F(n)=F(n-1)+F(n-2). The Fibonacci sequence is 0, 1, 1, 2, 3, 5, 8, 13...', task: 'Return F(n).', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'For a loop solution: keep two variables (prev, curr) and update them n times.', explanation: 'Iterative: a, b = 0, 1; for _ in range(n): a, b = b, a+b; return a. Avoids stack overflow of naive recursion.' },
+  // Episode 4 — Lists & Searching
+  { id: 'BP_217_CONTAINS_DUP',    episodeId: 'S1E4_A9', tier: 1, category: 'PROGRAMMING BASICS', points: 75,  difficulty: 1, title: 'Contains Duplicate',         scenario: 'Given an integer array, return true if any value appears at least twice.', task: 'Return true if any element appears more than once, false if all are distinct.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Add each number to a set. If it is already there, you found a duplicate.', explanation: 'A set stores only unique values. Loop through nums: if num in seen, return True; else add to seen.' },
+  { id: 'BP_1_TWO_SUM',           episodeId: 'S1E4_A9', tier: 1, category: 'PROGRAMMING BASICS', points: 100, difficulty: 2, title: 'Two Sum',                     scenario: 'Given an array of integers and a target, return the indices of the two numbers that add up to target. Exactly one solution exists.', task: 'Return [i, j] where nums[i] + nums[j] == target.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'For each number x, you need target - x. Store numbers you have already seen in a dictionary.', explanation: 'Hash map: seen = {}. For each (i, num): complement = target - num. If complement in seen, return [seen[complement], i]. Else seen[num] = i.' },
+  { id: 'BP_121_BEST_TIME_STOCK', episodeId: 'S1E4_A9', tier: 1, category: 'PROGRAMMING BASICS', points: 100, difficulty: 2, title: 'Best Time to Buy and Sell Stock', scenario: 'prices[i] is the price on day i. You can buy on one day and sell on a later day.', task: 'Return the maximum profit. If no profit is possible, return 0.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Track the minimum price seen so far. At each day, compute profit = price - min_price. Track the max profit.', explanation: 'One pass: min_price = prices[0], max_profit = 0. For each price: min_price = min(min_price, price); max_profit = max(max_profit, price - min_price).' },
+
+  // ── Arc 1 remaining — ALGORITHMS (DSA framework) ──────────────────────────
+  // Episode S1E1_A1: Graph Theory
+  { id: 'DSA_1971_FIND_PATH',   episodeId: 'S1E1_A1', tier: 1, category: 'ALGORITHMS', points: 100, difficulty: 1, title: 'Find if Path Exists in Graph',      scenario: 'A bidirectional graph of n nodes. edges[i] = [u, v] means there is an edge between u and v.', task: 'Return true if there is a valid path from source to destination.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'BFS or DFS from source. If you reach destination, return True.', explanation: 'BFS/DFS from source node. Mark visited. If destination is reached during traversal, path exists.' },
+  { id: 'DSA_207_COURSE_SCHED',  episodeId: 'S1E1_A1', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 3, title: 'Course Schedule',                    scenario: 'To take course a you must first take course b — represented as [a, b]. Detect if finishing all courses is possible.', task: 'Return true if you can finish all numCourses given the prerequisites.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Model as a directed graph. If the graph has a cycle, it is impossible.', explanation: 'Topological sort / DFS cycle detection. If a back-edge is found during DFS, a cycle exists → impossible.' },
+  { id: 'DSA_684_REDUNDANT_CONN',episodeId: 'S1E1_A1', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 3, title: 'Redundant Connection',              scenario: 'A tree is an undirected connected acyclic graph with n nodes. One extra edge was added. Find it.', task: 'Return the edge that, if removed, makes the graph a tree. If multiple, return the last one in the input.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Use Union-Find. The edge that tries to union two nodes already in the same set is the redundant one.', explanation: 'Union-Find: process edges in order. The first edge [u, v] where find(u) == find(v) creates a cycle.' },
+  // Episode S1E2_A1: Backtracking
+  { id: 'DSA_78_SUBSETS',        episodeId: 'S1E2_A1', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 2, title: 'Subsets',                            scenario: 'Given an integer array nums of unique elements, return all possible subsets (the power set). The solution set must not contain duplicate subsets.', task: 'Return all subsets of nums in any order.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Backtrack: at each index, decide to include or exclude the element. Base case: index == len(nums).', explanation: 'DFS backtracking. For each element you have two choices: include it or skip it. Total 2^n subsets.' },
+  { id: 'DSA_46_PERMUTATIONS',   episodeId: 'S1E2_A1', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 2, title: 'Permutations',                       scenario: 'Given an array of distinct integers, return all possible permutations in any order.', task: 'Return all permutations of nums.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Backtrack: swap nums[start] with each nums[i], recurse, then swap back.', explanation: 'Swap-based DFS: fix position start, try every remaining element at that position, recurse for start+1, then undo swap.' },
+  { id: 'DSA_39_COMBINATION_SUM',episodeId: 'S1E2_A1', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 2, title: 'Combination Sum',                   scenario: 'Find all unique combinations of candidates that sum to target. Numbers may be reused.', task: 'Return all unique combinations of candidates where the chosen numbers sum to target.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Backtrack: try each candidate starting from index i (allow reuse). If remaining == 0, found a solution.', explanation: 'DFS: subtract candidate from remaining target and recurse. Allow same index to reuse numbers. Prune when remaining < 0.' },
+  // Episode S1E4_A1: Dijkstra
+  { id: 'DSA_743_NETWORK_DELAY', episodeId: 'S1E4_A1', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 3, title: 'Network Delay Time',                 scenario: 'n network nodes labeled 1..n. times[i] = [u, v, w] is a directed edge from u to v with travel time w. Send a signal from node k.', task: 'Return the time it takes for all n nodes to receive the signal, or -1 if impossible.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: "Dijkstra from node k. Answer = max of all shortest distances. If any node is unreachable (dist = ∞), return -1.", explanation: "Dijkstra's: build adjacency list, min-heap (dist, node), relax edges. Result is max(dist.values()) if all reachable." },
+  { id: 'DSA_1631_MIN_EFFORT',   episodeId: 'S1E4_A1', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 3, title: 'Path with Minimum Effort',          scenario: 'A 2D grid of heights. The effort of a path is the maximum absolute difference between adjacent cells. Find the path from top-left to bottom-right with minimum effort.', task: 'Return the minimum effort required to travel from top-left to bottom-right.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Modified Dijkstra: instead of sum of weights, minimize the maximum edge weight along the path.', explanation: 'Dijkstra with dist[r][c] = min effort to reach (r,c). Heap entry: (effort, r, c). Relax: effort = max(current, |h1-h2|).' },
+  { id: 'DSA_787_CHEAP_FLIGHTS', episodeId: 'S1E4_A1', tier: 3, category: 'ALGORITHMS', points: 200, difficulty: 4, title: 'Cheapest Flights Within K Stops',  scenario: 'n cities, flights with costs. Find the cheapest flight from src to dst with at most k stops.', task: 'Return the cheapest price, or -1 if no such route exists.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Bellman-Ford with k+1 iterations (k stops = k+1 edges). Or modified Dijkstra tracking stops.', explanation: 'Bellman-Ford: relax all edges at most k+1 times. Keep previous-round costs to avoid chaining updates within one round.' },
+  // Episode S1E5_A1: BFS/DFS
+  { id: 'DSA_200_NUM_ISLANDS',   episodeId: 'S1E5_A1', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 2, title: 'Number of Islands',                 scenario: "A 2D grid of '1' (land) and '0' (water). An island is surrounded by water and formed by connecting adjacent land cells horizontally/vertically.", task: 'Return the number of islands.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'BFS/DFS from each unvisited land cell. Mark the whole connected component as visited.', explanation: "DFS: for each '1' not yet visited, increment count and flood-fill all connected '1's by marking them '0' (visited)." },
+  { id: 'DSA_994_ROTTING_ORANGES',episodeId: 'S1E5_A1', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 2, title: 'Rotting Oranges',                  scenario: 'A 2D grid: 0=empty, 1=fresh, 2=rotten. Every minute, fresh oranges adjacent (4-dirs) to rotten ones become rotten.', task: 'Return the minimum minutes until no fresh orange remains, or -1 if impossible.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Multi-source BFS from all initially rotten oranges simultaneously.', explanation: 'Add all rotten oranges to BFS queue at step 0. Each BFS level = 1 minute. Count fresh remaining after BFS.' },
+  { id: 'DSA_102_LEVEL_ORDER',   episodeId: 'S1E5_A1', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 2, title: 'Binary Tree Level Order Traversal', scenario: 'Given the root of a binary tree, return the node values level by level (left to right, level by level).', task: 'Return a list of lists — each inner list is one level of the tree.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'BFS with a queue. At each level, process all nodes currently in the queue (track queue size before adding children).', explanation: 'BFS: queue starts with root. For each level, snapshot queue size n, process n nodes (add their values), enqueue children.' },
+  // Episode S2E1_A1: Divide & Conquer
+  { id: 'DSA_169_MAJORITY',      episodeId: 'S2E1_A1', tier: 1, category: 'ALGORITHMS', points: 100, difficulty: 1, title: 'Majority Element',                  scenario: 'The majority element appears more than n/2 times. Such an element always exists.', task: 'Return the majority element.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: "Boyer-Moore Voting: candidate starts at nums[0], count=1. If next equals candidate, count++, else count--. When count=0, update candidate.", explanation: 'Boyer-Moore: the majority element survives the cancellation process. O(n) time, O(1) space.' },
+  { id: 'DSA_53_MAX_SUBARRAY',   episodeId: 'S2E1_A1', tier: 1, category: 'ALGORITHMS', points: 100, difficulty: 2, title: 'Maximum Subarray',                  scenario: 'Find the contiguous subarray with the largest sum.', task: 'Return the sum of the subarray with the largest sum.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: "Kadane's algorithm: keep a running sum. If adding the next element makes it worse than starting fresh, start fresh.", explanation: "Kadane's: curr = nums[0], best = nums[0]. For each x in nums[1:]: curr = max(x, curr+x); best = max(best, curr)." },
+  { id: 'DSA_912_SORT_ARRAY',    episodeId: 'S2E1_A1', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 3, title: 'Sort an Array',                     scenario: 'Sort an array of integers in ascending order. You must implement it yourself — do not use a built-in sort function.', task: 'Return the sorted array.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Implement merge sort: split array in half, sort each half recursively, merge the two sorted halves.', explanation: 'Merge sort is classic divide & conquer. O(n log n). Divide until single elements, then merge pairs maintaining sorted order.' },
+
+  // ── Arc 5 — DATA STRUCTURES (DSA framework) ───────────────────────────────
+  // Episode S1E1_A5: Hash Maps & Tries
+  { id: 'DSA_49_GROUP_ANAGRAMS',    episodeId: 'S1E1_A5', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 2, title: 'Group Anagrams',                    scenario: 'Group strings that are anagrams of each other. An anagram uses all the original letters exactly once.', task: 'Return a list of groups. Each group contains all strings that are anagrams of each other.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Sort each string alphabetically — anagrams produce the same sorted key. Use a dictionary keyed by sorted string.', explanation: 'defaultdict(list): for each word, key = tuple(sorted(word)), append word to dict[key]. Return dict.values().' },
+  { id: 'DSA_383_RANSOM_NOTE',       episodeId: 'S1E1_A5', tier: 1, category: 'ALGORITHMS', points: 100, difficulty: 1, title: 'Ransom Note',                       scenario: 'Given two strings, return true if you can construct ransomNote using only letters from magazine. Each letter in magazine may only be used once.', task: 'Return true if ransomNote can be constructed from magazine.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Count the frequency of each letter in magazine. Then check if ransomNote needs more of any letter than available.', explanation: 'Counter(magazine): for each char in ransomNote, decrement its count. If count goes below 0, return False.' },
+  { id: 'DSA_205_ISOMORPHIC',        episodeId: 'S1E1_A5', tier: 1, category: 'ALGORITHMS', points: 100, difficulty: 1, title: 'Isomorphic Strings',               scenario: 'Two strings are isomorphic if characters in s can be replaced to get t. Replacements must preserve character order and be consistent (one character maps to exactly one other).', task: 'Return true if s and t are isomorphic.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Maintain two maps: s_to_t and t_to_s. If a mapping conflicts, return False.', explanation: 'Two dictionaries: s_to_t[s[i]] = t[i] and t_to_s[t[i]] = s[i]. Conflict = existing mapping ≠ current char.' },
+  // Episode S1E2_A5: Priority Queues & Heaps
+  { id: 'DSA_703_KTH_LARGEST_STREAM',episodeId: 'S1E2_A5', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 2, title: 'Kth Largest Element in a Stream', scenario: 'Design a class that finds the kth largest element in a stream of numbers.', task: 'Implement KthLargest(k, nums) and add(val) which returns the kth largest each time.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Maintain a min-heap of size k. The smallest element in the heap is always the kth largest.', explanation: 'heapq of size k. If heap size < k or val > heap[0], push val. If heap > k, pop smallest. heap[0] is kth largest.' },
+  { id: 'DSA_347_TOP_K_FREQUENT',    episodeId: 'S1E2_A5', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 2, title: 'Top K Frequent Elements',         scenario: 'Given an integer array and k, return the k most frequent elements. You may return the answer in any order.', task: 'Return the k most frequent elements.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Count frequencies with a Counter, then use heapq.nlargest(k, counter.keys(), key=counter.get).', explanation: 'Bucket sort O(n): count frequencies, create buckets[freq] = [numbers]. Scan from high freq to low, collect k elements.' },
+  { id: 'DSA_215_KTH_LARGEST',       episodeId: 'S1E2_A5', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 2, title: 'Kth Largest Element in an Array', scenario: 'Find the kth largest element in an unsorted array. It is the kth largest in sorted order (not the kth distinct element).', task: 'Return the kth largest element.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Quickselect partitions around a pivot — O(n) average. Or maintain a min-heap of size k.', explanation: 'Min-heap of size k: push each element, pop if size > k. Heap root = kth largest. O(n log k).' },
+  // Episode S1E3_A5: Binary Search Trees
+  { id: 'DSA_700_SEARCH_BST',        episodeId: 'S1E3_A5', tier: 1, category: 'ALGORITHMS', points: 100, difficulty: 1, title: 'Search in a Binary Search Tree',  scenario: 'Given the root of a BST and a value val, return the subtree rooted at the node with that value, or null if it does not exist.', task: 'Return the node where node.val == val, or null.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'BST property: if val < node.val go left, if val > node.val go right.', explanation: 'Recursive or iterative: if node is None return None; if val == node.val return node; recurse left or right.' },
+  { id: 'DSA_98_VALIDATE_BST',        episodeId: 'S1E3_A5', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 3, title: 'Validate Binary Search Tree',    scenario: 'Given a binary tree, determine if it is a valid BST — all left subtree values < node, all right > node.', task: 'Return true if the tree is a valid BST.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Pass allowed range [min, max] to each recursive call. The root must be in (-∞, +∞).', explanation: 'Recursive validate(node, min_val, max_val): check min_val < node.val < max_val; recurse left with max=node.val, right with min=node.val.' },
+  { id: 'DSA_230_KTH_SMALLEST_BST',   episodeId: 'S1E3_A5', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 2, title: 'Kth Smallest Element in a BST', scenario: 'Given the root of a BST and an integer k, return the kth smallest value.', task: 'Return the kth smallest value in the BST.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'In-order traversal of a BST visits nodes in ascending order. The kth node visited is your answer.', explanation: 'Iterative in-order with a stack. Count nodes visited; when count reaches k, return current node value.' },
+  // Episode S1E4_A5: Arrays & Prefix Sums
+  { id: 'DSA_238_PRODUCT_EXCEPT',    episodeId: 'S1E4_A5', tier: 2, category: 'ALGORITHMS', points: 150, difficulty: 3, title: 'Product of Array Except Self',   scenario: 'Return an array answer where answer[i] is the product of all elements except nums[i]. No division allowed, O(n) time.', task: 'Return the product array.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Two passes: left pass builds prefix products, right pass accumulates suffix products.', explanation: 'answer[i] = prefix[i] * suffix[i]. Left pass: answer[i] = product of nums[0..i-1]. Right pass: multiply by product of nums[i+1..n-1].' },
+  { id: 'DSA_303_RANGE_SUM',         episodeId: 'S1E4_A5', tier: 1, category: 'ALGORITHMS', points: 100, difficulty: 1, title: 'Range Sum Query - Immutable',    scenario: 'Given an integer array, handle multiple sumRange(i, j) queries efficiently.', task: 'Implement NumArray(nums) and sumRange(left, right) that returns sum of nums[left..right] in O(1).', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Precompute prefix sums. sumRange(l, r) = prefix[r+1] - prefix[l].', explanation: 'prefix[i] = sum(nums[0..i-1]). sumRange(l, r) = prefix[r+1] - prefix[l]. O(n) build, O(1) query.' },
+  { id: 'DSA_724_PIVOT_INDEX',       episodeId: 'S1E4_A5', tier: 1, category: 'ALGORITHMS', points: 100, difficulty: 1, title: 'Find Pivot Index',                scenario: 'The pivot index is where the sum of all numbers to the left equals the sum to the right.', task: 'Return the leftmost pivot index, or -1 if none exists.', artifacts: [], flag: 'DSA_HONOR_SOLVED', attemptsAllowed: 1, hint: 'Precompute total sum. For index i: left_sum == total - left_sum - nums[i] means it is the pivot.', explanation: 'total = sum(nums). Walk left to right tracking left_sum. Pivot when left_sum == total - left_sum - nums[i].' }
+];
 
 export interface Resource {
   icon: string;
@@ -688,33 +660,21 @@ export const EPISODE_RESOURCES: Record<string, Resource[]> = {
     { icon: '◈', title: 'Convolutional Networks', tag: 'ARTICLE', tagClass: 'rtag-a', src: 'cs231n.stanford.edu', desc: 'CNN inductive biases — locality, weight sharing, translation equivariance.', link: 'https://cs231n.github.io/convolutional-networks/', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
     { icon: '📊', title: 'ViT Benchmarks', tag: 'LIVE DATA', tagClass: 'rtag-a', src: 'paperswithcode.com', desc: 'Where ViTs dominate vs where CNNs hold.', link: 'https://paperswithcode.com/methods/category/vision-transformer', iconStyle: { background: 'rgba(185,255,0,.08)', border: '1px solid rgba(185,255,0,.15)', color: 'var(--lime)' } },
   ],
-  'S1E3': [
-    {
-      icon: '🔢',
-      title: 'Understanding Zero-Based Indexing',
-      tag: 'ARTICLE',
-      tagClass: 'rtag-a',
-      src: 'developer.mozilla.org · 5 min',
-      desc: 'Learn how arrays are structured in memory and how to avoid common off-by-one boundary errors.',
-      link: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array',
-      iconStyle: {
-        background: 'rgba(255,193,7,.08)',
-        border: '1px solid rgba(255,193,7,.15)',
-        color: 'var(--yellow)'
-      }
-    }
-  ],
   'S1E1_A9': [
-    { icon: '🐍', title: 'Python Official Docs: Data Types', tag: 'DOCS', tagClass: 'rtag-a', src: 'python.org · 10 min', desc: 'Understand dynamic typing, operators, and casting functions in Python 3.', link: 'https://docs.python.org/3/tutorial/introduction.html', iconStyle: { background: 'rgba(79,195,247,.08)', border: '1px solid rgba(79,195,247,.15)', color: '#4fc3f7' } }
+    { icon: '▶', title: 'Variables, Loops & Conditionals — CS50 Shorts', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · CS50 · 10 min', desc: 'Harvard CS50 introduction to variables, loops (for/while), and if/else — the three building blocks of every program.', link: 'https://www.youtube.com/watch?v=wEdXExljuGA', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Python Tutorial: First Steps', tag: 'DOCS', tagClass: 'rtag-a', src: 'python.org · 10 min', desc: 'Covers numbers, strings, variables, and the range() function for loops — written for absolute beginners.', link: 'https://docs.python.org/3/tutorial/introduction.html', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
   ],
   'S1E2_A9': [
-    { icon: '⚙️', title: 'C Programming: Pointers & Addresses', tag: 'GUIDE', tagClass: 'rtag-p', src: 'c-prog.org · 15 min', desc: 'Deep dive into standard pointer allocation, address-of (&), and dereference (*) operators.', link: 'https://www.tutorialspoint.com/cprogramming/c_pointers.htm', iconStyle: { background: 'rgba(239,83,80,.08)', border: '1px solid rgba(239,83,80,.15)', color: '#ef5350' } }
+    { icon: '▶', title: 'Strings in Python — CS Dojo', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · CS Dojo · 12 min', desc: 'String indexing, slicing, built-in methods (len, split, strip), and character-by-character iteration.', link: 'https://www.youtube.com/watch?v=k9TUPpGqYTo', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Python Docs: Common String Methods', tag: 'DOCS', tagClass: 'rtag-a', src: 'python.org · 8 min', desc: 'Official reference for str.upper(), str.split(), str.strip(), str.replace() and other essential methods.', link: 'https://docs.python.org/3/library/stdtypes.html#string-methods', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
   ],
   'S1E3_A9': [
-    { icon: '🐹', title: 'A Tour of Go: Goroutines', tag: 'INTERACTIVE', tagClass: 'rtag-v', src: 'go.dev · 8 min', desc: 'Google\'s interactive sandbox teaching concurrent functions and channels.', link: 'https://go.dev/tour/concurrency/1', iconStyle: { background: 'rgba(0,229,255,.08)', border: '1px solid rgba(0,229,255,.15)', color: '#00e5ff' } }
+    { icon: '▶', title: 'Functions & Return Values — CS50 Shorts', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · CS50 · 9 min', desc: 'Defining functions, passing arguments, returning values, and scope — with beginner-friendly examples.', link: 'https://www.youtube.com/watch?v=n1glFqt3g38', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '▶', title: 'Recursion Explained — Visual Introduction', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · Reducible · 14 min', desc: 'How a function calling itself works, the base case, and how to trace recursive calls step by step.', link: 'https://www.youtube.com/watch?v=IJDJ0kBx2LM', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
   ],
   'S1E4_A9': [
-    { icon: '⚡', title: 'MDN: Strict Equality (===)', tag: 'DOCS', tagClass: 'rtag-a', src: 'developer.mozilla.org', desc: 'Why double-equals coercion is dangerous and when to enforce strict comparisons.', link: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality', iconStyle: { background: 'rgba(255,213,79,.08)', border: '1px solid rgba(255,213,79,.15)', color: '#ffd54f' } }
+    { icon: '▶', title: 'Lists & Arrays — CS50 Shorts', tag: 'VIDEO', tagClass: 'rtag-v', src: 'youtube.com · CS50 · 8 min', desc: 'Creating lists, indexing, appending, iterating, and why arrays are the most fundamental data structure.', link: 'https://www.youtube.com/watch?v=K1-3Cm30R2s', iconStyle: { background: 'rgba(232,0,13,.08)', border: '1px solid rgba(232,0,13,.15)', color: 'var(--red)' } },
+    { icon: '◈', title: 'Python Lists — Official Tutorial', tag: 'DOCS', tagClass: 'rtag-a', src: 'python.org · 10 min', desc: 'Covers list creation, slicing, mutation, list methods (append, pop, sort), and nested lists.', link: 'https://docs.python.org/3/tutorial/datastructures.html', iconStyle: { background: 'rgba(0,255,65,.06)', border: '1px solid rgba(0,255,65,.12)', color: 'var(--crt)' } },
   ],
   // ── Arc 4 ──────────────────────────────────────────────────────
   'S1E1_A4': [
