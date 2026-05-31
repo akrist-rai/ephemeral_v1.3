@@ -169,27 +169,38 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
           className="ds-study-toggle"
           onClick={() => { setStudyOpen(o => !o); playSound.click(); }}
         >
+          <span className="ds-study-toggle-dots">
+            <span className="ds-panel-dot ds-panel-dot--r" />
+            <span className="ds-panel-dot ds-panel-dot--y" />
+            <span className="ds-panel-dot ds-panel-dot--g" />
+          </span>
           <span className="ds-study-toggle-label">// STUDY GUIDE</span>
           <span className="ds-study-concept">{problem.studyGuide.concept}</span>
-          <span className={`ds-study-chevron ${studyOpen ? 'open' : ''}`}>▲</span>
+          <span className={`ds-study-chevron ${studyOpen ? 'open' : ''}`}>▾</span>
         </button>
 
         {studyOpen && (
           <div className="ds-study-body">
             {/* TL;DR */}
-            <div className="ds-tldr">
-              <span className="ds-tldr-label">TL;DR</span>
-              {problem.studyGuide.tldr}
+            <div className="ds-study-section">
+              <div className="ds-section-label" data-n="01">SUMMARY</div>
+              <div className="ds-tldr">
+                <span className="ds-tldr-label">TL;DR</span>
+                {problem.studyGuide.tldr}
+              </div>
             </div>
 
             {/* Explanation */}
-            <div className="ds-explanation">{problem.studyGuide.explanation}</div>
+            <div className="ds-study-section">
+              <div className="ds-section-label" data-n="02">EXPLANATION</div>
+              <div className="ds-explanation">{problem.studyGuide.explanation}</div>
+            </div>
 
             {/* Approaches table */}
-            <div>
-              <div className="ds-approach-label">APPROACHES</div>
+            <div className="ds-study-section">
+              <div className="ds-section-label" data-n="03">APPROACHES</div>
               <div className="ds-approaches">
-                <div className="ds-approach-row" style={{ background: 'rgba(255,255,255,.02)', fontWeight: 700, letterSpacing: '.1em', color: 'var(--muted)' }}>
+                <div className="ds-approach-row">
                   <span>APPROACH</span><span>TIME</span><span>SPACE</span><span>NOTES</span><span>WORKS?</span>
                 </div>
                 {problem.studyGuide.approaches.map((ap, i) => (
@@ -207,24 +218,31 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
             </div>
 
             {/* ASCII visual */}
-            <div>
-              <div className="ds-visual-label">TRACE / EXAMPLE</div>
-              <pre className="ds-visual">{problem.studyGuide.visualExample}</pre>
+            <div className="ds-study-section">
+              <div className="ds-section-label" data-n="04">TRACE</div>
+              <div className="ds-visual-wrap">
+                <div className="ds-visual-chrome">
+                  <span className="ds-visual-chrome-dot" />
+                  <span className="ds-visual-chrome-title">execution trace</span>
+                </div>
+                <pre className="ds-visual">{problem.studyGuide.visualExample}</pre>
+              </div>
             </div>
 
-            {/* Key insight */}
-            <div className="ds-insight">
-              <span className="ds-insight-label">KEY INSIGHT</span>
-              <p className="ds-insight-text">{problem.studyGuide.keyInsight}</p>
+            {/* Key insight + pattern */}
+            <div className="ds-study-section">
+              <div className="ds-section-label" data-n="05">KEY INSIGHT</div>
+              <div className="ds-insight">
+                <span className="ds-insight-label">CORE PATTERN</span>
+                <p className="ds-insight-text">{problem.studyGuide.keyInsight}</p>
+              </div>
+              <p className="ds-pattern ds-pattern--gap">
+                <em>Pattern recognition: </em>{problem.studyGuide.patternHint}
+              </p>
             </div>
-
-            {/* Pattern hint */}
-            <p className="ds-pattern">
-              <em>Pattern recognition: </em>{problem.studyGuide.patternHint}
-            </p>
 
             {/* Pitfalls */}
-            <div>
+            <div className="ds-study-section">
               <div className="ds-pitfalls-label">COMMON PITFALLS</div>
               <div className="ds-pitfalls">
                 {problem.studyGuide.pitfalls.map((p, i) => (
@@ -247,39 +265,43 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
           ))}
         </div>
 
-        <div>
-          <div className="ds-problem-label">PROBLEM</div>
-          <p className="ds-statement">{problem.statement}</p>
-        </div>
-
-        <div>
-          <div className="ds-problem-label">EXAMPLES</div>
-          <div className="ds-examples">
-            {problem.examples.map((ex, i) => (
-              <div key={i} className="ds-example">
-                <div className="ds-example-title">Example {i + 1}</div>
-                <div className="ds-example-line">
-                  <span className="ds-example-key">Input:  </span>
-                  <span className="ds-example-val">{ex.input}</span>
-                </div>
-                <div className="ds-example-line">
-                  <span className="ds-example-key">Output: </span>
-                  <span className="ds-example-val">{ex.output}</span>
-                </div>
-                {ex.explanation && (
-                  <div className="ds-example-expl">{ex.explanation}</div>
-                )}
-              </div>
-            ))}
+        <div className="ds-problem-body">
+          <div>
+            <div className="ds-problem-label">PROBLEM</div>
+            <p className="ds-statement">{problem.statement}</p>
           </div>
-        </div>
 
-        <div>
-          <div className="ds-problem-label">CONSTRAINTS</div>
-          <div className="ds-constraints">
-            {problem.constraints.map((c, i) => (
-              <span key={i} className="ds-constraint">{c}</span>
-            ))}
+          <div>
+            <div className="ds-problem-label">EXAMPLES</div>
+            <div className="ds-examples">
+              {problem.examples.map((ex, i) => (
+                <div key={i} className="ds-example">
+                  <div className="ds-example-title">Example {i + 1}</div>
+                  <div className="ds-example-lines">
+                    <div className="ds-example-line">
+                      <span className="ds-example-key">Input:</span>
+                      <span className="ds-example-val">{ex.input}</span>
+                    </div>
+                    <div className="ds-example-line">
+                      <span className="ds-example-key">Output:</span>
+                      <span className="ds-example-val">{ex.output}</span>
+                    </div>
+                  </div>
+                  {ex.explanation && (
+                    <div className="ds-example-expl">{ex.explanation}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="ds-problem-label">CONSTRAINTS</div>
+            <div className="ds-constraints">
+              {problem.constraints.map((c, i) => (
+                <span key={i} className="ds-constraint">{c}</span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -287,7 +309,20 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
       {/* ── Code Editor ── */}
       <div className="ds-editor-card">
         <div className="ds-editor-header">
-          <span className="ds-editor-label">// CODE EDITOR</span>
+          <div className="ds-editor-tabs">
+            <span className="ds-editor-label">// EDITOR</span>
+            {(['python', 'javascript'] as const).map(l => (
+              <button
+                key={l}
+                type="button"
+                className={`ds-editor-tab ${lang === l ? 'active' : ''}`}
+                onClick={() => handleLangChange(l)}
+              >
+                <span className="ds-editor-tab-dot" />
+                {l === 'python' ? 'solution.py' : 'solution.js'}
+              </button>
+            ))}
+          </div>
           <div className="ds-lang-toggle">
             {(['python', 'javascript'] as const).map(l => (
               <button
@@ -296,7 +331,7 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
                 className={`ds-lang-btn ${lang === l ? 'active' : ''}`}
                 onClick={() => handleLangChange(l)}
               >
-                {l === 'python' ? 'Python' : 'JavaScript'}
+                {l === 'python' ? 'Python' : 'JS'}
               </button>
             ))}
           </div>
@@ -357,7 +392,7 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
                   <span className="ds-test-got">got: {r.got}  expected: {r.expected}</span>
                 )}
                 {r.passed && (
-                  <span className="ds-test-got" style={{ color: 'var(--crt)' }}>PASSED</span>
+                  <span className="ds-test-got ds-test-got--pass">PASSED</span>
                 )}
                 {!r.passed && !r.expected && (
                   <span className="ds-test-got">{r.got}</span>
@@ -392,10 +427,6 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
             <button
               type="button"
               className="ds-mark-btn"
-              style={{
-                background: acc,
-                color: '#fff',
-              }}
               onClick={handleMarkSolved}
               disabled={submitting}
             >
