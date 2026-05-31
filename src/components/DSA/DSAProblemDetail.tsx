@@ -189,7 +189,7 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
             <div>
               <div className="ds-approach-label">APPROACHES</div>
               <div className="ds-approaches">
-                <div className="ds-approach-row" style={{ background: 'rgba(255,255,255,.02)', fontWeight: 700, fontSize: '.42rem', letterSpacing: '.1em', color: 'var(--muted)' }}>
+                <div className="ds-approach-row" style={{ background: 'rgba(255,255,255,.02)', fontWeight: 700, letterSpacing: '.1em', color: 'var(--muted)' }}>
                   <span>APPROACH</span><span>TIME</span><span>SPACE</span><span>NOTES</span><span>WORKS?</span>
                 </div>
                 {problem.studyGuide.approaches.map((ap, i) => (
