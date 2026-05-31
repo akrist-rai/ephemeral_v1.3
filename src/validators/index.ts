@@ -47,6 +47,11 @@ export const challengeFilterSchema = z.object({
   difficulty: z.coerce.number().int().min(1).max(5).optional(),
 });
 
+// ── ADD XP BODY ──
+export const addXpSchema = z.object({
+  xp: z.number().int().positive('xp must be a positive integer').max(10000, 'xp cannot exceed 10000 per call'),
+});
+
 // ── EPISODE ID PARAM ──
 export const episodeIdParamSchema = z.object({
   arcId: z.string().refine((val) => !Number.isNaN(Number.parseInt(val, 10)), {

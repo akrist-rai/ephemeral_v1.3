@@ -1,5 +1,21 @@
-// Maps arc IDs and episode IDs to actual images present in /public/one_piece/
-// Updated to use all available images from the expanded collection.
+/**
+ * Image mapping for arc covers, episode thumbnails, and UI backgrounds.
+ *
+ * Layout of /public/one_piece/ (1–101.jpeg):
+ *   1–8   → arc cover images (one per arc)
+ *   9–16  → arc 1 episodes (Algorithms)
+ *  17–24  → arc 2 episodes (Cybersecurity)
+ *  25–32  → arc 3 episodes (Machine Learning)
+ *  33–40  → arc 4 episodes (Networks)
+ *  41–48  → arc 5 episodes (Data Structures)
+ *  49–56  → arc 6 episodes (Competitive Programming)
+ *  57–64  → arc 7 episodes (Mathematics)
+ *  65–72  → arc 8 episodes (Probability)
+ *  73–78  → legacy arc 3 episode IDs (S1E1…S2E3)
+ *  79–83  → UI background images
+ *  84–85  → additional hero images
+ *  86–101 → arc 9 episodes (Initiation / Programming Basics) + spares
+ */
 
 export const DEFAULT_ARC_COVERS: Record<number, string> = {
   1: '/one_piece/1.jpeg',
@@ -103,11 +119,25 @@ export const getEpisodeImage = (epId: string): string => {
     'S1E6_A8': '/one_piece/70.jpeg',
     'S1E7_A8': '/one_piece/71.jpeg',
     'S1E8_A8': '/one_piece/72.jpeg',
+
+    // Arc 9 — Initiation / Programming Basics
+    'S1E1_A9': '/one_piece/86.jpeg',
+    'S1E2_A9': '/one_piece/87.jpeg',
+    'S1E3_A9': '/one_piece/88.jpeg',
+    'S1E4_A9': '/one_piece/89.jpeg',
+    'S1E5_A9': '/one_piece/90.jpeg',
+    'S1E6_A9': '/one_piece/91.jpeg',
+    'S1E7_A9': '/one_piece/92.jpeg',
+    'S1E8_A9': '/one_piece/93.jpeg',
   };
-  return ep[epId] || '';
+  return ep[epId] || '/one_piece/84.jpeg';
 };
 
-// Avatar options for the profile selector
+/** Return a guaranteed image path — falls back to the first arc cover. */
+export const getEpisodeImageSafe = (epId: string): string =>
+  getEpisodeImage(epId) || DEFAULT_ARC_COVERS[1];
+
+// Named avatar presets for the profile selector (files in /public/avatar/)
 export const HERO_IMAGES = {
   luffy:        '/avatar/Monkey D Luffy (1).jpeg',
   zoro:         '/avatar/Roronoa Zoro.jpeg',

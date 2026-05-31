@@ -1,30 +1,29 @@
+import { promises as fs } from 'node:fs';
+import { join } from 'node:path';
 import type { Context } from 'koa';
 import { ArcService } from '../services/arc.service';
 import { EpisodeService } from '../services/episode.service';
 import { ChallengeService } from '../services/challenge.service';
+import { AppError } from '../lib/errors';
 import { ok } from '../lib/response';
 
+const IMAGE_RE = /\.(jpe?g|png|webp|gif|avif)$/i;
+
 export class ContentController {
-  /**
-   * GET /api/arcs — Fetch all story arcs
-   */
+  /** GET /api/arcs — all story arcs */
   static async getArcs(ctx: Context) {
     const arcs = await ArcService.getAll();
     ok(ctx, { arcs });
   }
 
-  /**
-   * GET /api/arcs/:arcId — Fetch a single arc by ID
-   */
+  /** GET /api/arcs/:arcId — single arc */
   static async getArcById(ctx: Context) {
     const arcId = Number.parseInt(ctx.params.arcId, 10);
     const arc = await ArcService.getById(arcId);
     ok(ctx, { arc });
   }
 
-  /**
-   * GET /api/episodes/:arcId — Fetch episodes for an arc
-   */
+  /** GET /api/episodes/:arcId — all episodes for an arc */
   static async getEpisodes(ctx: Context) {
     const arcId = Number.parseInt(ctx.params.arcId, 10);
     const episodes = await EpisodeService.getByArcId(arcId);
@@ -32,11 +31,11 @@ export class ContentController {
   }
 
   /**
-   * GET /api/challenges — Fetch challenges, optionally scoped to an episode.
-   * Supports query params: episodeId, tier, category, difficulty
+   * GET /api/challenges — all challenges, with optional filters.
+   * Query params: episodeId, tier, category, difficulty
    */
   static async getChallenges(ctx: Context) {
-    const filters = ctx.state.validatedQuery || {};
+    const filters = ctx.state.validatedQuery ?? {};
     const hasFilters = filters.episodeId || filters.tier || filters.category || filters.difficulty;
     const challenges = hasFilters
       ? await ChallengeService.getFiltered(filters)
@@ -45,8 +44,8 @@ export class ContentController {
   }
 
   /**
-   * GET /api/episodes/:arcId/:episodeId/challenges — Fetch all challenges for one episode.
-   * This is the canonical way for the client to load a CTF arena.
+   * GET /api/episodes/:arcId/:episodeId/challenges
+   * Canonical loader for the CTF arena — scoped to a single episode.
    */
   static async getChallengesByEpisode(ctx: Context) {
     const { episodeId } = ctx.params;
@@ -54,28 +53,27 @@ export class ContentController {
     ok(ctx, { challenges, count: challenges.length });
   }
 
-  /**
-   * GET /api/challenges/:challengeId — Fetch a single challenge
-   */
+  /** GET /api/challenges/:challengeId — single public-safe challenge */
   static async getChallengeById(ctx: Context) {
     const challenge = await ChallengeService.getPublicById(ctx.params.challengeId);
     ok(ctx, { challenge });
   }
 
   /**
-   * GET /api/avatars — Fetch all available custom player and cover avatars from public directory
+   * GET /api/avatars — list all player avatar images from public/avatar/.
+   * Returns paths relative to the public root so the client can use them directly.
    */
   static async getAvatars(ctx: Context) {
-    const fs = require('fs');
-    const path = require('path');
+    const avatarDir = join(process.cwd(), 'public', 'avatar');
+    let files: string[];
     try {
-      // Serve all images from the top-level one_piece/ directory (no avatar/ subfolder)
-      const imageDir = path.join(process.cwd(), 'public', 'one_piece');
-      const files = await fs.promises.readdir(imageDir);
-      const imageFiles = files.filter((f: string) => /\.(jpe?g|png|webp|gif)$/i.test(f));
-      ok(ctx, { avatars: imageFiles.map((f: string) => `/one_piece/${f}`) });
-    } catch (err: any) {
-      ctx.throw(500, `Failed to load avatars: ${err.message}`);
+      files = await fs.readdir(avatarDir);
+    } catch {
+      throw new AppError('Avatar directory is unavailable', 503, 'ASSETS_UNAVAILABLE');
     }
+    const avatars = files
+      .filter(f => IMAGE_RE.test(f))
+      .map(f => `/avatar/${f}`);
+    ok(ctx, { avatars, count: avatars.length });
   }
 }

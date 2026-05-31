@@ -3,7 +3,6 @@ import { WriteupModal } from '../Common/WriteupModal';
 import { playSound } from '../../lib/sound';
 import { GlitchText } from '../Effects/GlitchText';
 import { getChaptersForChallenge } from '../../data/ctfChapters';
-import { CodexPanel } from './CodexPanel';
 import type { Challenge, GctfState, ChallengeStats, SolveRecord } from '../../types';
 
 interface CTFComponentProps {
@@ -452,29 +451,32 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   const ch = challenges.find(c => c.id === id);
   if (!ch) return <div className="ctf-wrap"><div className="ctf-boot ctf-boot--err">CHALLENGE NOT FOUND // {id}</div></div>;
 
-  const sv   = gctf.solved[id!];
-  const isOk = !!sv?.solved;
-  const att  = gctf.chalAttempts[id!] ?? ch.attemptsAllowed;
-  const isFail = !!(sv?.failed || (!sv?.solved && att <= 0));
+  const sv      = gctf.solved[id!];
+  const isOk    = !!sv?.solved;
+  const att     = gctf.chalAttempts[id!] ?? ch.attemptsAllowed;
+  const isFail  = !!(sv?.failed || (!sv?.solved && att <= 0));
   const meta    = CAT_META[ch.category] || { color: 'var(--red)', icon: '□' };
+  // Use last chapter for direct flag submission (single-step flow)
   const chapters = getChaptersForChallenge(ch.id, ch.flag);
+  const lastChap = chapters[chapters.length - 1];
+  const flagValue = chapAnswers[lastChap?.id ?? ''] ?? '';
+  const diffLabel = (['EASY', 'MED', 'HARD', 'ELITE', 'LEGEND'] as const)[ch.difficulty - 1] ?? '';
 
-  const isChapOk = (_chap: unknown, idx: number) =>
-    isOk ? true : idx === chapters.length - 1 ? isOk : !!solvedChaps[chapters[idx].id];
-  const isChapOn = (_chap: unknown, idx: number) =>
-    isOk ? true : idx === 0 ? true : !!solvedChaps[chapters[idx - 1].id];
+  // ── NEW CLEAN 2-PANE DETAIL VIEW ────────────────────────────────────────────
+  const fileColors: Record<string, string> = {
+    table: '#80cbc4', config: 'var(--lime)', log: '#4fc3f7', code: '#ce93d8', output: 'var(--crt)',
+  };
 
-  const curChap = chapters[activeChapIdx];
-  const curOk   = isChapOk(curChap, activeChapIdx);
-  const curOn   = isChapOn(curChap, activeChapIdx);
-  const isLast  = activeChapIdx === chapters.length - 1;
+  const submitDirect = () => {
+    if (lastChap) handleSubmit(ch, chapters, chapters.length - 1);
+  };
 
   return (
-    <div className={`ctf-wrap ctf-detail ${shake || chapShake ? 'ctf-shake' : ''}`}>
+    <div className={`ctf-detail nd-wrap ${shake || chapShake ? 'ctf-shake' : ''}`}>
 
-      {/* Top Chrome Path Navigation */}
+      {/* Chrome bar */}
       <div className="ctf-chrome" style={{ borderBottomColor: `${meta.color}33` }}>
-        <button className="ch-back ctf-back" onClick={closeChallenge}>← BOARD</button>
+        <button type="button" className="ch-back ctf-back" onClick={closeChallenge}>← BOARD</button>
         <div className="ctf-chrome-path">
           <span style={{ color: meta.color }}>{meta.icon} {ch.category}</span>
           <span className="ctf-sep">/</span>
@@ -489,107 +491,71 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
         </div>
       </div>
 
-      {/* ── HIGH FIDELITY INTEGRATED 2-COLUMN OPERATOR WORKSTATION ── */}
-      <div className="ctf-dashboard" style={{ '--accent-col': meta.color } as React.CSSProperties}>
-        
-        {/* ── LEFT PANE: SYSTEM BRIEFING & OPERATIONS ── */}
-        <div className="ctf-dash-left">
-          
-          {/* Incident Info Header */}
-          <div className="ctf-dash-hdr-card" style={{ borderLeftColor: meta.color }}>
-            <div className="ctf-dash-eyebrow" style={{ color: meta.color }}>// INCIDENT REPORT // SECURITY CLASSIFIED</div>
-            <h2 className="ctf-dash-title">
+      {/* 2-column layout */}
+      <div className="nd-layout">
+
+        {/* ── LEFT PANE ── */}
+        <div className="nd-left">
+
+          {/* Challenge identity */}
+          <div className="nd-id-card" style={{ borderLeftColor: meta.color }}>
+            <div className="nd-id-title">
               <GlitchText text={ch.title} triggerOnHover color={meta.color} />
-            </h2>
-            <div className="ctf-dash-meta">
-              <span className="ctf-dash-badge" style={{ borderColor: `${meta.color}33`, color: meta.color }}>
+            </div>
+            <div className="nd-id-meta">
+              <span className="nd-id-badge" style={{ borderColor: `${meta.color}44`, color: meta.color }}>
                 {ch.category}
               </span>
-              <span className="ctf-dash-difficulty" style={{ color: meta.color }}>
-                {['EASY', 'MEDIUM', 'HARD', 'ELITE', 'LEGEND'][ch.difficulty - 1] || 'CORE'}
-              </span>
+              <span className="nd-id-diff">{diffLabel}</span>
             </div>
           </div>
 
-          {/* Scenario Description */}
-          <div className="ctf-dash-section">
-            <div className="ctf-section-label">SYSTEM SCENARIO BRIEFING</div>
-            <div className="ctf-scenario-card">
-              <p className="ctf-scenario-desc">{ch.scenario}</p>
-            </div>
+          {/* Scenario */}
+          <div className="nd-card">
+            <div className="nd-scenario-label">SCENARIO</div>
+            <p className="nd-scenario-text">{ch.scenario}</p>
           </div>
 
-          {/* Stages Progression Deck */}
-          <div className="ctf-dash-section">
-            <div className="ctf-section-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>STAGE PROTOCOLS</span>
-              <span className="ctf-stages-badge">
-                {chapters.filter((_: any, i: number) => isChapOk(chapters[i], i)).length}/{chapters.length} CLEARED
-              </span>
+          {/* Hint toggle */}
+          {ch.hint && (
+            <div>
+              <button
+                type="button"
+                className="nd-hint-toggle"
+                onClick={() => toggleCTFHint(ch.id)}
+              >
+                ⚡ HINT {gctf.hintOn[ch.id] ? '▲' : '▼'}
+              </button>
+              {gctf.hintOn[ch.id] && (
+                <div className="nd-hint-body">{ch.hint}</div>
+              )}
             </div>
-            
-            <div className="ctf-stages-list">
-              {chapters.map((chap, idx) => {
-                const ok  = isChapOk(chap, idx);
-                const on  = isChapOn(chap, idx);
-                const act = idx === activeChapIdx;
-                return (
-                  <button
-                    key={chap.id}
-                    className={`ctf-stage-node ${act ? 'active' : ''} ${ok ? 'cleared' : !on ? 'locked' : ''}`}
-                    onClick={() => {
-                      if (on) { playSound.click(); setActiveChapIdx(idx); }
-                      else { playSound.error(); showToast('COMPLETE PRECEDING STAGES FIRST'); }
-                    }}
-                  >
-                    <div className="ctf-stage-status-indicator">
-                      {ok ? '✓' : !on ? '🔒' : String(idx + 1).padStart(2, '0')}
-                    </div>
-                    <div className="ctf-stage-details">
-                      <div className="ctf-stage-name">{chap.title}</div>
-                      <div className="ctf-stage-status-text">
-                        {ok ? 'PROTOCOL CLEARED' : !on ? 'DECRYPT TOKEN REQUIRED' : 'ACTIVE UPLINK'}
-                      </div>
-                    </div>
-                    {act && <div className="ctf-stage-active-pulse" style={{ background: meta.color }} />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Intel & Codex Section */}
-          <div className="ctf-dash-section">
-            <div className="ctf-section-label">CODEX DIRECTIVES</div>
-            <CodexPanel category={ch.category} onCopySnippet={handleInjectCodexSnippet} />
-          </div>
+          )}
 
         </div>
 
-        {/* ── RIGHT PANE: THE COMPILER & EVIDENCE LAB ── */}
-        <div className="ctf-dash-right">
+        {/* ── RIGHT PANE ── */}
+        <div className="nd-right">
 
-          {/* 1. VIRTUAL FILE EXPLORER (TABBED EVIDENCE) */}
-          <div className="ctf-workspace-card ctf-file-explorer">
-            <div className="ctf-card-chrome">
-              <span className="ctf-chrome-tag">// EVIDENCE ARCHIVES</span>
-              <span className="ctf-chrome-metric">{ch.artifacts.length} DETECTED FILE{ch.artifacts.length !== 1 ? 'S' : ''}</span>
+          {/* Task directive */}
+          <div className="nd-task-card">
+            <div className="nd-task-label">▶ TASK DIRECTIVE</div>
+            <p className="nd-task-text">{ch.task}</p>
+          </div>
+
+          {/* Evidence files */}
+          <div className="nd-files-card">
+            <div className="nd-files-header">
+              <span className="nd-files-label">// EVIDENCE FILES</span>
+              <span className="nd-files-count">{ch.artifacts.length} FILE{ch.artifacts.length !== 1 ? 'S' : ''}</span>
             </div>
-
-            {/* File Explorer Tabs */}
             <div className="ctf-file-tabs">
               {ch.artifacts.map((art, idx) => {
                 const isSelected = expandedArt === idx;
-                const fileColors: Record<string, string> = {
-                  table: '#80cbc4',
-                  config: 'var(--lime)',
-                  log: '#4fc3f7',
-                  code: '#ce93d8',
-                  output: 'var(--crt)',
-                };
                 const color = fileColors[art.type] || meta.color;
                 return (
                   <button
+                    type="button"
                     key={idx}
                     className={`ctf-file-tab ${isSelected ? 'active' : ''}`}
                     style={isSelected ? { borderBottomColor: color } : {}}
@@ -603,265 +569,106 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
                 );
               })}
             </div>
-
-            {/* Active File Viewport */}
             {expandedArt !== null && ch.artifacts[expandedArt] && (
               <div className="ctf-file-viewport">
                 <div className="ctf-file-meta-bar">
-                  <span className="ctf-file-path">sys/evidence/{ch.artifacts[expandedArt].label.toLowerCase()}</span>
-                  <div className="ctf-file-actions">
-                    <button
-                      className="ctf-file-btn"
-                      onClick={() => {
-                        navigator.clipboard.writeText(ch.artifacts[expandedArt].content);
-                        showToast('COPIED TO CLIPBOARD');
-                        playSound.success();
-                      }}
-                    >
-                      📋 COPY
-                    </button>
-                    {(ch.artifacts[expandedArt].type === 'code' || ch.artifacts[expandedArt].type === 'config') && (
-                      <button
-                        className="ctf-file-btn ctf-file-btn--send"
-                        onClick={() => {
-                          handleInjectCodexSnippet(ch.artifacts[expandedArt].content);
-                        }}
-                      >
-                        ⚡ SEND TO SCRATCHPAD
-                      </button>
-                    )}
-                  </div>
+                  <span className="ctf-file-path">evidence/{ch.artifacts[expandedArt].label.toLowerCase()}</span>
+                  <button
+                    type="button"
+                    className="ctf-file-btn"
+                    onClick={() => {
+                      navigator.clipboard.writeText(ch.artifacts[expandedArt].content);
+                      showToast('COPIED TO CLIPBOARD');
+                      playSound.success();
+                    }}
+                  >
+                    📋 COPY
+                  </button>
                 </div>
-                <pre className="ctf-file-body">
-                  <code>{ch.artifacts[expandedArt].content}</code>
-                </pre>
+                <pre className="ctf-file-body"><code>{ch.artifacts[expandedArt].content}</code></pre>
               </div>
             )}
           </div>
 
-          {/* 2. THE CURRENT CHALLENGE OBJECTIVE */}
-          <div className="ctf-workspace-card ctf-objective-card" style={{ borderColor: `${meta.color}33` }}>
-            <div className="ctf-card-chrome" style={{ borderBottomColor: `${meta.color}22` }}>
-              <span className="ctf-chrome-tag" style={{ color: meta.color }}>▶ CURRENT TASK DIRECTIVE</span>
-            </div>
-            <div className="ctf-objective-body">
-              <p className="ctf-objective-text">{ch.task}</p>
-            </div>
-          </div>
-
-          {/* 3. COGNITIVE ACTIVE WORKSPACE & INSTRUCTIONS */}
-          <div className="ctf-workspace-card ctf-stages-question-card" style={{ borderColor: `${meta.color}44` }}>
-            <div className="ctf-card-chrome" style={{ borderBottomColor: `${meta.color}22` }}>
-              <span className="ctf-chrome-tag" style={{ color: meta.color }}>▶ STAGE {activeChapIdx + 1} QUESTION</span>
-            </div>
-            <div className="ctf-question-body">
-              <div className="ctf-stage-title-inline">{curChap.title}</div>
-              <p className="ctf-stage-desc">{curChap.description}</p>
-              
-              <div className="ctf-question-prompt" style={{ borderLeftColor: meta.color }}>
-                <span className="ctf-prompt-prefix" style={{ color: meta.color }}>QUERY //</span>
-                <span className="ctf-prompt-text">{curChap.question}</span>
+          {/* Flag submission / solved / failed */}
+          {isOk ? (
+            <div className="nd-solved-banner">
+              <span className="nd-solved-check">✓</span>
+              <div>
+                <div className="nd-solved-label">FLAG ACCEPTED</div>
+                <div className="nd-solved-flag">EPHEMERAL{`{${ch.flag}}`}</div>
+                {sv?.pts_earned && <div className="nd-solved-pts">+{sv.pts_earned} XP EARNED</div>}
               </div>
             </div>
-          </div>
-
-          {/* 4. OPERATOR WORKSPACE (THE SANDBOX PLATFORM) */}
-          {!curOk && !isFail && (
-            <div className="ctf-workspace-card ctf-sandbox-workspace">
-              <div className="ctf-card-chrome">
-                <span className="ctf-chrome-tag">// OPERATOR WORKSPACE v1.3 [ONLINE]</span>
-                <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                  <span className="ctf-status-ring pulse" />
-                  <span style={{ fontSize: '0.45rem', opacity: 0.6 }}>READY</span>
-                </div>
-              </div>
-
-              <div className="ctf-sandbox-controls">
-                <div className="ctf-sandbox-left">
-                  <span className="ctf-control-label">INTERPRET ENGINE:</span>
-                  <select 
-                    value={sandboxLang} 
-                    onChange={(e) => setSandboxLang(e.target.value as any)}
-                    className="ctf-control-select"
-                  >
-                    <option value="javascript">JavaScript (Safe Sandbox)</option>
-                    <option value="python">Python (Logical Simulation)</option>
-                    <option value="sql">SQL Query Solver</option>
-                  </select>
-                </div>
-                <button 
-                  onClick={handlePreloadTemplate}
-                  className="ctf-sandbox-btn ctf-sandbox-btn--preload"
-                >
-                  📋 RESTORE CASE TEMPLATE
-                </button>
-              </div>
-
-              {/* IDE Editor view */}
-              <div className="ctf-ide-container">
-                <div className="ctf-ide-lines">
-                  {Array.from({ length: sandboxCode.split('\n').length || 4 }).map((_, i) => (
-                    <div key={i} className="ctf-ide-line-num">{String(i + 1).padStart(2, '0')}</div>
-                  ))}
-                </div>
-                <textarea
-                  value={sandboxCode}
-                  onChange={e => setSandboxCode(e.target.value)}
-                  spellCheck={false}
-                  className="ctf-ide-textarea"
-                />
-              </div>
-
-              {/* Execute Buffer action */}
-              <button
-                onClick={handleExecuteSandbox}
-                disabled={sandboxRunning}
-                className="ctf-sandbox-run-btn"
-                style={{
-                  background: meta.color,
-                  color: meta.color === 'var(--lime)' || meta.color === '#ccff00' ? '#000' : '#fff'
-                }}
-              >
-                {sandboxRunning ? (
-                  <span className="ctf-loading-dots">COMPILING OPERATIONS BUFFER...</span>
-                ) : (
-                  <span>⚡ EXECUTE OPERATIONS BUFFER</span>
-                )}
-              </button>
-
-              {/* Live Terminal outputs */}
-              <div className="ctf-terminal-box">
-                <div className="ctf-terminal-hdr">// TERMINAL STREAMS:</div>
-                <div className="ctf-terminal-logs">
-                  {consoleLogs.map((log, i) => {
-                    let color = '#00ff41';
-                    if (log.startsWith('[FATAL]') || log.startsWith('[ERROR]')) color = 'var(--red)';
-                    if (log.startsWith('[SYS]') || log.startsWith('//')) color = 'rgba(255,255,255,0.3)';
-                    if (log.startsWith('[EVAL]')) color = '#4fc3f7';
-                    if (log.startsWith('[OUT]')) color = '#fff';
-                    return (
-                      <div key={i} className="ctf-terminal-line" style={{ color }}>{log}</div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 5. THE UNIFIED DECRYPTION PROMPT (SUBMISSION TERMINAL) */}
-          {curOk ? (
-            <div className="ctf-workspace-card ctf-submit-card ctf-submit-card--ok" style={{ borderLeftColor: 'var(--crt)' }}>
-              <div className="ctf-submit-ok-header">
-                <span className="ctf-success-check">✓</span>
-                <span className="ctf-success-label">{isLast ? 'CASE ENVELOPE DECRYPTED' : 'PROTOCOL CLEARED'}</span>
-              </div>
-              <div className="ctf-decrypted-value">
-                {isLast ? `EPHEMERAL{${ch.flag}}` : curChap.answer}
-              </div>
-              {isLast && sv?.pts_earned && (
-                <div className="ctf-pts-badge">+{sv.pts_earned} XP COMMITTED TO PROFILE</div>
-              )}
-            </div>
-          ) : isFail && isLast ? (
-            <div className="ctf-workspace-card ctf-submit-card ctf-submit-card--fail" style={{ borderLeftColor: 'var(--red)' }}>
-              <div className="ctf-fail-label">✗ SECURE MAINFRAME SEALED</div>
-              <div className="ctf-fail-desc">Maximum credentials violation. Secure payload is now locked.</div>
-              <div className="ctf-decrypted-value" style={{ opacity: 0.3 }}>
-                EPHEMERAL{`{${ch.flag}}`}
-              </div>
+          ) : isFail ? (
+            <div className="nd-failed-banner">
+              <div className="nd-failed-label">✗ OUT OF ATTEMPTS</div>
+              <div className="nd-failed-flag">EPHEMERAL{`{${ch.flag}}`}</div>
             </div>
           ) : (
-            <div className="ctf-workspace-card ctf-submit-card" style={{ borderColor: `${meta.color}55` }}>
-              <div className="ctf-card-chrome" style={{ borderBottomColor: 'transparent', paddingBottom: 0 }}>
-                <span className="ctf-chrome-tag" style={{ color: meta.color }}>
-                  {isLast ? '// INJECT FINAL DECRYPTION FLAG' : '// SUBMIT PROTOCOL ANSWER'}
-                </span>
-              </div>
-
-              <div className="ctf-submit-input-row">
-                <span className="ctf-submit-prefix">{isLast ? 'EPHEMERAL{' : 'ANSWER{'}</span>
+            <div className="nd-submit-card">
+              <div className="nd-submit-label">SUBMIT FLAG</div>
+              <div className="nd-flag-row">
+                <span className="nd-flag-prefix">EPHEMERAL{'{'}</span>
                 <input
                   ref={flagInputRef}
                   type="text"
-                  placeholder={curChap.placeholder || (isLast ? 'flag...' : 'answer...')}
-                  value={chapAnswers[curChap.id] || ''}
-                  onChange={e => setChapAnswers({ ...chapAnswers, [curChap.id]: e.target.value })}
-                  onKeyDown={e => e.key === 'Enter' && handleSubmit(ch, chapters, activeChapIdx)}
-                  className="ctf-submit-input"
-                  style={{ caretColor: meta.color }}
+                  className="nd-flag-input"
+                  placeholder="flag..."
+                  value={flagValue}
+                  onChange={e => lastChap && setChapAnswers({ ...chapAnswers, [lastChap.id]: e.target.value })}
+                  onKeyDown={e => e.key === 'Enter' && submitDirect()}
                   autoComplete="off"
                   spellCheck={false}
+                  style={{ caretColor: meta.color }}
                 />
-                <span className="ctf-submit-prefix">{'}'}</span>
+                <span className="nd-flag-prefix">{'}'}</span>
                 <button
-                  className="ctf-submit-action-btn"
-                  style={{
-                    background: meta.color,
-                    color: meta.color === 'var(--lime)' || meta.color === '#ccff00' ? '#000' : '#fff'
-                  }}
-                  onClick={() => handleSubmit(ch, chapters, activeChapIdx)}
+                  type="button"
+                  className="nd-flag-btn"
+                  style={{ background: meta.color, color: meta.color === 'var(--lime)' || meta.color === '#ccff00' ? '#000' : '#fff' }}
+                  onClick={submitDirect}
                 >
-                  DECRYPT
+                  SUBMIT
                 </button>
               </div>
-
-              {isLast && (
-                <div className="ctf-attempts-indicator">
-                  <div className="ctf-attempt-nodes">
-                    {Array.from({ length: ch.attemptsAllowed }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`ctf-attempt-node ${i < att ? 'active' : 'spent'}`}
-                        style={i < att ? { background: meta.color } : {}}
-                      />
-                    ))}
-                  </div>
-                  <span className="ctf-attempts-text">{att} COMPROMISE ATTEMPTS REMAINING</span>
+              <div className="nd-attempts">
+                <div className="nd-attempt-pips">
+                  {Array.from({ length: ch.attemptsAllowed }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`nd-pip ${i < att ? 'live' : 'spent'}`}
+                      style={{ background: i < att ? meta.color : 'rgba(255,255,255,.15)' }}
+                    />
+                  ))}
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* 6. HINTS & INTEL ACTION */}
-          {!curOk && !isFail && (
-            <div className="ctf-workspace-card ctf-intel-card">
-              <button 
-                onClick={() => toggleCTFHint(ch.id)}
-                className="ctf-intel-trigger"
-                style={{ color: 'var(--lime)', borderColor: 'rgba(204,255,0,0.2)' }}
-              >
-                ⚡ REQUEST TACTICAL DIRECTIVE INTEL {gctf.hintOn[ch.id] ? '▲' : '▼'}
-              </button>
-              {gctf.hintOn[ch.id] && (
-                <div className="ctf-intel-body" style={{ borderLeftColor: 'var(--lime)', background: 'rgba(204,255,0,0.02)' }}>
-                  <span style={{ color: 'var(--lime)', marginRight: '0.4rem', fontFamily: 'var(--mono)', fontSize: '0.45rem' }}>[INTEL DIRECTIVE]</span>
-                  {curChap.hint}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* 7. POST-MORTEM & SOLUTION WRITEUPS */}
-          {(isOk || isFail) && isLast && ch.explanation && (
-            <div className="ctf-workspace-card ctf-postmortem-card" style={{ borderTopColor: isOk ? 'var(--crt)' : 'var(--red)' }}>
-              <div className="ctf-postmortem-title" style={{ color: isOk ? 'var(--crt)' : 'var(--red)' }}>
-                // CASE DECLASSIFICATION ANALYSIS
+                <span className="nd-attempts-text">{att} ATTEMPT{att !== 1 ? 'S' : ''} REMAINING</span>
               </div>
-              <p className="ctf-postmortem-desc">{ch.explanation}</p>
+            </div>
+          )}
+
+          {/* Post-solve explanation */}
+          {(isOk || isFail) && ch.explanation && (
+            <div className="nd-postsolve" style={{ borderTopColor: isOk ? 'var(--crt)' : 'var(--red)' }}>
+              <div className="nd-postsolve-label" style={{ color: isOk ? 'var(--crt)' : 'var(--red)' }}>
+                // SOLUTION ANALYSIS
+              </div>
+              <p className="nd-postsolve-text">{ch.explanation}</p>
               {isOk && (
                 <button
-                  className="ctf-writeup-trigger-btn"
+                  type="button"
+                  className="nd-writeup-btn"
                   onClick={() => { playSound.click(); setWriteupChal({ id: ch.id, title: ch.title }); }}
                 >
-                  ✎ FILE OPERATOR WRITE-UP AND RECTIFICATION REPORT
+                  ✎ FILE WRITE-UP
                 </button>
               )}
             </div>
           )}
 
         </div>
-
       </div>
+
       {writeupChal && (
         <WriteupModal challengeId={writeupChal.id} challengeTitle={writeupChal.title} onClose={() => setWriteupChal(null)} />
       )}

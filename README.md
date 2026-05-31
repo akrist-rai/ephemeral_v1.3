@@ -14,15 +14,14 @@
 ║    ░                                                  ░    ║
 ║    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░    ║
 ║                                                              ║
-║          M A C H I N E · L E A R N I N G · C T F           ║
+║       M U L T I - D O M A I N · L E A R N I N G · C T F    ║
 ║                                                              ║
 ║         K·I·N·D·E·R·H·E·I·M  ·  5·1·1  ·  J·O·H·A·N       ║
 ║                   [ RUHENHEIM_NODE ]                         ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-**A high-fidelity, machine-learning–themed Capture The Flag platform.**  
-Investigate broken models. Analyze gradient norms. Derive flags from architectural evidence.
+**A multi-domain intelligence academy.** Learn algorithms through story-driven episodes, crack real exploits in cybersecurity CTFs, visualize machine learning from scratch — all in a single CRT-terminal platform.
 
 <br/>
 
@@ -46,37 +45,33 @@ Investigate broken models. Analyze gradient norms. Derive flags from architectur
 ## Table of Contents
 
 - [Overview](#overview)
-- [Features](#features)
+- [Domains](#domains)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
+- [Adding Content](#adding-content)
 - [Deployment](#deployment)
 - [Environment Variables](#environment-variables)
 - [CI/CD](#cicd)
-- [Contributing](#contributing)
 
 ---
 
 ## Overview
 
-**EPHEMERAL** is a CTF platform built around a fictional ML research lab called *Ruhenheim*. Players are cast as investigators analysing corrupted model artifacts, anomalous gradient logs, and fragmented weight files to extract hidden flags. Every challenge is a forensic puzzle — rooted in real ML concepts — wrapped in a persistent CRT-terminal aesthetic.
+**EPHEMERAL** is a story-driven, multi-domain learning platform structured around anime-inspired **Arcs**. Each arc covers a distinct STEM discipline and uses a teaching and testing format tailored to that domain:
 
-The scoring system degrades with each wrong attempt (100% → 70% → 40%), punishing brute-force and rewarding careful analysis. Progress is tracked in real-time via an in-app HUD showing XP, rank, and solved count.
+| Domain | Arc | Teaching Style | Test Format |
+|:---|:---|:---|:---|
+| Algorithms / DSA | The Eclipse | Conceptual + visual | Problem solving |
+| Cybersecurity | Grand Line | Narrative + forensics | CTF flag submission |
+| Machine Learning | JOHANS LAB | Visual explainers | Conceptual Q&A |
+| Networks | The Knot | Protocol diagrams | CTF + analysis |
+| Data Structures | Prophecy | Visual explainers | Problem solving |
+| Competitive Prog | ONE PUNCH | Timed challenges | CP-style |
+| Mathematics | UNIT-01 | Proof-based | Derivation Q&A |
 
----
-
-## Features
-
-| | Feature | Description |
-|---|---|---|
-| 🎯 | **Server-side Flag Validation** | Flags are sanitized and verified against the database — no client-side leaks. |
-| 📉 | **Degrading Points** | Score decays per incorrect submission: 100 → 70 → 40 pts. |
-| 📡 | **Real-time HUD** | Live XP, rank, and solve-count overlay rendered without page reloads. |
-| 🔐 | **Koa-Helmet Security** | HTTP security headers enforced on every API response. |
-| ⚡ | **Serverless Ready** | Single Koa entrypoint compiled to a Vercel serverless function. |
-| 🔁 | **CI/CD Pipeline** | Automated build + type-check on every push and pull request. |
-| 🎨 | **CRT Aesthetics** | Vanilla CSS scanline/phosphor effects — zero runtime overhead. |
+The scoring system degrades per wrong attempt (**100 → 70 → 40 pts**), punishing brute-force and rewarding careful analysis. Progress is tracked globally on a live leaderboard.
 
 ---
 
@@ -85,37 +80,41 @@ The scoring system degrades with each wrong attempt (100% → 70% → 40%), puni
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                        CLIENT (Browser)                       │
-│              React 19 + Vite + TypeScript                     │
-│              Vanilla CSS  ·  CRT Aesthetic Layer              │
+│   React 19 · Vite 8 · TypeScript · Vanilla CSS (CRT layer)   │
+│                                                               │
+│   parseRoute() → screen component → data from /api/*         │
 └────────────────────────┬─────────────────────────────────────┘
                          │  HTTP  /api/*
                          ▼
 ┌──────────────────────────────────────────────────────────────┐
-│                  VERCEL SERVERLESS FUNCTION                   │
-│                      api/index.ts                             │
+│              VERCEL SERVERLESS  (api/index.ts)                │
 │                                                               │
 │   ┌─────────────────────────────────────────────────────┐    │
-│   │              Koa.js Application                      │    │
-│   │  koa-router · koa-bodyparser · koa-helmet · CORS     │    │
+│   │                  Koa.js Pipeline                     │    │
+│   │  errorHandler → requestId → responseTime → logger    │    │
+│   │  → helmet/cors → rateLimit → bodyGuard → router      │    │
 │   │                                                      │    │
-│   │  POST /api/submit   ←  flag validation + scoring     │    │
-│   │  GET  /api/challenges  ←  challenge manifest         │    │
-│   │  GET  /api/progress    ←  user XP / solve state      │    │
+│   │  GET  /api/arcs, /api/episodes/:arcId                │    │
+│   │  GET  /api/episodes/:arcId/:episodeId/challenges     │    │
+│   │  GET  /api/progress/:userId                          │    │
+│   │  POST /api/submit   ← flag validation + scoring      │    │
+│   │  GET  /api/leaderboard, /api/stats/*                 │    │
 │   └───────────────────────┬─────────────────────────────┘    │
-│                           │  Drizzle ORM                      │
+│                           │  Drizzle ORM (neon-http)          │
 │                           ▼                                   │
 │   ┌─────────────────────────────────────────────────────┐    │
-│   │              Neon Serverless Postgres                 │    │
-│   │         challenges · submissions · users             │    │
+│   │          Neon Serverless Postgres                     │    │
+│   │  users · arcs · episodes · challenges · progress     │    │
 │   └─────────────────────────────────────────────────────┘    │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-**Request flow:**
+**Key flows:**
 
-1. Vite dev server proxies `/api/*` → `localhost:3000` in development.
-2. In production, `vercel.json` rewrites `/api/*` → `api/index.ts` serverless function.
-3. All other routes rewrite to `index.html`, keeping client-side routing intact.
+- **Dev:** Vite proxies `/api/*` → `localhost:3010` (backend started via `bun run dev:full`)
+- **Prod:** `vercel.json` routes `/api/*` → `api/index.ts`; all other paths → `index.html`
+- **Flag submission:** `POST /api/submit` compares the submitted flag (normalised to uppercase) against the DB record inside a DB transaction that atomically updates progress and awards XP
+- **Content:** Arcs, episodes, and challenges live in `src/data/content.ts` and are seeded to the DB via `bun run db:seed`. `EPISODE_RESOURCES` is static — used by the frontend directly without a DB round-trip
 
 ---
 
@@ -123,14 +122,14 @@ The scoring system degrades with each wrong attempt (100% → 70% → 40%), puni
 
 | Layer | Technology | Notes |
 |:---|:---|:---|
-| **UI** | React 19, Vite 8, TypeScript | Strict mode, no UI library |
-| **Styling** | Vanilla CSS | CRT scanline + phosphor glow effects |
-| **Server** | Koa 2, Koa-Router | Compiled to a single Vercel function |
-| **ORM** | Drizzle ORM | Type-safe, schema-first, zero query builder |
-| **Database** | Neon Serverless Postgres | Branching, scales to zero |
-| **Runtime** | Bun | Dev server, seeding, script runner |
-| **Security** | Koa-Helmet, @koa/cors | CSP, HSTS, XSS headers |
-| **DevOps** | GitHub Actions, Vercel | CI on push + auto-deploy on merge |
+| **UI** | React 19, Vite 8, TypeScript | Strict mode, zero UI library dependency |
+| **Styling** | Vanilla CSS | CRT scanline + phosphor glow, CSS variables for accent colors |
+| **Server** | Koa 2, @koa/router | Exported as a single Vercel serverless function |
+| **ORM** | Drizzle ORM | Type-safe, schema-first, Neon HTTP driver |
+| **Database** | Neon Serverless Postgres | Scales to zero, branching for preview environments |
+| **Runtime** | Bun | Dev server, seed script, script runner |
+| **Security** | koa-helmet, @koa/cors, Zod | CSP/HSTS, typed request validation |
+| **DevOps** | GitHub Actions, Vercel | CI on push + zero-config deploy on merge |
 
 ---
 
@@ -139,25 +138,59 @@ The scoring system degrades with each wrong attempt (100% → 70% → 40%), puni
 ```
 ephemeral_v1.3/
 ├── api/
-│   └── index.ts            # Vercel serverless entrypoint (wraps Koa)
+│   └── index.ts              # Vercel entrypoint — exports Koa app.callback()
 ├── src/
+│   ├── config/
+│   │   └── index.ts          # Env vars, scoring multipliers, rate-limit config
+│   ├── controllers/
+│   │   ├── content.controller.ts  # Arc / episode / challenge read endpoints
+│   │   ├── user.controller.ts     # Progress, flag submission, leaderboard
+│   │   ├── stats.controller.ts    # Solve counts, first-blood, activity feed
+│   │   └── system.controller.ts   # Health check, ping
+│   ├── data/
+│   │   ├── content.ts        # SOURCE OF TRUTH: ARCS, EPISODES, CHALLENGES, EPISODE_RESOURCES
+│   │   ├── codex.ts          # Per-category reference cards (CTF cheatsheets)
+│   │   └── ctfChapters.ts    # Guided chapter definitions for specific challenges
 │   ├── db/
-│   │   ├── schema.ts       # Drizzle table definitions
-│   │   └── client.ts       # Neon connection + Drizzle instance
-│   ├── routes/             # Koa route handlers
-│   ├── middleware/         # Auth, error handling, rate limiting
-│   ├── components/         # React UI components
-│   ├── pages/              # Page-level components
-│   ├── styles/             # Global CSS + CRT effect layers
-│   ├── seed.ts             # Database seeding script
-│   └── server.ts           # Core Koa app (exported for serverless)
-├── .github/
-│   └── workflows/
-│       └── ci.yml          # Build + type-check pipeline
-├── drizzle.config.ts       # Drizzle-Kit config (schema → Neon)
-├── vite.config.ts          # Vite + /api proxy config
-├── vercel.json             # Routing: static ↔ serverless
-├── .env.example            # Required environment variables
+│   │   ├── schema.ts         # Drizzle table definitions (users/arcs/episodes/challenges/progress)
+│   │   ├── index.ts          # Neon connection + health check helper
+│   │   └── migrate-and-seed.ts
+│   ├── hooks/
+│   │   ├── useApi.ts         # fetch wrapper with loading/error state + apiRequest helper
+│   │   └── useCtf.ts         # CTF flag submission state machine
+│   ├── lib/
+│   │   ├── errors.ts         # AppError hierarchy (NotFoundError, ValidationError, …)
+│   │   ├── imageMapping.ts   # Arc cover + episode thumbnail paths (public/one_piece/)
+│   │   ├── logger.ts         # Coloured structured logger (component-scoped)
+│   │   ├── response.ts       # ok() / error() / paginated() response helpers
+│   │   └── sound.ts          # Web Audio API sound effects
+│   ├── middleware/
+│   │   ├── index.ts          # requestId, responseTime, errorHandler, rateLimit, …
+│   │   └── validate.ts       # Zod-backed request validation middleware
+│   ├── routes/
+│   │   └── index.ts          # All /api/* routes with validation wired
+│   ├── services/
+│   │   ├── arc.service.ts
+│   │   ├── challenge.service.ts   # PUBLIC_COLUMNS strips flag from client responses
+│   │   ├── episode.service.ts
+│   │   ├── leaderboard.service.ts
+│   │   ├── progress.service.ts    # solveWithXp() runs in a DB transaction
+│   │   ├── stats.service.ts
+│   │   └── user.service.ts
+│   ├── types.ts              # Shared frontend types (Arc, Episode, Challenge, …)
+│   ├── types/index.ts        # Backend API types (ApiResponse, SubmitFlagResult, …)
+│   ├── validators/index.ts   # Zod schemas for all request bodies/params/queries
+│   ├── server.ts             # Koa app assembly + graceful shutdown
+│   ├── seed.ts               # DB seed script (reads from src/data/content.ts)
+│   └── App.tsx               # Single-file SPA router (parseRoute + screen dispatch)
+├── public/
+│   ├── one_piece/            # 1–101.jpeg — arc covers (1-8), episode thumbnails, UI backgrounds
+│   └── avatar/               # Player avatar images
+├── CLAUDE.md                 # AI assistant instructions for this repo
+├── CONTENT_GUIDE.md          # Step-by-step guide for adding arcs/episodes/challenges
+├── drizzle.config.ts
+├── vite.config.ts
+├── vercel.json
 └── package.json
 ```
 
@@ -168,67 +201,85 @@ ephemeral_v1.3/
 ### Prerequisites
 
 - [Bun](https://bun.sh) `>= 1.0`
-- A [Neon](https://neon.tech) project (free tier works fine)
-- Node.js `>= 18` (for tooling compatibility)
+- A [Neon](https://neon.tech) project (free tier is sufficient)
+- Node.js `>= 18` (for Vite and drizzle-kit)
 
 ### Installation
 
 ```bash
-# 1. Clone the repository
+# Clone
 git clone https://github.com/akrist-rai/ephemeral_v1.3.git
 cd ephemeral_v1.3
 
-# 2. Install dependencies
+# Install
 bun install
 
-# 3. Configure environment
+# Configure
 cp .env.example .env
-# → Open .env and paste your Neon DATABASE_URL
+# → Set DATABASE_URL to your Neon connection string
 
-# 4. Push schema to database
+# Push schema
 bun run db:push
 
-# 5. Seed challenge data
+# Seed content (arcs, episodes, challenges)
 bun run db:seed
 
-# 6. Start the full dev environment (frontend + backend)
+# Start full dev environment (frontend :5173, API :3010)
 bun run dev:full
 ```
 
-The frontend is available at `http://localhost:5173`.  
-The API runs at `http://localhost:3000` (proxied through Vite automatically).
+---
+
+## Adding Content
+
+All platform content — arcs, episodes, challenges, and curated resources — lives in **`src/data/content.ts`**.
+
+```
+1. Edit src/data/content.ts
+2. bun run db:seed          ← re-seeds arcs/episodes/challenges (EPISODE_RESOURCES is frontend-only, no seed needed)
+```
+
+> **Important:** `db:seed` is destructive — it purges all rows from `progress`, `challenges`, `episodes`, and `arcs` before inserting. User XP is lost. Run it only in dev or when you explicitly want a full reset.
+
+See **[CONTENT_GUIDE.md](./CONTENT_GUIDE.md)** for the full field reference and examples.
+
+### Image assets
+
+All episode and arc images live in `public/one_piece/` as sequentially numbered `.jpeg` files:
+
+| Range | Purpose |
+|:---|:---|
+| `1–8` | Arc cover images |
+| `9–16` | Arc 1 (Algorithms) episode thumbnails |
+| `17–24` | Arc 2 (Cybersecurity) episode thumbnails |
+| `25–32` | Arc 3 (Machine Learning) episode thumbnails |
+| `33–40` | Arc 4 (Networks) episode thumbnails |
+| `41–48` | Arc 5 (Data Structures) episode thumbnails |
+| `49–56` | Arc 6 (Competitive Prog) episode thumbnails |
+| `57–64` | Arc 7 (Mathematics) episode thumbnails |
+| `65–72` | Arc 8 (Probability) episode thumbnails |
+| `73–78` | Legacy Arc 3 IDs |
+| `79–83` | UI background images |
+| `86–101` | Arc 9 (Initiation) episode thumbnails + spares |
+
+The mapping from episode ID → image path is in **`src/lib/imageMapping.ts`**.
+
+Player avatars live in `public/avatar/` and are served via `GET /api/avatars`.
 
 ---
 
 ## Deployment
 
-This project is pre-configured for zero-config deployment to Vercel.
+**Vercel (recommended)**
 
-### Steps
+1. Push to GitHub
+2. Import repo at [vercel.com/new](https://vercel.com/new) — framework preset: **Vite**
+3. Add `DATABASE_URL` in project settings → Environment Variables
+4. Deploy — every push to `main` auto-redeploys
 
-**1. Push to GitHub** — ensure `vercel.json`, `api/index.ts`, and the Vite build config are present.
-
-**2. Import the repository on Vercel**
-- Go to [vercel.com/new](https://vercel.com/new)
-- Select `akrist-rai/ephemeral_v1.3`
-- Framework preset: **Vite** (auto-detected)
-
-**3. Add the environment variable**
-
-| Variable | Value |
-|:---|:---|
-| `DATABASE_URL` | Your Neon connection string (from Neon console → Connection Details) |
-
-**4. Deploy** — Vercel will build the frontend and expose `api/index.ts` as a serverless function. Every future push to `main` triggers an automatic redeploy.
-
-> **Preview Environments:** Pull Requests automatically get a unique preview URL, sharing the same production database unless you configure a separate Neon branch.
-
-### Database migrations
-
-Schema changes should be applied manually before merging:
+Schema changes must be applied manually before merging:
 
 ```bash
-# Apply schema diff to production
 DATABASE_URL=<prod_url> bun run db:push
 ```
 
@@ -236,33 +287,28 @@ DATABASE_URL=<prod_url> bun run db:push
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|:---|:---:|:---|
-| `DATABASE_URL` | ✅ | Neon Postgres connection string (`postgresql://...`) |
-
-See [`.env.example`](./.env.example) for the full template.
+| Variable | Required | Default | Description |
+|:---|:---:|:---|:---|
+| `DATABASE_URL` | ✅ | — | Neon Postgres connection string |
+| `PORT` | | `3000` | Dev server port |
+| `CORS_ORIGIN` | | `*` | Allowed CORS origin (set to your domain in production) |
+| `RATE_LIMIT_MAX` | | `100` | Global requests per minute per IP |
+| `RATE_LIMIT_SUBMIT_MAX` | | `10` | Flag submissions per minute per IP |
 
 ---
 
 ## CI/CD
 
-GitHub Actions runs on every push to `main` and every pull request:
+GitHub Actions runs on every push and pull request:
 
 ```
-push / PR to main
-       │
-       ├── bun install --frozen-lockfile
-       ├── tsc --noEmit          (type-check)
-       └── bun run build         (Vite production build)
+push / PR → main
+  ├── bun install --frozen-lockfile
+  ├── bun run build   (Vite production build)
+  └── tsc --noEmit    (type-check — if tsconfig present)
 ```
 
-Vercel handles continuous deployment independently — a green CI check is not a deploy gate by default, but you can enforce it via [Vercel's GitHub integration settings](https://vercel.com/docs/deployments/git/vercel-for-github).
-
----
-
-## Contributing
-
-See [**CONTRIBUTING.md**](./CONTRIBUTING.md) for guidelines on adding new challenges, reporting bugs, and the pull request process.
+Vercel deploys automatically on merge to `main`.
 
 ---
 
@@ -275,67 +321,3 @@ See [**CONTRIBUTING.md**](./CONTRIBUTING.md) for guidelines on adding new challe
 *SUBJECT_ALPHA · KINDERHEI·M 511 · J·O·H·A·N*
 
 </div>
-=======
-# ⟁ EPHEMERAL CTF ENGINE
-
-```text
-┌──────────────────┐
-│ ░░░░░░░░░░░░░░░ │
-│ ░  ─── ─── ░ │
-│ ░░░░ ᵕ ░░░░ │
-│ ░  ─────── ░ │
-│ ░░░░░░░░░░░░░░░ │
-│                  │
-│  K · I · N · D  │
-│  E · R · H · E  │
-│  I · M  5 1 1   │
-└──────────────────┘
-   J·O·H·A·N
-──────────────────
-  SUBJECT_ALPHA
- RUHENHEIM_NODE
-```
-
-**EPHEMERAL** is a high-fidelity, machine learning-themed Capture The Flag (CTF) platform. Investigate broken models, analyze gradient norms, and derive flags from architectural evidence.
-
-## ⚡ QUICK START
-
-```bash
-# Install dependencies
-bun install
-
-# Setup Database (Neon Postgres)
-bun run db:push
-bun run db:seed
-
-# Start Development Environment (Frontend + Backend)
-bun run dev:full
-```
-
-## 🏗 ARCHITECTURE
-
-- **Frontend:** React 19 + Vite + TypeScript (Vanilla CSS for high-performance CRT aesthetics)
-- **Backend:** Koa.js (Node.js)
-- **Database:** Drizzle ORM + Neon (Serverless Postgres)
-- **Deployment:** Vercel Serverless Functions
-
-## 🚀 FEATURES
-
-- **Real-time Progress:** Integrated HUD tracking user XP and solved challenges.
-- **Server-side Validation:** Flags are sanitized and validated against a secure backend.
-- **Degrading Points:** Score is calculated based on attempts (100% → 70% → 40%).
-- **Serverless Ready:** Optimized for Vercel with a single entrypoint for the entire API.
-- **CI/CD:** Automated build checks via GitHub Actions.
-
-## 🛠 TECH STACK
-
-| Layer | Technology |
-| :--- | :--- |
-| **UI** | React, Vite |
-| **Server** | Koa, Koa-Router |
-| **Database** | Drizzle ORM, Neon Postgres |
-| **Security** | Koa-Helmet, CORS |
-| **DevOps** | Bun, Concurrently, GitHub Actions |
-
-
-

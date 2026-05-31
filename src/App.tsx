@@ -5,7 +5,6 @@ import { Hero } from './components/Home/Hero';
 import { Manifest } from './components/Home/Manifest';
 import { Transmissions } from './components/Home/Transmissions';
 import { ActivityFeed } from './components/Home/ActivityFeed';
-import { RankedSiege } from './components/Home/RankedSiege';
 import { SeriesHero } from './components/Series/SeriesHero';
 import { EpisodeList } from './components/Series/EpisodeList';
 import { ChallengeHeader } from './components/Challenge/ChallengeHeader';
@@ -22,7 +21,7 @@ import { apiRequest } from './hooks/useApi';
 import { useCtf } from './hooks/useCtf';
 import { BootTour } from './components/Effects/BootTour';
 
-import type { Arc, Episode } from './types';
+import type { Arc, Episode, Challenge } from './types';
 import { getArcCover } from './lib/imageMapping';
 
 // ── Route parsing ──────────────────────────────────────────────────────────
@@ -109,18 +108,20 @@ export default function App() {
     }
   }, [user]);
 
-  // Award XP function that syncs to server database
+  // Award XP — optimistic update, syncs to server in background
   const awardCalibrationXp = useCallback(async (xp: number) => {
     if (!user) return;
+    setUserXp(prev => prev + xp);
+    showToast(`CALIBRATION COMPLETE: +${xp} XP INTEGRATED`);
     try {
-      setUserXp(prev => prev + xp);
-      showToast(`CALIBRATION COMPLETE: +${xp} XP INTEGRATED`);
       await apiRequest(`/api/progress/${encodeURIComponent(user.id)}/add-xp`, {
         method: 'POST',
-        body: JSON.stringify({ xp })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ xp }),
       });
-    } catch (err: any) {
-      console.error('Failed to sync calibration XP to backend database:', err);
+    } catch (err) {
+      // Silently revert is not ideal but avoids blocking the UI for a bonus award
+      console.warn('Calibration XP sync failed:', err instanceof Error ? err.message : err);
     }
   }, [user, showToast]);
 
@@ -305,15 +306,17 @@ export default function App() {
     ? `/episode/${featuredArc.id}/${featuredEpisode.id}`
     : '/episode/1/S1E1_A1';
 
-  const getChallengePath = useCallback((ch: any) => {
+  const getChallengePath = useCallback((ch: Challenge) => {
     for (const [arcId, eps] of Object.entries(arcEpisodes)) {
       const ep = eps.find(e => e.id === ch.episodeId);
-      if (ep) {
-        return `/episode/${arcId}/${ep.id}/ctf/${encodeURIComponent(ch.id)}`;
-      }
+      if (ep) return `/episode/${arcId}/${ep.id}/ctf/${encodeURIComponent(ch.id)}`;
     }
-    return `/episode/1/S1E1_A1/ctf/${encodeURIComponent(ch.id)}`;
-  }, [arcEpisodes]);
+    // Fallback: use the featured episode path so the challenge still resolves
+    const fallbackBase = featuredArc && featuredEpisode
+      ? `/episode/${featuredArc.id}/${featuredEpisode.id}`
+      : '/episode/1/S1E1_A1';
+    return `${fallbackBase}/ctf/${encodeURIComponent(ch.id)}`;
+  }, [arcEpisodes, featuredArc, featuredEpisode]);
 
   // ── Auth gate ──────────────────────────────────────────────────────────────
   if (!user) return <AuthGate onAuth={handleAuth} />;
@@ -356,7 +359,6 @@ export default function App() {
             navigate={navigate}
           />
           <ActivityFeed challenges={challenges} currentUserId={user.id} />
-          <RankedSiege navigate={navigate} />
           <Manifest arcs={arcs} onShowSeries={() => navigate('/series')} />
           <Transmissions episodes={recentEpisodes} arcs={arcs} onNavigate={navigate} />
         </div>
@@ -367,7 +369,7 @@ export default function App() {
           <Navbar {...navProps} activeTab="series" onBack={() => navigate('/')} />
           <SeriesHero
             arc={selectedArc}
-            episodes={arcEpisodes[selectedArc?.id ?? 0] || []}
+            episodes={selectedArc ? (arcEpisodes[selectedArc.id] ?? []) : []}
             onBack={() => navigate('/')}
             arcCoverUrl={selectedArc ? (arcCovers[selectedArc.id] || getArcCover(selectedArc.id)) : undefined}
             onChangeCover={selectedArc ? () => openArcCoverSelector(selectedArc.id) : undefined}
@@ -386,9 +388,9 @@ export default function App() {
             ))}
           </div>
           <EpisodeList
-            episodes={arcEpisodes[curArc ?? 0] || []}
+            episodes={curArc != null ? (arcEpisodes[curArc] ?? []) : []}
             arc={selectedArc}
-            onShowChallenge={(ep) => navigate(`/episode/${selectedArc?.id}/${ep.id}`)}
+            onShowChallenge={(ep) => selectedArc && navigate(`/episode/${selectedArc.id}/${ep.id}`)}
             loading={dataStatus === 'loading'}
             error={apiError || null}
           />
