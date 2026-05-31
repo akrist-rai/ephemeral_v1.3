@@ -164,27 +164,57 @@ export const EPISODES = [
 ];
 
 export const CHALLENGES = [
+  // ── Arc 1, Episode 3: Greedy vs Dynamic Programming (DSA mode) ──────────────
+  // These challenges are rendered by DSAEpisodePage, not CTFComponent.
+  // flag: 'DSA_HONOR_SOLVED' is the honor-system sentinel — users mark problems
+  // solved via a button; the backend verifies this value just like any other flag.
   {
-    id: 'ARRAY_BASICS_001',
+    id: 'DSA_55_JUMP_GAME',
     episodeId: 'S1E3_A1',
     tier: 1,
-    category: 'SCRIPTING',
+    category: 'ALGORITHMS',
+    points: 100,
+    difficulty: 2,
+    title: 'Jump Game',
+    scenario: 'You are positioned at index 0 of an array. Each element tells you the maximum number of steps you can jump from that position. Determine if you can reach the last index.',
+    task: 'Return true if you can reach the last index, false otherwise.',
+    artifacts: [],
+    flag: 'DSA_HONOR_SOLVED',
+    attemptsAllowed: 1,
+    hint: 'At each position, track the furthest index reachable so far.',
+    explanation: 'Greedy: maintain maxReach = max(maxReach, i + nums[i]). If i exceeds maxReach at any point, return false. O(n) time, O(1) space.',
+  },
+  {
+    id: 'DSA_322_COIN_CHANGE',
+    episodeId: 'S1E3_A1',
+    tier: 2,
+    category: 'ALGORITHMS',
+    points: 150,
+    difficulty: 3,
+    title: 'Coin Change',
+    scenario: 'Given a set of coin denominations and a target amount, find the minimum number of coins needed to make that amount. You have an unlimited supply of each denomination.',
+    task: 'Return the minimum coin count, or -1 if the amount cannot be formed.',
+    artifacts: [],
+    flag: 'DSA_HONOR_SOLVED',
+    attemptsAllowed: 1,
+    hint: 'Build a dp[] table where dp[i] = min coins to make amount i. Recurrence: dp[i] = min(dp[i - c] + 1) for each coin c.',
+    explanation: 'Bottom-up DP: initialise dp[0..amount] to Infinity, set dp[0] = 0. For each amount i from 1 to amount, try each coin c and update dp[i] = min(dp[i], dp[i-c]+1). Return dp[amount] or -1.',
+  },
+  {
+    id: 'DSA_746_MIN_COST_STAIRS',
+    episodeId: 'S1E3_A1',
+    tier: 1,
+    category: 'ALGORITHMS',
     points: 100,
     difficulty: 1,
-    title: 'Off-by-One',
-    scenario: 'A junior developer pushed a script that manages our security camera feeds. The camera names are stored in a simple array, but the application keeps crashing with an "Index Out of Bounds" error when trying to access the final camera in the sequence.',
-    task: 'Review the provided configuration array. Identify the correct zero-based index for the "Loading Dock" camera to fix the script.',
-    artifacts: [
-      {
-        type: 'config',
-        label: 'CAM_ARRAY.JSON',
-        content: '{\n  "cameras": [\n    "Main Entrance",\n    "Lobby",\n    "Breakroom",\n    "Server Room",\n    "Loading Dock"\n  ],\n  "target_camera_query": 5\n}'
-      }
-    ],
-    flag: '4',
-    attemptsAllowed: 3,
-    hint: 'In most programming languages, arrays start counting at 0, not 1. Try counting the list items starting from 0.',
-    explanation: 'Because arrays are zero-indexed, an array with 5 items has valid indices of 0, 1, 2, 3, and 4. The "Loading Dock" is at index 4. Querying index 5 (which would be a 6th item) causes the script to fail.'
+    title: 'Min Cost Climbing Stairs',
+    scenario: 'Each step on a staircase has a cost. Once you pay the cost you can jump 1 or 2 steps. You can start from step 0 or step 1. Find the minimum total cost to reach the top (past the last step).',
+    task: 'Return the minimum cost to reach the top of the floor.',
+    artifacts: [],
+    flag: 'DSA_HONOR_SOLVED',
+    attemptsAllowed: 1,
+    hint: 'Define dp[i] as the minimum cost to stand on step i. Recurrence: dp[i] = cost[i] + min(dp[i-1], dp[i-2]).',
+    explanation: 'dp[i] = cost[i] + min(dp[i-1], dp[i-2]). Answer = min(dp[n-1], dp[n-2]) since either of the last two steps can reach the top.',
   },
   {
     id: 'WEB_SQLI_001',

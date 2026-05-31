@@ -3,6 +3,7 @@ import { WriteupModal } from '../Common/WriteupModal';
 import { playSound } from '../../lib/sound';
 import { GlitchText } from '../Effects/GlitchText';
 import { getChaptersForChallenge } from '../../data/ctfChapters';
+import { getArcCover } from '../../lib/imageMapping';
 import type { Challenge, GctfState, ChallengeStats, SolveRecord } from '../../types';
 
 interface CTFComponentProps {
@@ -462,158 +463,210 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   const flagValue = chapAnswers[lastChap?.id ?? ''] ?? '';
   const diffLabel = (['EASY', 'MED', 'HARD', 'ELITE', 'LEGEND'] as const)[ch.difficulty - 1] ?? '';
 
-  // ── NEW CLEAN 2-PANE DETAIL VIEW ────────────────────────────────────────────
-  const fileColors: Record<string, string> = {
+  // ── IMMERSIVE DETAIL VIEW ────────────────────────────────────────────────────
+  const FILE_COLORS: Record<string, string> = {
     table: '#80cbc4', config: 'var(--lime)', log: '#4fc3f7', code: '#ce93d8', output: 'var(--crt)',
+  };
+  const FILE_ICONS: Record<string, string> = {
+    table: '田', config: '⚙', log: '☰', code: '⚡', output: '▶',
   };
 
   const submitDirect = () => {
     if (lastChap) handleSubmit(ch, chapters, chapters.length - 1);
   };
 
-  return (
-    <div className={`ctf-detail nd-wrap ${shake || chapShake ? 'ctf-shake' : ''}`}>
+  // Derive arc image from episodeBasePath (/episode/1/...)
+  const arcId = parseInt(episodeBasePath.split('/')[2] ?? '1', 10);
+  const bannerImg = getArcCover(isNaN(arcId) ? 1 : arcId);
 
-      {/* Chrome bar */}
-      <div className="ctf-chrome" style={{ borderBottomColor: `${meta.color}33` }}>
-        <button type="button" className="ch-back ctf-back" onClick={closeChallenge}>← BOARD</button>
-        <div className="ctf-chrome-path">
-          <span style={{ color: meta.color }}>{meta.icon} {ch.category}</span>
-          <span className="ctf-sep">/</span>
-          <span>{ch.id}</span>
-        </div>
-        <div className="ctf-chrome-right">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <span key={i} style={{ color: i < ch.difficulty ? meta.color : 'rgba(255,255,255,.12)', marginRight: 2 }}>★</span>
-          ))}
-          <span className="ctf-chrome-pts" style={{ color: meta.color }}>{ch.points} PTS</span>
-          {isOk && <span className="ctf-chrome-owned">PWNED ✓</span>}
+  return (
+    <div className={`cw2-page ${shake || chapShake ? 'ctf-shake' : ''}`}>
+
+      {/* ── BANNER ── */}
+      <div className="cw2-banner">
+        <img src={bannerImg} alt="" className="cw2-banner-img" onError={e => { e.currentTarget.style.display = 'none'; }} />
+        <div className="cw2-banner-overlay" />
+        <div className="cw2-banner-overlay-b" />
+        <div className="cw2-banner-content">
+          <div className="cw2-banner-nav">
+            <button type="button" className="cw2-back-btn" onClick={closeChallenge}>← BOARD</button>
+            <div className="cw2-breadcrumb">
+              <span style={{ color: meta.color }}>{meta.icon}</span>
+              <span className="cw2-breadcrumb-sep">/</span>
+              <span>{ch.category}</span>
+              <span className="cw2-breadcrumb-sep">/</span>
+              <span style={{ opacity: .5 }}>{ch.id}</span>
+            </div>
+          </div>
+          <div className="cw2-banner-meta">
+            <h1 className="cw2-banner-title">
+              <GlitchText text={ch.title} triggerOnHover color={meta.color} />
+            </h1>
+            <div className="cw2-banner-badges">
+              <span
+                className="cw2-banner-cat-badge"
+                style={{ borderColor: `${meta.color}44`, color: meta.color, background: `${meta.color}18` }}
+              >
+                {meta.icon} {ch.category}
+              </span>
+              <div className="cw2-banner-diff">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="cw2-banner-star"
+                    style={{ color: i < ch.difficulty ? meta.color : 'rgba(255,255,255,.15)' }}
+                  >★</span>
+                ))}
+              </div>
+              <span className="cw2-banner-pts" style={{ color: meta.color }}>{ch.points}</span>
+              {isOk && <span className="cw2-banner-pwned">PWNED ✓</span>}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* 2-column layout */}
-      <div className="nd-layout">
+      {/* ── BODY: 2 COLUMNS ── */}
+      <div className="cw2-body">
 
-        {/* ── LEFT PANE ── */}
-        <div className="nd-left">
+        {/* LEFT: context */}
+        <div className="cw2-left">
 
-          {/* Challenge identity */}
-          <div className="nd-id-card" style={{ borderLeftColor: meta.color }}>
-            <div className="nd-id-title">
-              <GlitchText text={ch.title} triggerOnHover color={meta.color} />
-            </div>
-            <div className="nd-id-meta">
-              <span className="nd-id-badge" style={{ borderColor: `${meta.color}44`, color: meta.color }}>
-                {ch.category}
-              </span>
-              <span className="nd-id-diff">{diffLabel}</span>
+          {/* Category + difficulty */}
+          <div className="cw2-section">
+            <div className="cw2-section-label">CLASSIFICATION</div>
+            <div className="cw2-cat-area">
+              <span className="cw2-cat-icon" style={{ color: meta.color }}>{meta.icon}</span>
+              <div className="cw2-cat-info">
+                <span className="cw2-cat-name" style={{ color: meta.color }}>{ch.category}</span>
+                <div className="cw2-diff-pips">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="cw2-diff-pip"
+                      style={{ background: i < ch.difficulty ? meta.color : 'rgba(255,255,255,.1)' }}
+                    />
+                  ))}
+                  <span className="cw2-diff-label" style={{ color: meta.color }}>{diffLabel}</span>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Scenario */}
-          <div className="nd-card">
-            <div className="nd-scenario-label">SCENARIO</div>
-            <p className="nd-scenario-text">{ch.scenario}</p>
+          <div className="cw2-section">
+            <div className="cw2-section-label">SCENARIO</div>
+            <div className="cw2-scenario">{ch.scenario}</div>
           </div>
 
-          {/* Hint toggle */}
+          {/* Hint */}
           {ch.hint && (
-            <div>
+            <div className="cw2-section">
               <button
                 type="button"
-                className="nd-hint-toggle"
+                className="cw2-hint-toggle"
                 onClick={() => toggleCTFHint(ch.id)}
               >
-                ⚡ HINT {gctf.hintOn[ch.id] ? '▲' : '▼'}
+                <span>⚡ TACTICAL HINT</span>
+                <span>{gctf.hintOn[ch.id] ? '▲' : '▼'}</span>
               </button>
               {gctf.hintOn[ch.id] && (
-                <div className="nd-hint-body">{ch.hint}</div>
+                <div className="cw2-hint-body">{ch.hint}</div>
               )}
             </div>
           )}
 
         </div>
 
-        {/* ── RIGHT PANE ── */}
-        <div className="nd-right">
+        {/* RIGHT: workspace */}
+        <div className="cw2-right">
 
           {/* Task directive */}
-          <div className="nd-task-card">
-            <div className="nd-task-label">▶ TASK DIRECTIVE</div>
-            <p className="nd-task-text">{ch.task}</p>
+          <div className="cw2-section">
+            <div className="cw2-task">
+              <div className="cw2-task-label">▶ OBJECTIVE</div>
+              <p className="cw2-task-text">{ch.task}</p>
+            </div>
           </div>
 
           {/* Evidence files */}
-          <div className="nd-files-card">
-            <div className="nd-files-header">
-              <span className="nd-files-label">// EVIDENCE FILES</span>
-              <span className="nd-files-count">{ch.artifacts.length} FILE{ch.artifacts.length !== 1 ? 'S' : ''}</span>
-            </div>
-            <div className="ctf-file-tabs">
-              {ch.artifacts.map((art, idx) => {
-                const isSelected = expandedArt === idx;
-                const color = fileColors[art.type] || meta.color;
-                return (
-                  <button
-                    type="button"
-                    key={idx}
-                    className={`ctf-file-tab ${isSelected ? 'active' : ''}`}
-                    style={isSelected ? { borderBottomColor: color } : {}}
-                    onClick={() => { playSound.click(); setExpandedArt(idx); }}
-                  >
-                    <span className="ctf-tab-icon" style={{ color }}>
-                      {art.type === 'code' ? '⚡' : art.type === 'log' ? '☰' : art.type === 'table' ? '田' : '⚙'}
-                    </span>
-                    <span className="ctf-tab-name">{art.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-            {expandedArt !== null && ch.artifacts[expandedArt] && (
-              <div className="ctf-file-viewport">
-                <div className="ctf-file-meta-bar">
-                  <span className="ctf-file-path">evidence/{ch.artifacts[expandedArt].label.toLowerCase()}</span>
-                  <button
-                    type="button"
-                    className="ctf-file-btn"
-                    onClick={() => {
-                      navigator.clipboard.writeText(ch.artifacts[expandedArt].content);
-                      showToast('COPIED TO CLIPBOARD');
-                      playSound.success();
-                    }}
-                  >
-                    📋 COPY
-                  </button>
-                </div>
-                <pre className="ctf-file-body"><code>{ch.artifacts[expandedArt].content}</code></pre>
+          {ch.artifacts.length > 0 && (
+            <div className="cw2-section" style={{ padding: 0 }}>
+              <div style={{ padding: '1.1rem 1.3rem .6rem' }}>
+                <div className="cw2-section-label">EVIDENCE</div>
               </div>
-            )}
-          </div>
+              <div className="cw2-evidence">
+                <div className="cw2-evidence-tabs">
+                  {ch.artifacts.map((art, idx) => {
+                    const col = FILE_COLORS[art.type] || meta.color;
+                    return (
+                      <button
+                        type="button"
+                        key={idx}
+                        className={`cw2-ev-tab ${expandedArt === idx ? 'active' : ''}`}
+                        style={expandedArt === idx ? { color: col, borderBottomColor: col } : {}}
+                        onClick={() => { playSound.click(); setExpandedArt(idx); }}
+                      >
+                        <span className="cw2-ev-icon">{FILE_ICONS[art.type] ?? '⊞'}</span>
+                        {art.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {expandedArt !== null && ch.artifacts[expandedArt] && (() => {
+                  const art = ch.artifacts[expandedArt];
+                  const col = FILE_COLORS[art.type] || meta.color;
+                  return (
+                    <div className="cw2-ev-viewport">
+                      <div className="cw2-ev-topbar">
+                        <span className="cw2-ev-path" style={{ color: col }}>
+                          {FILE_ICONS[art.type] ?? '⊞'} evidence/{art.label.toLowerCase()}
+                        </span>
+                        <button
+                          type="button"
+                          className="cw2-ev-copy"
+                          onClick={() => { navigator.clipboard.writeText(art.content); showToast('COPIED'); playSound.success(); }}
+                        >
+                          COPY
+                        </button>
+                      </div>
+                      <pre className="cw2-ev-pre" style={{ color: col }}>
+                        <code>{art.content}</code>
+                      </pre>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
 
-          {/* Flag submission / solved / failed */}
+          {/* Flag zone */}
           {isOk ? (
-            <div className="nd-solved-banner">
-              <span className="nd-solved-check">✓</span>
-              <div>
-                <div className="nd-solved-label">FLAG ACCEPTED</div>
-                <div className="nd-solved-flag">EPHEMERAL{`{${ch.flag}}`}</div>
-                {sv?.pts_earned && <div className="nd-solved-pts">+{sv.pts_earned} XP EARNED</div>}
+            <div className="cw2-section">
+              <div className="cw2-solved-banner">
+                <span className="cw2-solved-icon">✓</span>
+                <div className="cw2-solved-info">
+                  <span className="cw2-solved-label">FLAG ACCEPTED</span>
+                  <span className="cw2-solved-flag">EPHEMERAL{`{${ch.flag}}`}</span>
+                  {sv?.pts_earned && <span className="cw2-solved-xp">+{sv.pts_earned} XP EARNED</span>}
+                </div>
               </div>
             </div>
           ) : isFail ? (
-            <div className="nd-failed-banner">
-              <div className="nd-failed-label">✗ OUT OF ATTEMPTS</div>
-              <div className="nd-failed-flag">EPHEMERAL{`{${ch.flag}}`}</div>
+            <div className="cw2-section">
+              <div className="cw2-failed-banner">
+                <div className="cw2-failed-label">✗ OPERATION FAILED</div>
+                <div className="cw2-failed-flag">EPHEMERAL{`{${ch.flag}}`}</div>
+              </div>
             </div>
           ) : (
-            <div className="nd-submit-card">
-              <div className="nd-submit-label">SUBMIT FLAG</div>
-              <div className="nd-flag-row">
-                <span className="nd-flag-prefix">EPHEMERAL{'{'}</span>
+            <div className="cw2-submit">
+              <div className="cw2-submit-label">DECRYPT FLAG</div>
+              <div className="cw2-flag-zone">
+                <span className="cw2-flag-pre">EPHEMERAL{'{'}</span>
                 <input
                   ref={flagInputRef}
                   type="text"
-                  className="nd-flag-input"
+                  className="cw2-flag-input"
                   placeholder="flag..."
                   value={flagValue}
                   onChange={e => lastChap && setChapAnswers({ ...chapAnswers, [lastChap.id]: e.target.value })}
@@ -622,42 +675,42 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
                   spellCheck={false}
                   style={{ caretColor: meta.color }}
                 />
-                <span className="nd-flag-prefix">{'}'}</span>
+                <span className="cw2-flag-suf">{'}'}</span>
                 <button
                   type="button"
-                  className="nd-flag-btn"
-                  style={{ background: meta.color, color: meta.color === 'var(--lime)' || meta.color === '#ccff00' ? '#000' : '#fff' }}
+                  className="cw2-flag-submit"
+                  style={{ background: meta.color, color: ['var(--lime)', '#ccff00', '#f9a825'].includes(meta.color) ? '#000' : '#fff' }}
                   onClick={submitDirect}
                 >
                   SUBMIT
                 </button>
               </div>
-              <div className="nd-attempts">
-                <div className="nd-attempt-pips">
+              <div className="cw2-attempts">
+                <div className="cw2-att-pips">
                   {Array.from({ length: ch.attemptsAllowed }).map((_, i) => (
                     <div
                       key={i}
-                      className={`nd-pip ${i < att ? 'live' : 'spent'}`}
-                      style={{ background: i < att ? meta.color : 'rgba(255,255,255,.15)' }}
+                      className="cw2-att-pip"
+                      style={{ background: i < att ? meta.color : 'rgba(255,255,255,.12)' }}
                     />
                   ))}
                 </div>
-                <span className="nd-attempts-text">{att} ATTEMPT{att !== 1 ? 'S' : ''} REMAINING</span>
+                <span className="cw2-att-text">{att} ATTEMPT{att !== 1 ? 'S' : ''} REMAINING</span>
               </div>
             </div>
           )}
 
           {/* Post-solve explanation */}
           {(isOk || isFail) && ch.explanation && (
-            <div className="nd-postsolve" style={{ borderTopColor: isOk ? 'var(--crt)' : 'var(--red)' }}>
-              <div className="nd-postsolve-label" style={{ color: isOk ? 'var(--crt)' : 'var(--red)' }}>
+            <div className="cw2-postsolve" style={{ borderTopColor: isOk ? 'var(--crt)' : 'var(--red)' }}>
+              <div className="cw2-postsolve-label" style={{ color: isOk ? 'var(--crt)' : 'var(--red)' }}>
                 // SOLUTION ANALYSIS
               </div>
-              <p className="nd-postsolve-text">{ch.explanation}</p>
+              <p className="cw2-postsolve-text">{ch.explanation}</p>
               {isOk && (
                 <button
                   type="button"
-                  className="nd-writeup-btn"
+                  className="cw2-writeup-btn"
                   onClick={() => { playSound.click(); setWriteupChal({ id: ch.id, title: ch.title }); }}
                 >
                   ✎ FILE WRITE-UP

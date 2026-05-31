@@ -17,6 +17,7 @@ import { Leaderboard } from './components/Common/Leaderboard';
 import { AvatarSelectorModal } from './components/Common/AvatarSelectorModal';
 import { ProfilePage } from './components/Common/ProfilePage';
 import { SearchOverlay } from './components/Common/SearchOverlay';
+import { DSAEpisodePage } from './components/DSA/DSAEpisodePage';
 import { apiRequest } from './hooks/useApi';
 import { useCtf } from './hooks/useCtf';
 import { BootTour } from './components/Effects/BootTour';
@@ -422,34 +423,54 @@ export default function App() {
       {route.screen === 's-ep' && (
         <div className="scr on">
           <Navbar {...navProps} onBack={() => navigate('/series')} nodeId={currentEpisode?.id || 'EPISODE'} />
-          <div className="ch-wrap">
-            <ChallengeHeader episode={currentEpisode} arc={currentArc} challenges={ctfChallenges} onBack={() => navigate('/series')} />
-            <div className="tabs-l">
-              <button className={`tl ${route.tab === 'brief' ? 'on' : ''}`} onClick={() => navigate(episodeBasePath)}>BRIEF</button>
-              <button className={`tl ${route.tab === 'res' ? 'on' : ''}`} onClick={() => navigate(`${episodeBasePath}/resources`)}>RESOURCES</button>
-              <button className={`tl ${route.tab === 'ctf' ? 'on' : ''}`} onClick={() => navigate(`${episodeBasePath}/ctf`)}>CTF ARENA</button>
+
+          {/* Domain dispatch — DSA arcs get a full-page experience with no tabs */}
+          {(['ALGORITHMS', 'DATA STRUCTURES', 'COMP. PROG'] as const).includes(
+            currentArc?.domain as any
+          ) ? (
+            <DSAEpisodePage
+              arc={currentArc}
+              episode={currentEpisode}
+              challenges={ctfChallenges}
+              gctf={gctf}
+              submitFlag={submitFlag}
+              setUserXp={setUserXp}
+              navigate={navigate}
+              currentUserId={user.id}
+              episodeBasePath={episodeBasePath}
+              selectedProblemId={route.challengeId ?? undefined}
+            />
+          ) : (
+            /* All other arcs keep the Brief / Resources / CTF tab structure */
+            <div className="ch-wrap">
+              <ChallengeHeader episode={currentEpisode} arc={currentArc} challenges={ctfChallenges} onBack={() => navigate('/series')} />
+              <div className="tabs-l">
+                <button type="button" className={`tl ${route.tab === 'brief' ? 'on' : ''}`} onClick={() => navigate(episodeBasePath)}>BRIEF</button>
+                <button type="button" className={`tl ${route.tab === 'res' ? 'on' : ''}`} onClick={() => navigate(`${episodeBasePath}/resources`)}>RESOURCES</button>
+                <button type="button" className={`tl ${route.tab === 'ctf' ? 'on' : ''}`} onClick={() => navigate(`${episodeBasePath}/ctf`)}>CTF ARENA</button>
+              </div>
+              {route.tab === 'brief' && <Brief episode={currentEpisode} arc={currentArc} onStartResources={() => navigate(`${episodeBasePath}/resources`)} />}
+              {route.tab === 'res' && <Resources episode={currentEpisode} onEnterArena={() => navigate(`${episodeBasePath}/ctf`)} />}
+              {route.tab === 'ctf' && (
+                <CTFComponent
+                  gctf={gctf}
+                  setUserXp={setUserXp}
+                  showToast={showToast}
+                  challenges={ctfChallenges}
+                  navigate={navigate}
+                  dataStatus={dataStatus}
+                  apiError={apiError}
+                  submitFlag={submitFlag}
+                  toggleCTFHint={toggleCTFHint}
+                  shake={shake}
+                  flagInputRef={flagInputRef}
+                  episodeBasePath={episodeBasePath}
+                  chalStats={chalStats}
+                  currentUserId={user.id}
+                />
+              )}
             </div>
-            {route.tab === 'brief' && <Brief episode={currentEpisode} arc={currentArc} onStartResources={() => navigate(`${episodeBasePath}/resources`)} />}
-            {route.tab === 'res' && <Resources episode={currentEpisode} onEnterArena={() => navigate(`${episodeBasePath}/ctf`)} />}
-            {route.tab === 'ctf' && (
-              <CTFComponent
-                gctf={gctf}
-                setUserXp={setUserXp}
-                showToast={showToast}
-                challenges={ctfChallenges}
-                navigate={navigate}
-                dataStatus={dataStatus}
-                apiError={apiError}
-                submitFlag={submitFlag}
-                toggleCTFHint={toggleCTFHint}
-                shake={shake}
-                flagInputRef={flagInputRef}
-                episodeBasePath={episodeBasePath}
-                chalStats={chalStats}
-                currentUserId={user.id}
-              />
-            )}
-          </div>
+          )}
         </div>
       )}
 
