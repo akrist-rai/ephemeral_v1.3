@@ -7,6 +7,6 @@ dist
 *.log
 .jetro/
 CLAUDE.md
-.cursor/
-.claude/
+.cursor
+.claude
 .agents
