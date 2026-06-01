@@ -170,12 +170,17 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
 
       {/* ── 1. Problem Header Bar ── */}
       <div className="ds-prob-header-bar">
-        <span className="ds-prob-num">#{problem.leetcodeNum}</span>
-        <span className="ds-prob-display-title">{challenge.title}</span>
-        <span className={`ds-diff ${diffClass}`}>{problem.difficulty}</span>
-        {problem.tags.map(t => (
-          <span key={t} className="ds-constraint">{t}</span>
-        ))}
+        <span className="ds-prob-ghost-num">#{problem.leetcodeNum}</span>
+        <div className="ds-prob-header-inner">
+          <span className="ds-prob-display-title">{challenge.title}</span>
+          <div className="ds-prob-meta">
+            <span className="ds-prob-num">#{problem.leetcodeNum}</span>
+            <span className={`ds-diff ${diffClass}`}>{problem.difficulty}</span>
+            {problem.tags.map(t => (
+              <span key={t} className="ds-constraint">{t}</span>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* ── 2. Visualization Stage ── */}
