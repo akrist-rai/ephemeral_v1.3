@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { WriteupModal } from '../Common/WriteupModal';
 import { playSound } from '../../lib/sound';
 import { GlitchText } from '../Effects/GlitchText';
+import { CipherText } from '../Effects/CipherText';
 import { getChaptersForChallenge } from '../../data/ctfChapters';
 import { getArcCover } from '../../lib/imageMapping';
 import type { Challenge, GctfState, ChallengeStats, SolveRecord } from '../../types';
@@ -195,6 +196,8 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   const [solvedChaps, setSolvedChaps] = useState<Record<string, boolean>>({});
   const [chapShake, setChapShake] = useState(false);
   const [expandedArt, setExpandedArt] = useState<number | null>(0);
+  const [showSolveFlash, setShowSolveFlash] = useState(false);
+  const solvedKeysRef = useRef<Set<string>>(new Set());
 
   // ── WORKSPACE PLAYGROUND / SANDBOX STATE ──
   const [sandboxOpen, setSandboxOpen] = useState(false);
@@ -249,6 +252,17 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
     }
   }, [activeChalId]);
 
+
+  // Fire solve flash when a new solve is detected
+  useEffect(() => {
+    const newlySolved = Object.entries(gctf.solved)
+      .filter(([id, s]) => s.solved && !solvedKeysRef.current.has(id));
+    if (newlySolved.length > 0) {
+      newlySolved.forEach(([id]) => solvedKeysRef.current.add(id));
+      setShowSolveFlash(true);
+      setTimeout(() => setShowSolveFlash(false), 1600);
+    }
+  }, [gctf.solved]);
 
   const openChallenge = useCallback((id: string) => {
     playSound.click();
@@ -350,12 +364,13 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
 
     return (
       <div className="ctf-wrap">
+        {showSolveFlash && <div className="cw2-solve-flash" />}
         {/* Header */}
         <div className="ctf-board-hdr">
           <div className="ctf-board-hdr-left">
             <div className="ctf-board-eyebrow">// CTF_ARENA · INCIDENT_RESPONSE</div>
             <h2 className="ctf-board-title">
-              <GlitchText text="CHALLENGE LAB" triggerOnHover color="var(--red)" />
+              <CipherText text="CHALLENGE LAB" speed={22} delay={200} />
             </h2>
             <p className="ctf-board-sub">Extract the flag from forensic evidence alone.</p>
           </div>
@@ -490,6 +505,7 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
 
   return (
     <div className={`cw2-page ${shake || chapShake ? 'ctf-shake' : ''}`}>
+      {showSolveFlash && <div className="cw2-solve-flash" />}
 
       {/* ── BANNER ── */}
       <div className="cw2-banner">
@@ -669,42 +685,51 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
             </div>
           ) : (
             <div className="cw2-submit">
-              <div className="cw2-submit-label">DECRYPT FLAG</div>
-              <div className="cw2-flag-zone">
-                <span className="cw2-flag-pre">EPHEMERAL{'{'}</span>
-                <input
-                  ref={flagInputRef}
-                  type="text"
-                  className="cw2-flag-input"
-                  placeholder="flag..."
-                  value={flagValue}
-                  onChange={e => lastChap && setChapAnswers({ ...chapAnswers, [lastChap.id]: e.target.value })}
-                  onKeyDown={e => e.key === 'Enter' && submitDirect()}
-                  autoComplete="off"
-                  spellCheck={false}
-                  style={{ caretColor: meta.color }}
-                />
-                <span className="cw2-flag-suf">{'}'}</span>
-                <button
-                  type="button"
-                  className="cw2-flag-submit"
-                  style={{ background: meta.color, color: ['var(--lime)', '#ccff00', '#f9a825'].includes(meta.color) ? '#000' : '#fff' }}
-                  onClick={submitDirect}
-                >
-                  SUBMIT
-                </button>
-              </div>
-              <div className="cw2-attempts">
-                <div className="cw2-att-pips">
-                  {Array.from({ length: ch.attemptsAllowed }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="cw2-att-pip"
-                      style={{ background: i < att ? meta.color : 'rgba(255,255,255,.12)' }}
-                    />
-                  ))}
+              <div className="cw2-terminal-wrap" style={{ '--term-col': meta.color } as React.CSSProperties}>
+                <div className="cw2-terminal-topbar">
+                  <span className="cw2-terminal-dot cw2-terminal-dot--red" />
+                  <span className="cw2-terminal-dot cw2-terminal-dot--yellow" />
+                  <span className="cw2-terminal-dot cw2-terminal-dot--green" />
+                  <span className="cw2-terminal-title">EXPLOIT_TERMINAL — root@ephemeral</span>
                 </div>
-                <span className="cw2-att-text">{att} ATTEMPT{att !== 1 ? 'S' : ''} REMAINING</span>
+                <div className="cw2-terminal-body">
+                  <div className="cw2-terminal-prompt">
+                    <span className="cw2-terminal-ps1">root@ephemeral:~$</span>
+                    <span className="cw2-terminal-flag-pre">EPHEMERAL{'{'}</span>
+                    <input
+                      ref={flagInputRef}
+                      type="text"
+                      className="cw2-terminal-input"
+                      placeholder="inject_flag_here"
+                      value={flagValue}
+                      onChange={e => lastChap && setChapAnswers({ ...chapAnswers, [lastChap.id]: e.target.value })}
+                      onKeyDown={e => e.key === 'Enter' && submitDirect()}
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                    <span className="cw2-terminal-flag-suf">{'}'}</span>
+                    <button
+                      type="button"
+                      className="cw2-terminal-submit"
+                      onClick={submitDirect}
+                    >
+                      INJECT
+                    </button>
+                  </div>
+                  <div className="cw2-terminal-attempts">
+                    <div className="cw2-att-pips">
+                      {Array.from({ length: ch.attemptsAllowed }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`cw2-att-pip ${i < att ? 'cw2-att-pip--on' : ''}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="cw2-terminal-att-text">
+                      {att}/{ch.attemptsAllowed} ATTEMPTS REMAINING
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           )}

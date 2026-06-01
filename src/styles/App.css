@@ -6516,3 +6516,95 @@ nav{background:rgba(6,6,14,0.92)!important;-webkit-backdrop-filter:blur(16px)!im
 .s1e1-limit-box-mt{margin-top:.8rem}
 .nn-stage-mb{margin-bottom:1rem}
 .vg-bar-fill{height:100%;width:var(--bar-w,0%);transition:width .6s cubic-bezier(.4,0,.2,1),background .4s}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CIPHER TEXT — cipher-*
+   ═══════════════════════════════════════════════════════════════════════════ */
+.cipher-text{font-family:var(--mono);letter-spacing:.04em}
+.cipher-running{opacity:.9}
+.cipher-char-live{color:var(--crt);opacity:.7;display:inline-block}
+.cipher-char-locked{color:inherit;display:inline-block;transition:color .1s}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MATRIX RAIN CANVAS
+   ═══════════════════════════════════════════════════════════════════════════ */
+.matrix-rain-canvas{pointer-events:none}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SOLVE FLASH OVERLAY
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes solveFlash{0%{opacity:0}8%{opacity:1}100%{opacity:0}}
+.cw2-solve-flash{position:fixed;inset:0;pointer-events:none;z-index:9998;background:radial-gradient(ellipse at center,rgba(0,255,85,.18) 0%,rgba(0,255,85,.06) 40%,transparent 70%);animation:solveFlash 1.6s ease-out forwards}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TERMINAL FLAG INPUT — cw2-terminal-*
+   ═══════════════════════════════════════════════════════════════════════════ */
+.cw2-terminal-wrap{background:#010605;border:1px solid rgba(0,255,85,.22);overflow:hidden;margin-bottom:.75rem}
+.cw2-terminal-topbar{display:flex;align-items:center;gap:.45rem;padding:.3rem .7rem;background:rgba(0,255,85,.05);border-bottom:1px solid rgba(0,255,85,.12)}
+.cw2-terminal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cw2-terminal-dot--red{background:#ff5f56}
+.cw2-terminal-dot--yellow{background:#ffbd2e}
+.cw2-terminal-dot--green{background:#27c93f}
+.cw2-terminal-title{font-family:var(--mono);font-size:.4rem;color:rgba(0,255,85,.4);letter-spacing:.12em;text-transform:uppercase;margin-left:.4rem}
+.cw2-terminal-body{padding:.65rem .85rem;display:flex;flex-direction:column;gap:.5rem}
+.cw2-terminal-prompt{display:flex;align-items:center;gap:.4rem;flex-wrap:nowrap;overflow:hidden}
+.cw2-terminal-ps1{font-family:var(--mono);font-size:.6rem;color:var(--lime);flex-shrink:0;letter-spacing:.02em}
+.cw2-terminal-flag-pre,.cw2-terminal-flag-suf{font-family:var(--mono);font-size:.7rem;color:var(--term-col,var(--red));flex-shrink:0;-webkit-user-select:none;user-select:none}
+.cw2-terminal-input{background:transparent;border:none;outline:none;color:var(--crt);font-family:var(--mono);font-size:.7rem;flex:1;min-width:0;letter-spacing:.04em;caret-color:var(--crt)}
+.cw2-terminal-input::placeholder{color:rgba(0,255,85,.2)}
+.cw2-terminal-submit{flex-shrink:0;border:none;padding:.35rem .9rem;font-family:var(--mono);font-size:.55rem;letter-spacing:.14em;font-weight:700;cursor:pointer;text-transform:uppercase;background:var(--term-col,var(--red));color:#fff;transition:filter .18s,transform .15s}
+.cw2-terminal-submit:hover{filter:brightness(1.2);transform:translateY(-1px)}
+.cw2-terminal-attempts{display:flex;align-items:center;gap:.5rem;padding-top:.1rem}
+.cw2-terminal-att-text{font-family:var(--mono);font-size:.44rem;color:rgba(255,255,255,.3);letter-spacing:.1em}
+.cw2-att-pip--on{background:var(--term-col,var(--red)) !important}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACTIVITY FEED ENHANCEMENTS — af-*
+   ═══════════════════════════════════════════════════════════════════════════ */
+.af-label-text{font-family:var(--mono);font-size:.44rem;letter-spacing:.18em}
+.af-hex-addr{font-family:var(--mono);font-size:.4rem;color:rgba(255,255,255,.2);letter-spacing:.06em;margin-right:.15rem}
+.af-item-cat-icon{font-size:.6rem}
+.af-item-sep{color:rgba(255,255,255,.15);margin:0 .15rem}
+.af-item-verb-hot{color:var(--red);font-weight:700}
+.af-item-pts{font-family:var(--mono);font-weight:700;color:#b9ff00}
+.af-item-time{color:rgba(255,255,255,.22);font-size:.42rem;font-family:var(--mono)}
+@keyframes afNewFlash{0%{background:rgba(0,255,85,.18)}100%{background:transparent}}
+.af-item-new{animation:afNewFlash 2.5s ease-out}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEON GLOW UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+.glow-red{text-shadow:0 0 8px var(--red),0 0 20px rgba(255,42,56,.4)}
+.glow-crt{text-shadow:0 0 8px var(--crt),0 0 20px rgba(0,255,85,.4)}
+.glow-lime{text-shadow:0 0 8px var(--lime),0 0 20px rgba(204,255,0,.4)}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CARD SHINE BEAM ON HOVER
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes cardBeam{0%{transform:translateX(-120%) skewX(-18deg)}100%{transform:translateX(340%) skewX(-18deg)}}
+.ctf-card{position:relative;overflow:hidden}
+.ctf-card::after{content:'';position:absolute;top:0;left:0;width:35%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.055),transparent);transform:translateX(-120%) skewX(-18deg);pointer-events:none;z-index:6}
+.ctf-card:hover::after{animation:cardBeam .65s ease-in-out}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CTF PROGRESS RAIL GLOW
+   ═══════════════════════════════════════════════════════════════════════════ */
+.ctf-progress-fill{box-shadow:0 0 10px rgba(255,42,56,.5),0 0 24px rgba(255,42,56,.2)}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCAN BEAM (reusable)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes scanBeam{0%{top:0;opacity:.9}85%{opacity:.9}100%{top:100%;opacity:0}}
+.scan-beam{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,var(--crt) 50%,transparent 100%);animation:scanBeam 2.4s linear infinite;pointer-events:none;z-index:10}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SOLVED BANNER PULSE
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes solvedBorderPulse{0%,100%{box-shadow:0 0 6px rgba(0,255,85,.35),inset 0 0 6px rgba(0,255,85,.08)}50%{box-shadow:0 0 18px rgba(0,255,85,.65),0 0 36px rgba(0,255,85,.2),inset 0 0 12px rgba(0,255,85,.12)}}
+.cw2-solved-banner{animation:solvedBorderPulse 2.5s ease-in-out infinite}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CIPHER TEXT in CTF board title — override color to inherit
+   ═══════════════════════════════════════════════════════════════════════════ */
+.ctf-board-title .cipher-text{font-family:var(--disp);font-size:inherit;letter-spacing:inherit}
+.ctf-board-title .cipher-char-live{color:var(--red)}
