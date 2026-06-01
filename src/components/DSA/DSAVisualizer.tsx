@@ -21,6 +21,12 @@ import { PivotIndex } from './visualizations/PivotIndex';
 import { RansomNote } from './visualizations/RansomNote';
 import { ProductExceptSelf } from './visualizations/ProductExceptSelf';
 import { GroupAnagrams } from './visualizations/GroupAnagrams';
+import { IsomorphicStrings } from './visualizations/IsomorphicStrings';
+import { RangeSumQuery } from './visualizations/RangeSumQuery';
+import { SortArray } from './visualizations/SortArray';
+import { SearchBST } from './visualizations/SearchBST';
+import { NumIslands } from './visualizations/NumIslands';
+import { FindPath } from './visualizations/FindPath';
 
 interface DSAVisualizerProps {
   problem: DSAProblem;
@@ -49,6 +55,12 @@ const VISUALIZER_REGISTRY: Record<string, React.ComponentType<{ accColor: string
   'DSA_383_RANSOM_NOTE':     RansomNote,
   'DSA_238_PRODUCT_EXCEPT':  ProductExceptSelf,
   'DSA_49_GROUP_ANAGRAMS':   GroupAnagrams,
+  'DSA_205_ISOMORPHIC':      IsomorphicStrings,
+  'DSA_303_RANGE_SUM':       RangeSumQuery,
+  'DSA_912_SORT_ARRAY':      SortArray,
+  'DSA_700_SEARCH_BST':      SearchBST,
+  'DSA_200_NUM_ISLANDS':     NumIslands,
+  'DSA_1971_FIND_PATH':      FindPath,
 };
 
 export const DSAVisualizer: React.FC<DSAVisualizerProps> = ({ problem, accColor }) => {
