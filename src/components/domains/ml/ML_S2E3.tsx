@@ -57,9 +57,10 @@ export const S2E3Playground: React.FC = () => (
       <div className="ep-stub-coming-icon">◫</div>
       <div className="ep-stub-coming-label">Patch Embedding Visualizer — Batch 5</div>
       <p className="ep-stub-coming-sub">
-        Upload any image and watch it transform: divided into 16×16 patches, each flattened
-        and projected into embedding space. Attention maps show which patches the [CLS] token
-        focuses on for the final classification.
+        Pre-loaded: an 8×8 pixel grid image (64 pixels, 4 colors) split into 2×2 patches
+        (16 patches total). Each patch is shown flattening into a 12-dim vector, then
+        projected to a 4-dim embedding. Positional embeddings are added and shown as color
+        offsets. Click any patch to highlight it through the full pipeline.
       </p>
     </div>
   </div>
@@ -71,9 +72,10 @@ export const S2E3Synapse: React.FC = () => (
       <div className="ep-stub-coming-icon">⊠</div>
       <div className="ep-stub-coming-label">ViT Forward Pass — Batch 5</div>
       <p className="ep-stub-coming-sub">
-        Build the full ViT pipeline: patch splitting → linear projection → add [CLS] token
-        → add positional embeddings → transformer encoder → classification head.
-        Verify that your patch sequence encodes all spatial information.
+        Pre-loaded: the same 8×8 image. Connect the pipeline stages by clicking in order:
+        patch split → flatten → linear projection → prepend [CLS] → add positional encoding
+        → transformer encoder → classify. Each stage reveals its output tensor shape
+        and values. The [CLS] token's final representation is used for "classification".
       </p>
     </div>
   </div>

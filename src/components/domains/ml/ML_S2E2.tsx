@@ -57,9 +57,10 @@ export const S2E2Playground: React.FC = () => (
       <div className="ep-stub-coming-icon">⚡</div>
       <div className="ep-stub-coming-label">Transformer Walkthrough — Batch 4</div>
       <p className="ep-stub-coming-sub">
-        Enter a sentence and step through the encoder layer by layer: positional encoding
-        injection → multi-head attention → residual + norm → feed-forward → residual + norm.
-        Every tensor shape shown at each stage.
+        Pre-loaded: "Attention is all you need" (5 tokens, d_model=8).
+        Step through the encoder: positional encoding injection → 2-head attention → residual
+        + layer norm → feed-forward → residual + norm. Every tensor shape shown at each stage.
+        Press NEXT to advance through the pipeline one component at a time.
       </p>
     </div>
   </div>
@@ -71,9 +72,10 @@ export const S2E2Synapse: React.FC = () => (
       <div className="ep-stub-coming-icon">◈</div>
       <div className="ep-stub-coming-label">Encoder Block Builder — Batch 4</div>
       <p className="ep-stub-coming-sub">
-        Assemble the encoder block by connecting its components in the right order.
-        Configure the number of heads, d_model, and d_ff. Run a forward pass and verify
-        that residual connections keep gradients healthy.
+        Pre-loaded: the same 5-token sequence with random but fixed embeddings.
+        Connect the four components (multi-head attention, add&norm, feed-forward, add&norm)
+        in the correct order by clicking to wire them. Run the forward pass and observe
+        that residual connections preserve the input's magnitude at each sublayer.
       </p>
     </div>
   </div>

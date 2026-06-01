@@ -56,9 +56,10 @@ export const S2E1Playground: React.FC = () => (
       <div className="ep-stub-coming-icon">Q·K·V</div>
       <div className="ep-stub-coming-label">Attention Heatmap — Batch 3</div>
       <p className="ep-stub-coming-sub">
-        Enter any sentence. The visualizer tokenizes it and displays a live attention weight
-        matrix — each cell showing how much token i attends to token j. Watch pronouns resolve
-        to their referents, verbs attend to their subjects, adjectives attend to the nouns they modify.
+        Pre-loaded sentence: <em>"The animal didn't cross the street because it was tired."</em>
+        &nbsp;A 9×9 heatmap shows how much each token attends to every other token — watch "it"
+        resolve to "animal", "cross" attend to "street", and "tired" link back to "animal".
+        No input needed. Explore by clicking any token to highlight its attention row.
       </p>
     </div>
   </div>
@@ -70,9 +71,10 @@ export const S2E1Synapse: React.FC = () => (
       <div className="ep-stub-coming-icon">⊛</div>
       <div className="ep-stub-coming-label">Attention Builder — Batch 3</div>
       <p className="ep-stub-coming-sub">
-        Given a small sequence, project it into Q, K, V spaces using sliders to control
-        the projection weights. Compute the attention scores, apply scaling and softmax,
-        and produce the final output. Every step exposed.
+        Pre-loaded: a 4-token sequence ["The", "cat", "sat", "down"] with fixed embeddings.
+        Sliders control the W_Q, W_K, W_V projection matrices. Watch the attention scores
+        recompute live — softmax weights update as you move the projections.
+        Every intermediate matrix (Q, K, V, scores, softmax) is shown.
       </p>
     </div>
   </div>

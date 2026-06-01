@@ -6255,4 +6255,83 @@ nav{background:rgba(6,6,14,0.92)!important;-webkit-backdrop-filter:blur(16px)!im
 .ep-stub-coming{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:320px;gap:.9rem;background:rgba(255,255,255,.012);border:1px dashed rgba(255,255,255,.09);padding:2rem}
 .ep-stub-coming-icon{font-family:var(--mono);font-size:1.8rem;color:rgba(0,200,90,.35);letter-spacing:.08em}
 .ep-stub-coming-label{font-family:var(--mono);font-size:.52rem;letter-spacing:.22em;color:rgba(0,200,90,.7);text-transform:uppercase;font-weight:700}
-.ep-stub-coming-sub{font-size:.68rem;color:rgba(240,237,230,.5);font-family:var(--body);font-weight:300;text-align:center;max-width:400px;line-height:1.7}
+.ep-stub-coming-sub{font-size:.68rem;color:rgba(240,237,230,.75);font-family:var(--body);font-weight:300;text-align:center;max-width:420px;line-height:1.8}
+.ep-stub-coming-sub em{color:var(--ml-acc);font-style:normal}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   S1E3 — BACKPROPAGATION
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Step progress nav */
+.bp-step-nav{display:flex;align-items:center;gap:0;margin-bottom:1.6rem;overflow-x:auto;padding-bottom:.2rem}
+.bp-step-pip{display:flex;align-items:center}
+.bp-pip-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);flex-shrink:0;cursor:pointer;transition:all .2s}
+.bp-pip-done{background:color-mix(in srgb,var(--ml-acc) 50%,transparent);border-color:var(--ml-acc)}
+.bp-pip-active{background:var(--ml-acc);border-color:var(--ml-acc);box-shadow:0 0 8px rgba(0,200,90,.5)}
+.bp-pip-connector{width:40px;height:1px;background:rgba(255,255,255,.1);flex-shrink:0}
+.bp-pip-connector-done{background:color-mix(in srgb,var(--ml-acc) 40%,transparent)}
+
+/* Step card */
+.bp-step-card{background:rgba(0,200,90,.03);border:1px solid rgba(0,200,90,.15);padding:1.1rem 1.4rem;margin-bottom:1.2rem}
+.bp-step-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.7rem}
+.bp-step-badge{font-family:var(--mono);font-size:.44rem;letter-spacing:.18em;color:var(--ml-acc);font-weight:700;background:rgba(0,200,90,.1);border:1px solid rgba(0,200,90,.25);padding:.18rem .5rem;text-transform:uppercase;flex-shrink:0}
+.bp-step-title{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;color:var(--paper);font-weight:700;text-transform:uppercase}
+.bp-step-desc{font-size:.72rem;color:rgba(240,237,230,.85);line-height:1.7;font-family:var(--body);font-weight:300;margin-bottom:1rem}
+
+/* Math computation block */
+.bp-math-block{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.06);padding:.8rem 1rem}
+.bp-math-row{display:grid;grid-template-columns:6.5rem 1fr auto;align-items:baseline;gap:.5rem;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:var(--mono)}
+.bp-math-row:last-child{border-bottom:none}
+.bp-math-lbl{font-size:.65rem;color:var(--ml-acc);font-weight:700;letter-spacing:.02em}
+.bp-math-eq{font-size:.6rem;color:rgba(240,237,230,.5)}
+.bp-math-val{font-size:.64rem;color:rgba(240,237,230,.9);text-align:right;letter-spacing:.01em}
+.bp-math-val em{color:rgba(255,200,80,.9);font-style:normal}
+
+/* Backprop nav controls */
+.bp-nav-row{display:flex;align-items:center;gap:.6rem;justify-content:space-between;margin-top:.8rem}
+.bp-nav-btn{background:none;border:1px solid rgba(255,255,255,.12);color:var(--muted);font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;padding:.45rem 1.2rem;cursor:pointer;text-transform:uppercase;transition:all .2s;flex-shrink:0}
+.bp-nav-btn:hover:not(:disabled){border-color:rgba(0,200,90,.5);color:var(--paper)}
+.bp-nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.bp-nav-next{background:var(--ml-acc);border-color:var(--ml-acc);color:#000;font-weight:700}
+.bp-nav-next:hover:not(:disabled){background:#00ff55;border-color:#00ff55}
+.bp-step-counter{font-family:var(--mono);font-size:.52rem;color:var(--muted);letter-spacing:.1em}
+
+/* Backward edge overlay in SVG */
+.nn-e-bwd{stroke:rgba(255,160,30,.75)}
+.nn-e-bwd-zero{stroke:rgba(80,80,100,.25)}
+.nn-grad-lbl{font-family:var(--mono);font-size:9px;fill:rgba(255,160,30,.9);letter-spacing:.3px;pointer-events:none}
+.nn-grad-lbl-zero{fill:rgba(100,100,130,.7)}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   S1E3 SYNAPSE — VANISHING GRADIENT VISUALIZER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.vg-intro{margin-bottom:1.6rem}
+.vg-toggle-row{display:flex;gap:.5rem;margin-bottom:1.8rem;align-items:center}
+.vg-toggle-label{font-family:var(--mono);font-size:.5rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-right:.3rem}
+.vg-toggle-btn{background:none;border:1px solid rgba(255,255,255,.14);color:var(--muted);font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;padding:.35rem .9rem;cursor:pointer;text-transform:uppercase;transition:all .2s}
+.vg-toggle-btn:hover{border-color:rgba(255,255,255,.3);color:var(--paper)}
+.vg-toggle-btn-on.vg-sigmoid{border-color:rgba(255,80,80,.6);color:rgba(255,120,120,.9);background:rgba(255,80,80,.08)}
+.vg-toggle-btn-on.vg-relu{border-color:rgba(0,200,90,.6);color:var(--ml-acc);background:rgba(0,200,90,.08)}
+
+.vg-chart{background:#060810;border:1px solid rgba(0,200,90,.15);padding:1.2rem 1.4rem;margin-bottom:1.2rem}
+.vg-chart-title{font-family:var(--mono);font-size:.46rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-bottom:1.1rem;font-weight:700}
+.vg-row{display:grid;grid-template-columns:5rem 1fr 4.5rem;align-items:center;gap:.8rem;margin-bottom:.65rem}
+.vg-row:last-child{margin-bottom:0}
+.vg-row-label{font-family:var(--mono);font-size:.58rem;color:rgba(240,237,230,.6);letter-spacing:.06em;text-align:right}
+.vg-bar-track{height:14px;background:rgba(255,255,255,.06);border-radius:0;position:relative;overflow:hidden}
+.vg-bar-fill-sig{background:linear-gradient(90deg,rgba(255,80,80,.35),rgba(255,80,80,.8))}
+.vg-bar-fill-relu{background:linear-gradient(90deg,rgba(0,200,90,.4),rgba(0,200,90,.9))}
+.vg-bar-value{font-family:var(--mono);font-size:.58rem;letter-spacing:.04em;text-align:right}
+.vg-bar-value-sig{color:rgba(255,120,120,.85)}
+.vg-bar-value-relu{color:var(--ml-acc)}
+
+.vg-insight{background:rgba(255,255,255,.016);border:1px solid rgba(255,255,255,.07);border-left:3px solid var(--ml-acc);padding:.9rem 1.2rem;margin-top:1rem}
+.vg-insight-title{font-family:var(--mono);font-size:.48rem;letter-spacing:.16em;color:var(--ml-acc);font-weight:700;margin-bottom:.45rem;text-transform:uppercase}
+.vg-insight-body{font-size:.72rem;color:rgba(240,237,230,.85);line-height:1.72;font-family:var(--body);font-weight:300}
+
+/* S1E3 layout helpers */
+.nn-target-val{fill:#00c85a;font-size:14px}
+.s1e1-limit-box-mt{margin-top:.8rem}
+.nn-stage-mb{margin-bottom:1rem}
+.vg-bar-fill{height:100%;width:var(--bar-w,0%);transition:width .6s cubic-bezier(.4,0,.2,1),background .4s}
