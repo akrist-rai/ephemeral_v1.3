@@ -22,19 +22,20 @@ interface DSAProblemDetailProps {
   setUserXp: React.Dispatch<React.SetStateAction<number>>;
   onMarkSolved: () => void;
   accColor: string;
+  episodeTitle?: string;
+  onBack?: () => void;
 }
 
-/** Safe JS sandbox — runs user code against a single test case. */
+function deepEqual(a: unknown, b: unknown): boolean { return JSON.stringify(a) === JSON.stringify(b); }
+void deepEqual;
+
 function runJsTestCase(userCode: string, testCase: DSATestCase): { result: unknown; error?: string } {
   try {
     const runner = new Function(
       'args',
       `${userCode}\n\nconst _fn = typeof Solution !== 'undefined'
         ? (() => { const s = new Solution(); const m = Object.getOwnPropertyNames(Solution.prototype).find(n => n !== 'constructor'); return s[m].bind(s); })()
-        : (typeof canJump !== 'undefined' ? canJump
-          : typeof coinChange !== 'undefined' ? coinChange
-          : typeof minCostClimbingStairs !== 'undefined' ? minCostClimbingStairs
-          : null);
+        : (typeof canJump !== 'undefined' ? canJump : typeof coinChange !== 'undefined' ? coinChange : typeof minCostClimbingStairs !== 'undefined' ? minCostClimbingStairs : null);
       if (!_fn) throw new Error('No solution function found');
       return _fn(...args);`
     );
@@ -43,37 +44,52 @@ function runJsTestCase(userCode: string, testCase: DSATestCase): { result: unkno
     return { result: undefined, error: err instanceof Error ? err.message : String(err) };
   }
 }
-
-function deepEqual(a: unknown, b: unknown): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
-
-// Suppress unused warning — deepEqual may be used by future JS runner expansions
-void deepEqual;
 void runJsTestCase;
 
+const TAG_TO_TOPIC: Record<string, string> = {
+  'Array': 'Arrays', 'Dynamic Programming': 'Dynamic Programming', 'Greedy': 'Greedy',
+  'String': 'Strings', 'Hash Table': 'Hash Maps', 'Two Pointers': 'Two Pointers',
+  'Math': 'Mathematics', 'Recursion': 'Recursion', 'Backtracking': 'Backtracking',
+  'Binary Search': 'Binary Search', 'Linked List': 'Linked Lists', 'Tree': 'Trees',
+  'Graph': 'Graphs', 'Stack': 'Stacks', 'Sorting': 'Sorting', 'Prefix Sum': 'Prefix Sums',
+  'Sliding Window': 'Sliding Window', 'Simulation': 'Simulation',
+};
+
+function topicFromTags(tags: string[]): string {
+  for (const tag of tags) { if (TAG_TO_TOPIC[tag]) return TAG_TO_TOPIC[tag]; }
+  return tags[0] ?? 'Algorithms';
+}
+
+const DIFF_COLORS: Record<string, string> = {
+  easy: 'var(--crt)', medium: 'var(--gold)', hard: 'var(--red)',
+};
+
 export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
-  problem, challenge, gctf, submitFlag, allChallenges, setUserXp, onMarkSolved, accColor,
+  problem, challenge, gctf, submitFlag, allChallenges, setUserXp,
+  onMarkSolved, accColor, episodeTitle, onBack,
 }) => {
   const [lang, setLang] = useState<'python' | 'javascript'>('python');
   const [code, setCode] = useState(problem.starterCode.python);
-  const [activeTab, setActiveTab] = useState<'problem' | 'code'>('problem');
   const [testResults, setTestResults] = useState<TestResult[] | null>(null);
+  const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const { ready: pyReady, loading: pyLoading, run: runPy } = usePyodide();
-
-  // Suppress unused warning
-  void pyReady;
+  const [activeTab, setActiveTab] = useState<'problem' | 'study' | 'viz'>('problem');
+  const { loading: pyLoading, run: runPy } = usePyodide();
 
   const solved = !!gctf.solved[challenge.id]?.solved;
+  const diffKey = problem.difficulty.toLowerCase();
+  const diffColor = DIFF_COLORS[diffKey] ?? 'var(--paper)';
+  const topic = topicFromTags(problem.tags);
+  const passedCount = testResults ? testResults.filter(r => r.passed).length : 0;
+  const allPass = testResults !== null && passedCount === testResults.length;
 
-  // Reset state when problem changes
   useEffect(() => {
-    setActiveTab('problem');
     setTestResults(null);
+    setConsoleLogs([]);
     setCode(problem.starterCode.python);
     setLang('python');
+    setActiveTab('problem');
   }, [problem.id]);
 
   const handleLangChange = (newLang: 'python' | 'javascript') => {
@@ -87,6 +103,7 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
     if (running) return;
     setRunning(true);
     setTestResults(null);
+    setConsoleLogs(['[SYS] Compiling source buffer...', '[SYS] Loading execution environment...']);
     playSound.click();
 
     try {
@@ -95,6 +112,7 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
         const res = await runPy(fullCode);
 
         if (res.error) {
+          setConsoleLogs(prev => [...prev, `[FATAL] ${res.error}`]);
           setTestResults([{ label: 'Runtime Error', passed: false, got: res.error, expected: '' }]);
           playSound.error();
           return;
@@ -104,6 +122,7 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
         try {
           parsed = JSON.parse(res.output.replace(/True/g, 'true').replace(/False/g, 'false'));
         } catch {
+          setConsoleLogs(prev => [...prev, `[ERR] Parse error: ${res.output}`]);
           setTestResults([{ label: 'Parse Error', passed: false, got: res.output, expected: 'boolean[]' }]);
           playSound.error();
           return;
@@ -115,9 +134,10 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
           got: parsed[i] ? String(tc.expected) : '(wrong)',
           expected: String(tc.expected),
         }));
+        const pass = results.filter(r => r.passed).length;
+        setConsoleLogs(prev => [...prev, `[OUT] Tests complete: ${pass}/${results.length} passed.`]);
         setTestResults(results);
         if (results.every(r => r.passed)) playSound.success(); else playSound.error();
-
       } else {
         try {
           const runner = new Function(
@@ -130,15 +150,14 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
             got: raw[i] ? String(tc.expected) : '(wrong)',
             expected: String(tc.expected),
           }));
+          const pass = results.filter(r => r.passed).length;
+          setConsoleLogs(prev => [...prev, `[OUT] Tests complete: ${pass}/${results.length} passed.`]);
           setTestResults(results);
           if (results.every(r => r.passed)) playSound.success(); else playSound.error();
         } catch (err) {
-          setTestResults([{
-            label: 'Runtime Error',
-            passed: false,
-            got: err instanceof Error ? err.message : String(err),
-            expected: '',
-          }]);
+          const msg = err instanceof Error ? err.message : String(err);
+          setConsoleLogs(prev => [...prev, `[FATAL] ${msg}`]);
+          setTestResults([{ label: 'Runtime Error', passed: false, got: msg, expected: '' }]);
           playSound.error();
         }
       }
@@ -159,228 +178,323 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
     }
   };
 
-  const diffClass = {
-    Easy: 'ds-diff--easy',
-    Medium: 'ds-diff--medium',
-    Hard: 'ds-diff--hard',
-  }[problem.difficulty];
+  const scopeCss = `
+    .dsa-detail-page { --dsa-acc: ${accColor}; --dsa-diff-col: ${diffColor} }
+    .dsa-detail-back:hover { color: ${accColor} }
+    .dsa-detail-cat { color: ${accColor} }
+    .dsa-detail-mark-btn { background: ${accColor} }
+  `;
 
   return (
-    <div className="ds-main">
+    <>
+      <style>{scopeCss}</style>
+      <div className="dsa-detail-page">
 
-      {/* ── 1. Problem Header Bar ── */}
-      <div className="ds-prob-header-bar">
-        <span className="ds-prob-ghost-num">#{problem.leetcodeNum}</span>
-        <div className="ds-prob-header-inner">
-          <span className="ds-prob-display-title">{challenge.title}</span>
-          <div className="ds-prob-meta">
-            <span className="ds-prob-num">#{problem.leetcodeNum}</span>
-            <span className={`ds-diff ${diffClass}`}>{problem.difficulty}</span>
-            {problem.tags.map(t => (
-              <span key={t} className="ds-constraint">{t}</span>
-            ))}
+        {/* ── TOP NAV / BANNER ── */}
+        <div className={`dsa-detail-banner dsa-detail-banner--${diffKey}`}>
+          <div className="dsa-detail-nav">
+            {onBack && (
+              <button type="button" className="dsa-detail-back" onClick={onBack}>
+                ← BOARD
+              </button>
+            )}
+            <div className="dsa-detail-breadcrumb">
+              <span className="dsa-detail-cat">{topic}</span>
+              <span className="dsa-detail-sep">/</span>
+              <span className="dsa-detail-crumb-id">#{problem.leetcodeNum}</span>
+            </div>
+          </div>
+          <div className="dsa-detail-banner-meta">
+            <h1 className="dsa-detail-title">{challenge.title}</h1>
+            <div className="dsa-detail-badges">
+              <span className={`dsa-detail-diff dsa-detail-diff--${diffKey}`}>{problem.difficulty}</span>
+              {problem.tags.slice(0, 3).map(t => (
+                <span key={t} className="dsa-detail-tag">{t}</span>
+              ))}
+              <span className="dsa-detail-pts">{challenge.points} XP</span>
+              {solved && <span className="dsa-detail-solved-badge">✓ SOLVED</span>}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ── 2. Visualization Stage ── */}
-      <div className="ds-viz-section">
-        <DSAVisualizer problem={problem} accColor={accColor} />
-      </div>
+        {/* ── BODY ── */}
+        <div className="dsa-detail-body">
 
-      {/* ── 3. Content Tabs ── */}
-      <div className="ds-tabs-bar">
-        <button
-          type="button"
-          className={`ds-tab ${activeTab === 'problem' ? 'active' : ''}`}
-          onClick={() => { setActiveTab('problem'); playSound.click(); }}
-        >
-          PROBLEM
-        </button>
-        <button
-          type="button"
-          className={`ds-tab ${activeTab === 'code' ? 'active' : ''}`}
-          onClick={() => { setActiveTab('code'); playSound.click(); }}
-        >
-          CODE
-        </button>
-      </div>
+          {/* LEFT: content */}
+          <div className="dsa-detail-left">
 
-      {/* ── 4a. Problem Tab ── */}
-      {activeTab === 'problem' && (
-        <div className="ds-problem-body-v2">
-          <div>
-            <div className="ds-problem-label">PROBLEM</div>
-            <p className="ds-statement">{problem.statement}</p>
-          </div>
+            {/* Content tabs */}
+            <div className="dsa-content-tabs">
+              {(['problem', 'study', 'viz'] as const).map(tab => (
+                <button
+                  key={tab}
+                  type="button"
+                  className={`dsa-content-tab${activeTab === tab ? ' on' : ''}`}
+                  onClick={() => { setActiveTab(tab); playSound.click(); }}
+                >
+                  {tab === 'problem' ? '◈ PROBLEM' : tab === 'study' ? '◉ STUDY GUIDE' : '◆ VISUALIZER'}
+                </button>
+              ))}
+            </div>
 
-          <div>
-            <div className="ds-problem-label">EXAMPLES</div>
-            <div className="ds-examples">
-              {problem.examples.map((ex, i) => (
-                <div key={i} className="ds-example">
-                  <div className="ds-example-title">Example {i + 1}</div>
-                  <div className="ds-example-lines">
-                    <div className="ds-example-line">
-                      <span className="ds-example-key">Input:</span>
-                      <span className="ds-example-val">{ex.input}</span>
-                    </div>
-                    <div className="ds-example-line">
-                      <span className="ds-example-key">Output:</span>
-                      <span className="ds-example-val">{ex.output}</span>
+            <div className="dsa-content-body">
+
+              {/* PROBLEM TAB */}
+              {activeTab === 'problem' && (
+                <div className="dsa-tab-panel">
+                  <div className="dsa-content-section">
+                    <div className="dsa-section-label">DESCRIPTION</div>
+                    <p className="dsa-problem-statement">{problem.statement}</p>
+                  </div>
+
+                  <div className="dsa-content-section">
+                    <div className="dsa-section-label">EXAMPLES</div>
+                    {problem.examples.map((ex, i) => (
+                      <div key={i} className="dsa-example">
+                        <div className="dsa-example-num">Example {i + 1}</div>
+                        <div className="dsa-example-row">
+                          <span className="dsa-example-key">Input:</span>
+                          <span className="dsa-example-val">{ex.input}</span>
+                        </div>
+                        <div className="dsa-example-row">
+                          <span className="dsa-example-key">Output:</span>
+                          <span className="dsa-example-val">{ex.output}</span>
+                        </div>
+                        {ex.explanation && <div className="dsa-example-expl">{ex.explanation}</div>}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="dsa-content-section">
+                    <div className="dsa-section-label">CONSTRAINTS</div>
+                    <div className="dsa-constraints">
+                      {problem.constraints.map((c, i) => (
+                        <span key={i} className="dsa-constraint">{c}</span>
+                      ))}
                     </div>
                   </div>
-                  {ex.explanation && (
-                    <div className="ds-example-expl">{ex.explanation}</div>
-                  )}
+
+                  <div className="dsa-content-section">
+                    <div className="dsa-section-label">HINT</div>
+                    <div className="dsa-hint-text">{problem.hint}</div>
+                  </div>
                 </div>
-              ))}
+              )}
+
+              {/* STUDY TAB */}
+              {activeTab === 'study' && (
+                <div className="dsa-tab-panel">
+                  <div className="dsa-content-section">
+                    <div className="dsa-section-label">CONCEPT</div>
+                    <div className="dsa-sg-concept">{problem.studyGuide.concept}</div>
+                    <div className="dsa-sg-tldr">{problem.studyGuide.tldr}</div>
+                  </div>
+
+                  <div className="dsa-content-section">
+                    <div className="dsa-section-label">APPROACHES</div>
+                    {problem.studyGuide.approaches.map((ap, i) => (
+                      <div key={i} className={`dsa-approach${ap.works ? ' dsa-approach--optimal' : ''}`}>
+                        <div className="dsa-approach-head">
+                          <span className="dsa-approach-name">{ap.name}</span>
+                          <span className={`dsa-approach-badge${ap.works ? ' dsa-approach-badge--yes' : ''}`}>
+                            {ap.works ? 'OPTIMAL' : 'SUBOPTIMAL'}
+                          </span>
+                        </div>
+                        <div className="dsa-approach-complexity">
+                          <span className="dsa-cx-badge">T: {ap.time}</span>
+                          <span className="dsa-cx-badge">S: {ap.space}</span>
+                        </div>
+                        <p className="dsa-approach-desc">{ap.description}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="dsa-insight">
+                    <div className="dsa-insight-label">▶ KEY INSIGHT</div>
+                    <p className="dsa-insight-text">{problem.studyGuide.keyInsight}</p>
+                  </div>
+
+                  {problem.studyGuide.pitfalls.length > 0 && (
+                    <div className="dsa-content-section">
+                      <div className="dsa-section-label">PITFALLS</div>
+                      {problem.studyGuide.pitfalls.map((p, i) => (
+                        <div key={i} className="dsa-pitfall">
+                          <span className="dsa-pitfall-icon">!</span>
+                          <span>{p}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="dsa-content-section">
+                    <div className="dsa-section-label">PATTERN HINT</div>
+                    <div className="dsa-pattern-hint">{problem.studyGuide.patternHint}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* VISUALIZER TAB */}
+              {activeTab === 'viz' && (
+                <div className="dsa-tab-panel">
+                  <div className="dsa-content-section">
+                    <div className="dsa-section-label">
+                      VISUALIZATION — {challenge.title.toUpperCase()}
+                    </div>
+                    <DSAVisualizer problem={problem} accColor={accColor} />
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
 
-          <div>
-            <div className="ds-problem-label">CONSTRAINTS</div>
-            <div className="ds-constraints">
-              {problem.constraints.map((c, i) => (
-                <span key={i} className="ds-constraint">{c}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+          {/* RIGHT: workspace */}
+          <div className="dsa-detail-right">
 
-      {/* ── 4b. Code Tab ── */}
-      {activeTab === 'code' && (
-        <div className="ds-editor-card">
-          <div className="ds-editor-header">
-            <div className="ds-editor-tabs">
-              <span className="ds-editor-label">// EDITOR</span>
-              {(['python', 'javascript'] as const).map(l => (
-                <button
-                  key={l}
-                  type="button"
-                  className={`ds-editor-tab ${lang === l ? 'active' : ''}`}
-                  onClick={() => handleLangChange(l)}
-                >
-                  <span className="ds-editor-tab-dot" />
-                  {l === 'python' ? 'solution.py' : 'solution.js'}
-                </button>
-              ))}
-            </div>
-            <div className="ds-lang-toggle">
-              {(['python', 'javascript'] as const).map(l => (
-                <button
-                  key={l}
-                  type="button"
-                  className={`ds-lang-btn ${lang === l ? 'active' : ''}`}
-                  onClick={() => handleLangChange(l)}
-                >
-                  {l === 'python' ? 'Python' : 'JS'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="ds-monaco-wrap">
-            <Editor
-              height="320px"
-              language={lang === 'python' ? 'python' : 'javascript'}
-              value={code}
-              onChange={v => setCode(v ?? '')}
-              theme="vs-dark"
-              options={{
-                fontSize: 13,
-                minimap: { enabled: false },
-                lineNumbers: 'on',
-                scrollBeyondLastLine: false,
-                wordWrap: 'on',
-                tabSize: 4,
-                renderLineHighlight: 'all',
-                padding: { top: 10, bottom: 10 },
-                fontFamily: '"Share Tech Mono", "Fira Code", monospace',
-              }}
-            />
-          </div>
-
-          <div className="ds-run-bar">
-            {pyLoading && lang === 'python' && (
-              <div className="ds-py-loading">
-                <div className="ds-py-spinner" />
-                INITIALIZING PYTHON RUNTIME...
-              </div>
-            )}
-            <button
-              type="button"
-              className="ds-run-btn"
-              onClick={handleRun}
-              disabled={running || (lang === 'python' && pyLoading)}
-            >
-              {running ? '⟳ RUNNING...' : '▶ RUN TESTS'}
-            </button>
-            {testResults && !running && (
-              <span className="ds-run-status">
-                {testResults.filter(r => r.passed).length}/{testResults.length} passed
+            {/* Terminal header */}
+            <div className="dsa-terminal-hdr">
+              <span className="dsa-terminal-icon">_</span>
+              <span className="dsa-terminal-label">
+                {lang === 'python' ? 'solution.py' : 'solution.js'}
               </span>
-            )}
-          </div>
-
-          {testResults && (
-            <div className="ds-test-results">
-              {testResults.map((r, i) => (
-                <div key={i} className="ds-test-row">
-                  <span className={`ds-test-icon ${r.passed ? 'ds-test-icon--pass' : 'ds-test-icon--fail'}`}>
-                    {r.passed ? '✓' : '✗'}
-                  </span>
-                  <span className="ds-test-label">{r.label}</span>
-                  {!r.passed && r.expected && (
-                    <span className="ds-test-got">got: {r.got}  expected: {r.expected}</span>
-                  )}
-                  {r.passed && (
-                    <span className="ds-test-got ds-test-got--pass">PASSED</span>
-                  )}
-                  {!r.passed && !r.expected && (
-                    <span className="ds-test-got">{r.got}</span>
-                  )}
+              <div className="dsa-lang-switcher">
+                {(['python', 'javascript'] as const).map(l => (
+                  <button
+                    key={l}
+                    type="button"
+                    className={`dsa-lang-btn${lang === l ? ' on' : ''}`}
+                    onClick={() => handleLangChange(l)}
+                  >
+                    {l === 'python' ? 'PY' : 'JS'}
+                  </button>
+                ))}
+              </div>
+              {pyLoading && lang === 'python' && (
+                <div className="dsa-py-loading">
+                  <div className="dsa-py-spinner" />
+                  <span>INIT</span>
                 </div>
-              ))}
+              )}
             </div>
-          )}
+
+            {/* Monaco editor */}
+            <div className="dsa-monaco-wrap">
+              <Editor
+                height="100%"
+                language={lang === 'python' ? 'python' : 'javascript'}
+                value={code}
+                onChange={v => setCode(v ?? '')}
+                theme="vs-dark"
+                options={{
+                  fontSize: 13,
+                  minimap: { enabled: false },
+                  lineNumbers: 'on',
+                  scrollBeyondLastLine: false,
+                  wordWrap: 'on',
+                  tabSize: 4,
+                  renderLineHighlight: 'line',
+                  padding: { top: 10, bottom: 10 },
+                  fontFamily: '"Share Tech Mono", "Fira Code", monospace',
+                  scrollbar: { verticalScrollbarSize: 4, horizontalScrollbarSize: 4 },
+                }}
+              />
+            </div>
+
+            {/* Execute bar */}
+            <div className="dsa-exec-bar">
+              <button
+                type="button"
+                className="dsa-exec-btn"
+                onClick={handleRun}
+                disabled={running || (lang === 'python' && pyLoading)}
+              >
+                {running ? '⟳ RUNNING' : '▶ EXECUTE'}
+              </button>
+              {testResults && !running && (
+                <span className={`dsa-exec-status${allPass ? ' dsa-exec-status--pass' : ' dsa-exec-status--fail'}`}>
+                  {passedCount}/{testResults.length} PASSED
+                </span>
+              )}
+              <a
+                href={problem.leetcodeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="dsa-lc-link"
+              >
+                ↗ LEETCODE
+              </a>
+            </div>
+
+            {/* Console output */}
+            <div className="dsa-console">
+              <div className="dsa-console-hdr">
+                <span className="dsa-console-label">// CONSOLE OUTPUT</span>
+              </div>
+              <div className="dsa-console-body">
+                {consoleLogs.length === 0 && (
+                  <span className="dsa-console-empty">&gt; Run your code to see output</span>
+                )}
+                {consoleLogs.map((log, i) => (
+                  <div key={i} className={`dsa-console-line${log.startsWith('[FATAL]') || log.startsWith('[ERR]') ? ' dsa-console-line--err' : log.startsWith('[OUT]') ? ' dsa-console-line--out' : ''}`}>
+                    {log}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Test cases */}
+            <div className="dsa-tests-panel">
+              <div className="dsa-tests-hdr">
+                <span className="dsa-tests-label">TEST CASES</span>
+                <div className="dsa-tests-counter">
+                  <span className={`dsa-tests-fraction${allPass ? ' all-pass' : testResults !== null ? ' has-fail' : ''}`}>
+                    {testResults ? passedCount : 0}/{problem.testCases.length}
+                  </span>
+                  <span className="dsa-tests-sub">PASSED</span>
+                </div>
+              </div>
+              {testResults && (
+                <div className="dsa-test-rows">
+                  {testResults.map((r, i) => (
+                    <div key={i} className={`dsa-test-row dsa-test-row--${r.passed ? 'pass' : 'fail'}`}>
+                      <span className={`dsa-test-icon dsa-test-icon--${r.passed ? 'pass' : 'fail'}`}>
+                        {r.passed ? '✓' : '✗'}
+                      </span>
+                      <span className="dsa-test-name">{r.label}</span>
+                      {!r.passed && r.expected && (
+                        <span className="dsa-test-detail">expected: {r.expected}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Submit action */}
+            <div className="dsa-submit-area">
+              {solved ? (
+                <div className="dsa-solved-banner">
+                  <span className="dsa-solved-icon">✓</span>
+                  <div>
+                    <div className="dsa-solved-label">SOLVED</div>
+                    <div className="dsa-solved-xp">+{gctf.solved[challenge.id]?.pts_earned ?? challenge.points} XP EARNED</div>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="dsa-detail-mark-btn"
+                  onClick={handleMarkSolved}
+                  disabled={submitting}
+                >
+                  {submitting ? '⟳ SAVING…' : `✓ MARK SOLVED  +${challenge.points} XP`}
+                </button>
+              )}
+            </div>
+
+          </div>
         </div>
-      )}
-
-      {/* ── 5. Actions ── */}
-      <div className="ds-action-card">
-        {solved ? (
-          <div className="ds-solved-banner">
-            <span className="ds-solved-check">✓</span>
-            <div className="ds-solved-info">
-              <span className="ds-solved-label">SOLVED</span>
-              <span className="ds-solved-xp">+{gctf.solved[challenge.id]?.pts_earned ?? challenge.points} XP EARNED</span>
-            </div>
-          </div>
-        ) : (
-          <div className="ds-action-row">
-            <a
-              href={problem.leetcodeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ds-lc-link-btn"
-            >
-              <span className="ds-lc-icon">↗</span>
-              OPEN ON LEETCODE
-            </a>
-            <button
-              type="button"
-              className="ds-mark-btn"
-              onClick={handleMarkSolved}
-              disabled={submitting}
-            >
-              {submitting ? '⟳ SAVING...' : `✓ MARK AS SOLVED  +${challenge.points} XP`}
-            </button>
-          </div>
-        )}
       </div>
-
-    </div>
+    </>
   );
 };
