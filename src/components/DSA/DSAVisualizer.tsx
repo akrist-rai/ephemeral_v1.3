@@ -33,6 +33,14 @@ import { Subsets } from './visualizations/Subsets';
 import { RottingOranges } from './visualizations/RottingOranges';
 import { CourseSchedule } from './visualizations/CourseSchedule';
 import { RedundantConnection } from './visualizations/RedundantConnection';
+import { ValidateBST } from './visualizations/ValidateBST';
+import { KthSmallestBST } from './visualizations/KthSmallestBST';
+import { KthLargest } from './visualizations/KthLargest';
+import { Permutations } from './visualizations/Permutations';
+import { CombinationSum } from './visualizations/CombinationSum';
+import { NetworkDelay } from './visualizations/NetworkDelay';
+import { MinEffort } from './visualizations/MinEffort';
+import { CheapestFlights } from './visualizations/CheapestFlights';
 
 interface DSAVisualizerProps {
   problem: DSAProblem;
@@ -73,6 +81,14 @@ const VISUALIZER_REGISTRY: Record<string, React.ComponentType<{ accColor: string
   'DSA_994_ROTTING_ORANGES': RottingOranges,
   'DSA_207_COURSE_SCHED':    CourseSchedule,
   'DSA_684_REDUNDANT_CONN':  RedundantConnection,
+  'DSA_98_VALIDATE_BST':     ValidateBST,
+  'DSA_230_KTH_SMALLEST_BST':KthSmallestBST,
+  'DSA_215_KTH_LARGEST':     KthLargest,
+  'DSA_46_PERMUTATIONS':     Permutations,
+  'DSA_39_COMBINATION_SUM':  CombinationSum,
+  'DSA_743_NETWORK_DELAY':   NetworkDelay,
+  'DSA_1631_MIN_EFFORT':     MinEffort,
+  'DSA_787_CHEAP_FLIGHTS':   CheapestFlights,
 };
 
 export const DSAVisualizer: React.FC<DSAVisualizerProps> = ({ problem, accColor }) => {
