@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import Editor from '@monaco-editor/react';
+import Editor, { type Monaco } from '@monaco-editor/react';
 import type { Challenge, GctfState } from '../../types';
 import type { DSAProblem, DSATestCase } from '../../data/dsaContent';
 import { usePyodide } from '../../hooks/usePyodide';
@@ -64,6 +64,55 @@ const DIFF_COLORS: Record<string, string> = {
   easy: 'var(--crt)', medium: 'var(--gold)', hard: 'var(--red)',
 };
 
+// Site-matched Monaco theme — mirrors the Ephemeral palette so the editor
+// blends into the terminal aesthetic instead of stock vs-dark.
+let ephemeralThemeDefined = false;
+function defineEphemeralTheme(monaco: Monaco) {
+  if (ephemeralThemeDefined) return;
+  ephemeralThemeDefined = true;
+  monaco.editor.defineTheme('ephemeral', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+      { token: '',          foreground: 'c9c6bf' },
+      { token: 'comment',   foreground: '4a4a66', fontStyle: 'italic' },
+      { token: 'keyword',   foreground: 'ff2a38' },
+      { token: 'keyword.flow', foreground: 'ff2a38' },
+      { token: 'string',    foreground: 'ccff00' },
+      { token: 'number',    foreground: '00ff55' },
+      { token: 'type',      foreground: '7fd4ff' },
+      { token: 'type.identifier', foreground: '7fd4ff' },
+      { token: 'function',  foreground: 'ffb830' },
+      { token: 'identifier', foreground: 'c9c6bf' },
+      { token: 'delimiter', foreground: '7a7a90' },
+      { token: 'operator',  foreground: 'ff6a74' },
+    ],
+    colors: {
+      'editor.background': '#04060a',
+      'editor.foreground': '#c9c6bf',
+      'editorLineNumber.foreground': '#26263a',
+      'editorLineNumber.activeForeground': '#5a5a7a',
+      'editor.lineHighlightBackground': '#0a0d14',
+      'editor.lineHighlightBorder': '#00000000',
+      'editor.selectionBackground': '#1c2c3e',
+      'editor.inactiveSelectionBackground': '#141e2a',
+      'editorCursor.foreground': '#00ff55',
+      'editor.findMatchBackground': '#ccff0040',
+      'editor.findMatchHighlightBackground': '#ccff0020',
+      'editorGutter.background': '#04060a',
+      'editorIndentGuide.background1': '#14141f',
+      'editorIndentGuide.activeBackground1': '#2a2a3a',
+      'editorWidget.background': '#070910',
+      'editorWidget.border': '#ffffff14',
+      'editorSuggestWidget.background': '#070910',
+      'editorSuggestWidget.selectedBackground': '#1c2c3e',
+      'scrollbarSlider.background': '#ffffff12',
+      'scrollbarSlider.hoverBackground': '#ffffff22',
+      'scrollbarSlider.activeBackground': '#ffffff33',
+    },
+  });
+}
+
 export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
   problem, challenge, gctf, submitFlag, allChallenges, setUserXp,
   onMarkSolved, accColor, episodeTitle, onBack,
@@ -74,7 +123,7 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
   const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState<'problem' | 'study' | 'viz'>('problem');
+  const [activeTab, setActiveTab] = useState<'problem' | 'study' | 'viz'>('viz');
   const { loading: pyLoading, run: runPy } = usePyodide();
 
   const solved = !!gctf.solved[challenge.id]?.solved;
@@ -89,7 +138,7 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
     setConsoleLogs([]);
     setCode(problem.starterCode.python);
     setLang('python');
-    setActiveTab('problem');
+    setActiveTab('viz');
   }, [problem.id]);
 
   const handleLangChange = (newLang: 'python' | 'javascript') => {
@@ -217,15 +266,15 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
           </div>
         </div>
 
-        {/* ── BODY ── */}
+        {/* ── BODY (vertical: content on top, editor below) ── */}
         <div className="dsa-detail-body">
 
-          {/* LEFT: content */}
-          <div className="dsa-detail-left">
+          {/* TOP: content */}
+          <div className="dsa-detail-content">
 
             {/* Content tabs */}
             <div className="dsa-content-tabs">
-              {(['problem', 'study', 'viz'] as const).map(tab => (
+              {(['viz', 'problem', 'study'] as const).map(tab => (
                 <button
                   key={tab}
                   type="button"
@@ -348,8 +397,8 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
             </div>
           </div>
 
-          {/* RIGHT: workspace */}
-          <div className="dsa-detail-right">
+          {/* BELOW: code workspace */}
+          <div className="dsa-detail-workspace">
 
             {/* Terminal header */}
             <div className="dsa-terminal-hdr">
@@ -384,7 +433,8 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
                 language={lang === 'python' ? 'python' : 'javascript'}
                 value={code}
                 onChange={v => setCode(v ?? '')}
-                theme="vs-dark"
+                beforeMount={defineEphemeralTheme}
+                theme="ephemeral"
                 options={{
                   fontSize: 13,
                   minimap: { enabled: false },

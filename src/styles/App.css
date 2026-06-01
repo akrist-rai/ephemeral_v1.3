@@ -5191,20 +5191,20 @@ nav{background:rgba(6,6,14,0.92)!important;-webkit-backdrop-filter:blur(16px)!im
 .dsa-detail-pts{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;color:var(--lime);margin-left:auto}
 .dsa-detail-solved-badge{font-family:var(--mono);font-size:.55rem;letter-spacing:.12em;color:var(--crt);padding:.14rem .45rem;border:1px solid rgba(0,255,65,.3);background:rgba(0,255,65,.06)}
 
-/* Body 2-col */
-.dsa-detail-body{display:grid;grid-template-columns:1fr 420px;flex:1;min-height:0;overflow:hidden}
+/* Body — single scroll column: content on top, editor below */
+.dsa-detail-body{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column}
+.dsa-detail-body::-webkit-scrollbar{width:5px}
+.dsa-detail-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08)}
 
-/* LEFT — problem content */
-.dsa-detail-left{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid rgba(255,255,255,.06)}
+/* TOP — problem content */
+.dsa-detail-content{display:flex;flex-direction:column;flex-shrink:0}
 
-.dsa-content-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0}
+.dsa-content-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;position:sticky;top:0;z-index:5;background:#020608}
 .dsa-content-tab{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;color:rgba(255,255,255,.3);background:none;border:none;border-bottom:2px solid transparent;padding:.55rem 1rem;cursor:pointer;text-transform:uppercase;transition:all .15s}
 .dsa-content-tab.on{color:var(--dsa-acc);border-bottom-color:var(--dsa-acc);background:rgba(255,255,255,.02)}
 .dsa-content-tab:hover:not(.on){color:rgba(255,255,255,.7)}
 
-.dsa-content-body{flex:1;overflow-y:auto;padding:.1rem 0}
-.dsa-content-body::-webkit-scrollbar{width:4px}
-.dsa-content-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08)}
+.dsa-content-body{flex-shrink:0}
 
 .dsa-tab-panel{padding:1rem 1.4rem 1.4rem;display:flex;flex-direction:column;gap:1.1rem}
 
@@ -5247,11 +5247,12 @@ nav{background:rgba(6,6,14,0.92)!important;-webkit-backdrop-filter:blur(16px)!im
 .dsa-pitfall-icon{font-family:var(--mono);color:rgba(232,0,13,.55);flex-shrink:0;font-size:.65rem;margin-top:.06rem}
 .dsa-pattern-hint{font-family:var(--mono);font-size:.72rem;color:rgba(255,255,255,.35);letter-spacing:.04em;line-height:1.65;border-left:2px solid rgba(255,255,255,.08);padding-left:.75rem}
 
-/* RIGHT — workspace */
-.dsa-detail-right{display:flex;flex-direction:column;overflow:hidden;background:#04060a}
+/* BELOW — code workspace (full width, stacked under content) */
+.dsa-detail-workspace{display:flex;flex-direction:column;background:#04060a;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0}
 
 /* Terminal-style code header */
 .dsa-terminal-hdr{display:flex;align-items:center;gap:.6rem;padding:.48rem .85rem;background:rgba(2,4,8,.97);border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.dsa-terminal-hdr::before{content:'CODE EDITOR';font-family:var(--mono);font-size:.52rem;letter-spacing:.18em;color:rgba(255,255,255,.2);margin-right:.3rem}
 .dsa-terminal-icon{font-family:var(--mono);font-size:.8rem;color:var(--crt);animation:blink 1.2s step-end infinite;flex-shrink:0;line-height:1}
 .dsa-terminal-label{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;color:rgba(255,255,255,.4);flex:1}
 .dsa-lang-switcher{display:flex;gap:.25rem}
@@ -5262,7 +5263,7 @@ nav{background:rgba(6,6,14,0.92)!important;-webkit-backdrop-filter:blur(16px)!im
 .dsa-py-spinner{width:8px;height:8px;border:1.5px solid rgba(0,255,65,.15);border-top-color:var(--crt);border-radius:50%;animation:dspin .7s linear infinite;flex-shrink:0}
 @keyframes dspin{to{transform:rotate(360deg)}}
 
-.dsa-monaco-wrap{flex:1;min-height:0;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.06)}
+.dsa-monaco-wrap{height:460px;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.06)}
 
 /* Execute bar */
 .dsa-exec-bar{display:flex;align-items:center;gap:.55rem;padding:.42rem .75rem;background:rgba(2,4,8,.95);border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
@@ -5319,8 +5320,7 @@ nav{background:rgba(6,6,14,0.92)!important;-webkit-backdrop-filter:blur(16px)!im
 .dsa-solved-xp{font-family:var(--mono);font-size:.66rem;color:var(--lime);letter-spacing:.1em}
 
 /* Responsive */
-@media(max-width:1100px){.dsa-detail-body{grid-template-columns:1fr 360px}}
-@media(max-width:860px){.dsa-detail-body{grid-template-columns:1fr}.dsa-detail-right{display:none}}
+@media(max-width:860px){.dsa-monaco-wrap{height:380px}}
 @media(max-width:600px){.dsa-grid{grid-template-columns:1fr 1fr}}
 
 /* ═══════════════════════════════════════════════════════════════════
