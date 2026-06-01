@@ -91,7 +91,7 @@ const VISUALIZER_REGISTRY: Record<string, React.ComponentType<{ accColor: string
   'DSA_787_CHEAP_FLIGHTS':   CheapestFlights,
 };
 
-export const DSAVisualizer: React.FC<DSAVisualizerProps> = ({ problem, accColor }) => {
+export const DSAVisualizer: React.FC<DSAVisualizerProps> = React.memo(({ problem, accColor }) => {
   const VisualizerComponent = VISUALIZER_REGISTRY[problem.id] ?? null;
 
   if (VisualizerComponent) {
@@ -135,4 +135,5 @@ export const DSAVisualizer: React.FC<DSAVisualizerProps> = ({ problem, accColor 
       </div>
     </div>
   );
-};
+});
+DSAVisualizer.displayName = 'DSAVisualizer';

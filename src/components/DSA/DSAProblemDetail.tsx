@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import Editor, { type Monaco } from '@monaco-editor/react';
 import type { Challenge, GctfState } from '../../types';
-import type { DSAProblem, DSATestCase } from '../../data/dsaContent';
+import type { DSAProblem } from '../../data/dsaContent';
 import { usePyodide } from '../../hooks/usePyodide';
 import { playSound } from '../../lib/sound';
 import { DSAVisualizer } from './DSAVisualizer';
@@ -26,26 +26,6 @@ interface DSAProblemDetailProps {
   onBack?: () => void;
 }
 
-function deepEqual(a: unknown, b: unknown): boolean { return JSON.stringify(a) === JSON.stringify(b); }
-void deepEqual;
-
-function runJsTestCase(userCode: string, testCase: DSATestCase): { result: unknown; error?: string } {
-  try {
-    const runner = new Function(
-      'args',
-      `${userCode}\n\nconst _fn = typeof Solution !== 'undefined'
-        ? (() => { const s = new Solution(); const m = Object.getOwnPropertyNames(Solution.prototype).find(n => n !== 'constructor'); return s[m].bind(s); })()
-        : (typeof canJump !== 'undefined' ? canJump : typeof coinChange !== 'undefined' ? coinChange : typeof minCostClimbingStairs !== 'undefined' ? minCostClimbingStairs : null);
-      if (!_fn) throw new Error('No solution function found');
-      return _fn(...args);`
-    );
-    return { result: runner(testCase.args) };
-  } catch (err) {
-    return { result: undefined, error: err instanceof Error ? err.message : String(err) };
-  }
-}
-void runJsTestCase;
-
 const TAG_TO_TOPIC: Record<string, string> = {
   'Array': 'Arrays', 'Dynamic Programming': 'Dynamic Programming', 'Greedy': 'Greedy',
   'String': 'Strings', 'Hash Table': 'Hash Maps', 'Two Pointers': 'Two Pointers',
@@ -62,6 +42,19 @@ function topicFromTags(tags: string[]): string {
 
 const DIFF_COLORS: Record<string, string> = {
   easy: 'var(--crt)', medium: 'var(--gold)', hard: 'var(--red)',
+};
+
+const MONACO_OPTIONS = {
+  fontSize: 13,
+  minimap: { enabled: false },
+  lineNumbers: 'on' as const,
+  scrollBeyondLastLine: false,
+  wordWrap: 'on' as const,
+  tabSize: 4,
+  renderLineHighlight: 'line' as const,
+  padding: { top: 10, bottom: 10 },
+  fontFamily: '"Share Tech Mono", "Fira Code", monospace',
+  scrollbar: { verticalScrollbarSize: 4, horizontalScrollbarSize: 4 },
 };
 
 // Site-matched Monaco theme — mirrors the Ephemeral palette so the editor
@@ -141,12 +134,12 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
     setActiveTab('viz');
   }, [problem.id]);
 
-  const handleLangChange = (newLang: 'python' | 'javascript') => {
+  const handleLangChange = useCallback((newLang: 'python' | 'javascript') => {
     setLang(newLang);
     setCode(newLang === 'python' ? problem.starterCode.python : problem.starterCode.javascript);
     setTestResults(null);
     playSound.click();
-  };
+  }, [problem.starterCode.python, problem.starterCode.javascript]);
 
   const handleRun = useCallback(async () => {
     if (running) return;
@@ -215,7 +208,7 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
     }
   }, [lang, code, problem, runPy, running]);
 
-  const handleMarkSolved = async () => {
+  const handleMarkSolved = useCallback(async () => {
     if (solved || submitting) return;
     setSubmitting(true);
     playSound.click();
@@ -225,14 +218,14 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [solved, submitting, challenge.id, allChallenges, setUserXp, submitFlag, onMarkSolved]);
 
-  const scopeCss = `
+  const scopeCss = useMemo(() => `
     .dsa-detail-page { --dsa-acc: ${accColor}; --dsa-diff-col: ${diffColor} }
     .dsa-detail-back:hover { color: ${accColor} }
     .dsa-detail-cat { color: ${accColor} }
     .dsa-detail-mark-btn { background: ${accColor} }
-  `;
+  `, [accColor, diffColor]);
 
   return (
     <>
@@ -435,18 +428,7 @@ export const DSAProblemDetail: React.FC<DSAProblemDetailProps> = ({
                 onChange={v => setCode(v ?? '')}
                 beforeMount={defineEphemeralTheme}
                 theme="ephemeral"
-                options={{
-                  fontSize: 13,
-                  minimap: { enabled: false },
-                  lineNumbers: 'on',
-                  scrollBeyondLastLine: false,
-                  wordWrap: 'on',
-                  tabSize: 4,
-                  renderLineHighlight: 'line',
-                  padding: { top: 10, bottom: 10 },
-                  fontFamily: '"Share Tech Mono", "Fira Code", monospace',
-                  scrollbar: { verticalScrollbarSize: 4, horizontalScrollbarSize: 4 },
-                }}
+                options={MONACO_OPTIONS}
               />
             </div>
 

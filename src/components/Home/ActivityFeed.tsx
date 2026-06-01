@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { apiRequest } from '../../hooks/useApi';
 
 interface ActivityEntry {
@@ -33,7 +33,10 @@ const CAT_COLORS: Record<string, string> = {
 
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({ challenges, currentUserId }) => {
   const [feed, setFeed] = useState<ActivityEntry[]>([]);
-  const chalMap = Object.fromEntries(challenges.map(c => [c.id, c]));
+  const chalMap = useMemo(
+    () => Object.fromEntries(challenges.map(c => [c.id, c])),
+    [challenges],
+  );
 
   const load = useCallback(() => {
     apiRequest('/api/stats/activity?limit=20')

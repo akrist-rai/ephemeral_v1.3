@@ -19,10 +19,10 @@ export function useCtf(
   const [shake, setShake] = useState(false);
   const flagInputRef = useRef<HTMLInputElement>(null);
 
-  const triggerShake = () => {
+  const triggerShake = useCallback(() => {
     setShake(true);
     setTimeout(() => setShake(false), 380);
-  };
+  }, []);
 
   const submitFlag = useCallback(
     async (

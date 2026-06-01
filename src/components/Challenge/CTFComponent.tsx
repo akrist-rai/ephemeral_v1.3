@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { WriteupModal } from '../Common/WriteupModal';
 import { playSound } from '../../lib/sound';
 import { GlitchText } from '../Effects/GlitchText';
@@ -41,6 +41,31 @@ const CAT_META: Record<string, { color: string; icon: string }> = {
   'DATA LEAK':  { color: '#ff6b35',     icon: '⚠'  },
   OVERFITTING:  { color: 'var(--red)',  icon: '⤴'  },
 };
+
+const FILE_COLORS: Record<string, string> = {
+  table: '#80cbc4', config: 'var(--lime)', log: '#4fc3f7', code: '#ce93d8', output: 'var(--crt)',
+};
+const FILE_ICONS: Record<string, string> = {
+  table: '田', config: '⚙', log: '☰', code: '⚡', output: '▶',
+};
+
+function runJsSandbox(code: string): { success: boolean; logs: string[] } {
+  const logs: string[] = ['[SYS] Initializing JS V8 local worker scope...'];
+  const mockConsole = {
+    log: (...args: any[]) => {
+      logs.push('[OUT] ' + args.map((a: any) => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+    },
+  };
+  try {
+    const runnable = new Function('console', code);
+    runnable(mockConsole);
+    logs.push('>>> SCRIPT EXECUTION FINISHED SUCCESSFULLY.');
+    return { success: true, logs };
+  } catch (err: any) {
+    logs.push(`[FATAL] ReferenceError / SyntaxError: ${err.message}`);
+    return { success: false, logs };
+  }
+}
 
 // ── CUSTOM OPERATOR WORKSPACE DATA ───────────────────────────────────────────
 const SANDBOX_TEMPLATES: Record<string, { lang: 'python' | 'javascript' | 'sql'; code: string; runLogic: (code: string) => { success: boolean; logs: string[] } }> = {
@@ -180,6 +205,23 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
 
   const activeChalId = gctf.active || '';
 
+  const totalPts = useMemo(
+    () => Object.values(gctf.solved).reduce((sum: number, s: SolveRecord) => sum + (s.pts_earned || 0), 0),
+    [gctf.solved],
+  );
+  const solvedCount = useMemo(
+    () => Object.values(gctf.solved).filter((s: SolveRecord) => s.solved).length,
+    [gctf.solved],
+  );
+  const pct = useMemo(
+    () => challenges.length > 0 ? Math.round((solvedCount / challenges.length) * 100) : 0,
+    [solvedCount, challenges.length],
+  );
+  const cats = useMemo(
+    () => ['ALL', ...Array.from(new Set(challenges.map((c: Challenge) => c.category)))],
+    [challenges],
+  );
+
   // Synchronize challenge specific code sandbox templates
   useEffect(() => {
     setActiveChapIdx(0);
@@ -207,22 +249,18 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
     }
   }, [activeChalId]);
 
-  const totalPts = Object.values(gctf.solved).reduce((sum: number, s: SolveRecord) => sum + (s.pts_earned || 0), 0);
-  const solvedCount = Object.values(gctf.solved).filter((s: SolveRecord) => s.solved).length;
-  const pct = challenges.length > 0 ? Math.round((solvedCount / challenges.length) * 100) : 0;
-  const cats = ['ALL', ...Array.from(new Set(challenges.map((c: Challenge) => c.category)))];
 
-  const openChallenge = (id: string) => {
+  const openChallenge = useCallback((id: string) => {
     playSound.click();
     navigate(`${episodeBasePath}/ctf/${encodeURIComponent(id)}`);
-  };
-  const closeChallenge = () => {
+  }, [navigate, episodeBasePath]);
+
+  const closeChallenge = useCallback(() => {
     playSound.click();
     navigate(`${episodeBasePath}/ctf`);
-  };
+  }, [navigate, episodeBasePath]);
 
-  // Preload code template helper
-  const handlePreloadTemplate = () => {
+  const handlePreloadTemplate = useCallback(() => {
     playSound.success();
     const t = SANDBOX_TEMPLATES[activeChalId];
     if (t) {
@@ -234,63 +272,40 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
       setSandboxLang('javascript');
       setConsoleLogs(['[SYS] Preloaded custom JavaScript decoding algorithm.']);
     }
-  };
+  }, [activeChalId]);
 
-  // Copy from Codex snippet straight into compiler
-  const handleInjectCodexSnippet = (snippet: string) => {
+  const handleInjectCodexSnippet = useCallback((snippet: string) => {
     setSandboxCode(prev => prev + '\n' + snippet);
     setConsoleLogs(prev => [...prev, `[SYS] Injected Codex directive into buffer: "${snippet}"`]);
     showToast('DIRECTIVE INJECTED INTO WORKSPACE');
-  };
+  }, [showToast]);
 
-  // Safe JavaScript Execution Engine
-  const runJsSandbox = (code: string): { success: boolean; logs: string[] } => {
-    const logs: string[] = ['[SYS] Initializing JS V8 local worker scope...'];
-    const mockConsole = {
-      log: (...args: any[]) => {
-        logs.push('[OUT] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
-      }
-    };
-    try {
-      const runnable = new Function('console', code);
-      runnable(mockConsole);
-      logs.push('>>> SCRIPT EXECUTION FINISHED SUCCESSFULLY.');
-      return { success: true, logs };
-    } catch (err: any) {
-      logs.push(`[FATAL] ReferenceError / SyntaxError: ${err.message}`);
-      return { success: false, logs };
-    }
-  };
-
-  // Execute workspace sandbox compiler
-  const handleExecuteSandbox = () => {
+  const handleExecuteSandbox = useCallback(() => {
     playSound.click();
     setSandboxRunning(true);
     setConsoleLogs(prev => [...prev, '[SYS] Compiling workspace source buffer...', '[SYS] Loading virtual machine thread...']);
 
     setTimeout(() => {
       let result;
-      // If challenge has preloaded logical simulations, run them
-      if (sandboxLang !== 'javascript' && SANDBOX_TEMPLATES[activeChalId] && sandboxLang === SANDBOX_TEMPLATES[activeChalId].lang) {
-        result = SANDBOX_TEMPLATES[activeChalId].runLogic(sandboxCode);
+      const tmpl = SANDBOX_TEMPLATES[activeChalId];
+      if (sandboxLang !== 'javascript' && tmpl && sandboxLang === tmpl.lang) {
+        result = tmpl.runLogic(sandboxCode);
       } else {
-        // Run as functional Javascript sandbox in user browser
         result = runJsSandbox(sandboxCode);
       }
 
       setConsoleLogs(prev => [...prev, ...result.logs]);
       setSandboxRunning(false);
-      if (result.success) {
-        playSound.success();
-      } else {
-        playSound.error();
-      }
+      if (result.success) playSound.success();
+      else playSound.error();
     }, 850);
-  };
+  }, [activeChalId, sandboxLang, sandboxCode]);
 
-  // Submissions — must be defined after ch is resolved in the detail view,
-  // so we hoist it here but guard against the board phase (ch will be null there).
-  const handleSubmit = async (ch: Challenge, chapters: ReturnType<typeof getChaptersForChallenge>, chapIdx: number) => {
+  const handleSubmit = useCallback(async (
+    ch: Challenge,
+    chapters: ReturnType<typeof getChaptersForChallenge>,
+    chapIdx: number,
+  ) => {
     const chap = chapters[chapIdx];
     const isLast = chapIdx === chapters.length - 1;
     const ans = (chapAnswers[chap.id] || '').trim();
@@ -314,7 +329,7 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
         showToast('✗ WRONG ANSWER');
       }
     }
-  };
+  }, [chapAnswers, solvedChaps, challenges, submitFlag, setUserXp, showToast]);
 
   // ── BOARD ──────────────────────────────────────────────────────────────────
   if (gctf.phase === 'board') {
@@ -464,12 +479,6 @@ export const CTFComponent: React.FC<CTFComponentProps> = ({
   const diffLabel = (['EASY', 'MED', 'HARD', 'ELITE', 'LEGEND'] as const)[ch.difficulty - 1] ?? '';
 
   // ── IMMERSIVE DETAIL VIEW ────────────────────────────────────────────────────
-  const FILE_COLORS: Record<string, string> = {
-    table: '#80cbc4', config: 'var(--lime)', log: '#4fc3f7', code: '#ce93d8', output: 'var(--crt)',
-  };
-  const FILE_ICONS: Record<string, string> = {
-    table: '田', config: '⚙', log: '☰', code: '⚡', output: '▶',
-  };
 
   const submitDirect = () => {
     if (lastChap) handleSubmit(ch, chapters, chapters.length - 1);

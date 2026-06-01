@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 export interface VizStep {
   eq: string;
@@ -54,21 +54,25 @@ export const VisualizerShell: React.FC<Props> = ({
     return () => window.removeEventListener('keydown', onKey);
   }, [isLast, steps.length]);
 
-  const handlePlay = () => { if (isLast) { setStepIdx(0); setPlaying(true); } else setPlaying(p => !p); };
+  const handlePlay = useCallback(() => {
+    if (isLast) { setStepIdx(0); setPlaying(true); } else setPlaying(p => !p);
+  }, [isLast]);
 
-  const eqColor = isDone ? '#22c55e' : accColor;
-  const css = `
-    .viz-progress-fill{width:${progress}%;background:${accColor}}
-    .viz-eq-text{color:${eqColor}}
-    .viz-info-bar{border-left-color:${isDone ? '#22c55e66' : accColor + '55'}}
+  // Static CSS that only changes when accColor or playing changes (not on every step)
+  const staticCss = useMemo(() => `
+    .viz-progress-fill{background:${accColor}}
     .viz-play-btn{border-color:${accColor}66;color:${accColor}}
     .viz-play-btn:hover{border-color:${accColor};background:${accColor}22}
     ${playing ? `.viz-play-ring{animation:vizRing 1.2s ease-out infinite}@keyframes vizRing{0%{box-shadow:0 0 0 0 ${accColor}66}70%{box-shadow:0 0 0 12px ${accColor}00}100%{box-shadow:0 0 0 0 ${accColor}00}}` : ''}
-  `;
+  `, [accColor, playing]);
+
+  const eqColor = isDone ? '#22c55e' : accColor;
+  const infoBarColor = isDone ? '#22c55e66' : accColor + '55';
 
   return (
     <>
-      <style>{css}</style>
+      <style>{staticCss}</style>
+      <style>{`.viz-progress-fill{width:${progress}%}.viz-eq-text{color:${eqColor}}.viz-info-bar{border-left-color:${infoBarColor}}`}</style>
       <div className="viz-progress-track"><div className="viz-progress-fill" /></div>
       <div className="viz-stage">
         <div className="viz-grid">

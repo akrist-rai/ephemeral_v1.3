@@ -332,11 +332,11 @@ export default function App() {
     return challenges.filter(c => c.episodeId === episodeId);
   }, [currentEpisode, challenges]);
 
-  const episodeBasePath = (currentEpisode && currentArc)
-    ? `/episode/${currentArc.id}/${currentEpisode.id}`
-    : (featuredEpisode && featuredArc)
-    ? `/episode/${featuredArc.id}/${featuredEpisode.id}`
-    : '/episode/1/S1E1_A1';
+  const episodeBasePath = useMemo(() => {
+    if (currentEpisode && currentArc) return `/episode/${currentArc.id}/${currentEpisode.id}`;
+    if (featuredEpisode && featuredArc) return `/episode/${featuredArc.id}/${featuredEpisode.id}`;
+    return '/episode/1/S1E1_A1';
+  }, [currentEpisode, currentArc, featuredEpisode, featuredArc]);
 
   const getChallengePath = useCallback((ch: Challenge) => {
     for (const [arcId, eps] of Object.entries(arcEpisodes)) {
@@ -350,13 +350,18 @@ export default function App() {
     return `${fallbackBase}/ctf/${encodeURIComponent(ch.id)}`;
   }, [arcEpisodes, featuredArc, featuredEpisode]);
 
+  const onHome        = useCallback(() => navigate('/'), [navigate]);
+  const onSeries      = useCallback(() => navigate('/series'), [navigate]);
+  const onOpenSearch  = useCallback(() => setSearchOpen(true), []);
+  const onOpenGuide   = useCallback(() => setShowTour(true), []);
+
   // ── Auth gate ──────────────────────────────────────────────────────────────
   if (!user) return <AuthGate onAuth={handleAuth} />;
 
   // ── Shared Navbar props ──
   const navProps = {
-    onHome: () => navigate('/'),
-    onSeries: () => navigate('/series'),
+    onHome,
+    onSeries,
     userXp,
     userId: user.id,
     displayName: user.name,
@@ -365,8 +370,8 @@ export default function App() {
     challengesSolved,
     userAvatar,
     onChangeAvatar: openPlayerAvatarSelector,
-    onOpenSearch: () => setSearchOpen(true),
-    onOpenGuide: () => setShowTour(true),
+    onOpenSearch,
+    onOpenGuide,
   };
 
   return (
