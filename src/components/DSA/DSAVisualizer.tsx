@@ -27,6 +27,12 @@ import { SortArray } from './visualizations/SortArray';
 import { SearchBST } from './visualizations/SearchBST';
 import { NumIslands } from './visualizations/NumIslands';
 import { FindPath } from './visualizations/FindPath';
+import { LevelOrder } from './visualizations/LevelOrder';
+import { TopKFrequent } from './visualizations/TopKFrequent';
+import { Subsets } from './visualizations/Subsets';
+import { RottingOranges } from './visualizations/RottingOranges';
+import { CourseSchedule } from './visualizations/CourseSchedule';
+import { RedundantConnection } from './visualizations/RedundantConnection';
 
 interface DSAVisualizerProps {
   problem: DSAProblem;
@@ -61,6 +67,12 @@ const VISUALIZER_REGISTRY: Record<string, React.ComponentType<{ accColor: string
   'DSA_700_SEARCH_BST':      SearchBST,
   'DSA_200_NUM_ISLANDS':     NumIslands,
   'DSA_1971_FIND_PATH':      FindPath,
+  'DSA_102_LEVEL_ORDER':     LevelOrder,
+  'DSA_347_TOP_K_FREQUENT':  TopKFrequent,
+  'DSA_78_SUBSETS':          Subsets,
+  'DSA_994_ROTTING_ORANGES': RottingOranges,
+  'DSA_207_COURSE_SCHED':    CourseSchedule,
+  'DSA_684_REDUNDANT_CONN':  RedundantConnection,
 };
 
 export const DSAVisualizer: React.FC<DSAVisualizerProps> = ({ problem, accColor }) => {
