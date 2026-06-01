@@ -13,6 +13,14 @@ import { BestTimeStock } from './visualizations/BestTimeStock';
 import { JumpGame } from './visualizations/JumpGame';
 import { CoinChange } from './visualizations/CoinChange';
 import { MinCostStairs } from './visualizations/MinCostStairs';
+import { PalindromeNumber } from './visualizations/PalindromeNumber';
+import { LengthLastWord } from './visualizations/LengthLastWord';
+import { MajorityElement } from './visualizations/MajorityElement';
+import { MaxSubarray } from './visualizations/MaxSubarray';
+import { PivotIndex } from './visualizations/PivotIndex';
+import { RansomNote } from './visualizations/RansomNote';
+import { ProductExceptSelf } from './visualizations/ProductExceptSelf';
+import { GroupAnagrams } from './visualizations/GroupAnagrams';
 
 interface DSAVisualizerProps {
   problem: DSAProblem;
@@ -33,6 +41,14 @@ const VISUALIZER_REGISTRY: Record<string, React.ComponentType<{ accColor: string
   'DSA_55_JUMP_GAME':       JumpGame,
   'DSA_322_COIN_CHANGE':    CoinChange,
   'DSA_746_MIN_COST_STAIRS': MinCostStairs,
+  'BP_9_PALINDROME':         PalindromeNumber,
+  'BP_58_LENGTH_LAST_WORD':  LengthLastWord,
+  'DSA_169_MAJORITY':        MajorityElement,
+  'DSA_53_MAX_SUBARRAY':     MaxSubarray,
+  'DSA_724_PIVOT_INDEX':     PivotIndex,
+  'DSA_383_RANSOM_NOTE':     RansomNote,
+  'DSA_238_PRODUCT_EXCEPT':  ProductExceptSelf,
+  'DSA_49_GROUP_ANAGRAMS':   GroupAnagrams,
 };
 
 export const DSAVisualizer: React.FC<DSAVisualizerProps> = ({ problem, accColor }) => {
